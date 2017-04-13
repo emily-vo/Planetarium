@@ -1,8 +1,7 @@
 
 const THREE = require('three'); // older modules are imported like this. You shouldn't have to worry about this much
 import Framework from './framework'
-import Asset from './asset'
-import World from './world'
+import World from './worlds/world'
 
 // initialize global clock
 var clock = new THREE.Clock();

@@ -1,11 +1,14 @@
 const THREE = require('three')
+import Asset from './assets/asset'
 
-// this class will be overridden very frequently for the various assets.
-export default class Asset {
+// this class will mostly be unchanged from world to world. 
+// variation in worlds will mostly rely on the various assets.
+export default class World {
     constructor(scene, timer) {
         this.scene = scene;
         this.timer = timer;
-        this.materials = [];
+        this.assets = [];
+        this.materials = []; 
         
         // initialize example uniform variables and store in list
         var exShaderUniforms = {
@@ -18,14 +21,20 @@ export default class Asset {
         // initialize example shader
         var exMaterial = new THREE.ShaderMaterial({
               uniforms: exShaderUniforms,
-              vertexShader: require('./shaders/noisy-vert.glsl'),
-              fragmentShader: require('./shaders/noisy-frag.glsl')
+              vertexShader: require('./worldShaders/noisy-vert.glsl'),
+              fragmentShader: require('./worldShaders/noisy-frag.glsl')
         });
 
         // store in global list of shaders
         this.materials.push(exMaterial);
+
+        // create an example asset
+        var exAsset = new Asset(scene, timer);
+        this.assets.push(exAsset);
+        
     }
-    
+
+    // update shader times
     updateShaderUniforms() {
         var delta = this.timer.getDelta();
         for (var i = 0; i < this.materials.length; i++) {
@@ -36,8 +45,13 @@ export default class Asset {
         }
     }
 
+    // update assets
     tick() {
-        console.log("asset ticking...");
         this.updateShaderUniforms();
+
+        // assets tick
+        for (var i = 0; i < this.assets.length; i++) {
+          this.assets[i].tick();
+        }
     }
 }
