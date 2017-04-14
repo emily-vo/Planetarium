@@ -10,6 +10,7 @@ export default class World {
         this.assets = [];
         this.rotation = new THREE.Vector3(0, 0, 0);
         this.position = new THREE.Vector3(0, 0, 0);
+        this.baseMesh = baseMesh;
         this.createScene();
     }
 
@@ -66,7 +67,7 @@ export default class World {
 
     // update shader times
     updateShaderUniforms() {
-        this.baseMesh.material.uniforms;
+        //this.baseMesh.material.uniforms;
         for (var i = 0; i < this.assets.length; i++) {
             this.assets[i].updateShaderUniforms();
         }

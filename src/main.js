@@ -2,11 +2,12 @@
 const THREE = require('three'); // older modules are imported like this. You shouldn't have to worry about this much
 import Framework from './framework'
 import World from './worlds/world'
+import BasicWorld from './worlds/basicWorld'
 
 // initialize global clock
 var clock = new THREE.Clock();
 
-var exWorld;
+var basicWorld;
 
 // called after the scene loads
 function onLoad(framework) {
@@ -30,8 +31,8 @@ function onLoad(framework) {
   camera.lookAt(new THREE.Vector3(0,0,0));
   camera.updateProjectionMatrix();
 
-  // create example world
-  exWorld = new World(scene, clock);
+  // create simple world
+  basicWorld = new BasicWorld(scene, clock);
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
@@ -45,8 +46,8 @@ function clearScene() {
 
 // called on frame updates
 function onUpdate(framework) {
-  if (exWorld !== undefined) {
-    exWorld.tick();
+  if (basicWorld !== undefined) {
+    basicWorld.tick();
   }
 }
 
