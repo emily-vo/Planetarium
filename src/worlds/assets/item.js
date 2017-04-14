@@ -5,6 +5,8 @@ export default class Item {
 		this.mesh = mesh;
 		this.localScale = new THREE.Vector3(1, 1, 1);
 		this.localPosition = new THREE.Vector3(0, 0, 0);
+
+		// this is in degrees
 		this.localRotation = new THREE.Vector3(0, 0, 0);
 	}
 
@@ -15,21 +17,14 @@ export default class Item {
 		this.mesh.position.z = position.z + this.localPosition.z;
 	}
 
-	// update the mesh's main rotation to be that of the assets and adds local rotation
-	setWorldRotation(rotation) {
-		// var ax = axis.clone();
-		// ax.applyEuler(this.localRotation);
-		// this.mesh.rotation.x = rotation.x + this.localRotation.x;
-		// this.mesh.rotation.y = rotation.y + this.localRotation.y;
-		// this.mesh.rotation.z = rotation.z + this.localRotation.z;
-	}
-
-	align(vector, axis) {
-		// rotate axis to reflect local rotation
-		var ax = axis.clone();
-		ax.applyEuler(this.localRotation);
-		this.mesh.quaternion.setFromUnitVectors(ax, vector.clone().normalize());
-		// console.log("aligning...");
+	// aligns the mesh with the vector specified
+	align(axis, vector) {
+		var v = vector.clone();
+	    var x = this.localRotation.x * (Math.PI / 180);
+	    var y = this.localRotation.y * (Math.PI / 180);
+	    var z = this.localRotation.z * (Math.PI / 180);
+	    v.applyEuler(new THREE.Euler( x, y, z, 'XYZ'));
+		this.mesh.quaternion.setFromUnitVectors(axis, v.clone().normalize());
 	}
 
 	// update the mesh's main scale to be that of the assets and adds local scale

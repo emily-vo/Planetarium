@@ -10,10 +10,10 @@ export default class Asset {
         this.timer = timer;
         this.items = [];
         this.world = world;
-        this.up = new THREE.Vector3(0, 1, 0);
-
-        // local position relative to its place on some world's vertex
         this.rotation = new THREE.Vector3(0, 0, 0);
+        this.up = new THREE.Vector3(0, 1, 0);
+        this.up.applyEuler(new THREE.Euler(this.rotation.x, 
+          this.rotation.y, this.rotation.z, 'XYZ'));
         this.position = new THREE.Vector3(0, 1, 0);
         this.scale = new THREE.Vector3(1, 1, 1);
 
@@ -80,24 +80,26 @@ export default class Asset {
       }
     }
 
-    // sets the overall asset position and moves the items accordingly
+    // sets the overall asset rotation
     setRotation(rotation) {
       this.rotation = rotation;
+      var x = this.localRotation.x * (Math.PI / 180);
+      var y = this.localRotation.y * (Math.PI / 180);
+      var z = this.localRotation.z * (Math.PI / 180);
+      this.up.applyEuler(new THREE.Vector3(x, y, z));
       this.updateRotations();
     }
 
     // allows the individual meshes to have their own offsets, updates them
     updateRotations() {
       for (var i = 0; i < this.items.length; i++) {
-        this.items[i].setWorldRotation(this.rotation);
+        this.items[i].align(this.up, this.normal);
       }
     }
 
     // aligns items with the normals
     alignItemsWithNormal() {
-      for (var i = 0; i < this.items.length; i++) {
-        this.items[i].align(this.normal, this.up);
-      }
+      this.updateRotations();
       this.up = this.normal;
     }
 
