@@ -5,7 +5,7 @@ export default class Item {
 		this.mesh = mesh;
 		this.localScale = new THREE.Vector3(1, 1, 1);
 		this.localPosition = new THREE.Vector3(0, 0, 0);
-
+		
 		// this is in degrees
 		this.localRotation = new THREE.Vector3(0, 0, 0);
 	}
@@ -17,7 +17,8 @@ export default class Item {
 		this.mesh.position.z = position.z + this.localPosition.z;
 	}
 
-	// aligns the mesh with the vector specified
+	// aligns the mesh with the vector specified (usually with the normal)
+	// will have to call align every time local rotation is changed, does the actual rotation
 	align(axis, vector) {
 		var v = vector.clone();
 	    var x = this.localRotation.x * (Math.PI / 180);
