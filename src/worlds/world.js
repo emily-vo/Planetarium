@@ -10,37 +10,6 @@ export default class World {
         this.assets = [];
         this.rotation = new THREE.Vector3(0, 0, 0);
         this.position = new THREE.Vector3(0, 0, 0);
-        
-        // test spawning assets
-        for (var i = 0; i < 10; i++) {
-            // initialize example uniform variables and store in list
-            this.shaderUniforms = {
-                time: { 
-                    type: "float", 
-                    value: 0
-                },
-                color: {
-                    type: "v4",
-                    value: new THREE.Vector4( 1., 1., 1., 1. )
-                }
-            };
-    
-            // initialize example shader and mesh
-            var material = new THREE.ShaderMaterial({
-                  uniforms: this.shaderUniforms,
-                  vertexShader: require('./worldShaders/basic-vert.glsl'),
-                  fragmentShader: require('./worldShaders/basic-frag.glsl')
-            });
-    
-            var geometry = new THREE.IcosahedronGeometry(6, 3);
-            this.baseMesh = new THREE.Mesh(geometry, material);
-    
-            // create an example asset
-            var exAsset = new Asset(scene, timer, this);
-    
-            this.spawnAsset(exAsset);
-        }
-
         this.createScene();
     }
 
@@ -85,7 +54,7 @@ export default class World {
         asset.normal = faces[faceIdx].vertexNormals[vIdx];
 
         // align asset with normal
-        this.alignAsset(asset);       
+        asset.alignItemsWithNormal();       
     }
 
     // adds assets to global list and adds their geometry to the scene
@@ -93,10 +62,6 @@ export default class World {
         this.assets.push(asset);
         asset.setPosition(position);
         asset.addToScene();
-    }
-
-    alignAsset(asset) {
-        asset.alignItemsWithNormal();
     }
 
     // update shader times
