@@ -17,9 +17,11 @@ export default class Item {
 
 	// update the mesh's main rotation to be that of the assets and adds local rotation
 	setWorldRotation(rotation) {
-		this.mesh.rotation.x = rotation.x + this.localRotation.x;
-		this.mesh.rotation.y = rotation.y + this.localRotation.y;
-		this.mesh.rotation.z = rotation.z + this.localRotation.z;
+		// var ax = axis.clone();
+		// ax.applyEuler(this.localRotation);
+		// this.mesh.rotation.x = rotation.x + this.localRotation.x;
+		// this.mesh.rotation.y = rotation.y + this.localRotation.y;
+		// this.mesh.rotation.z = rotation.z + this.localRotation.z;
 	}
 
 	align(vector, axis) {
