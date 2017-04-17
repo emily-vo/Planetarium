@@ -85,7 +85,7 @@ function createPetal() {
         }, 
         image: { // Check the Three.JS documentation for the different allowed types and values
             type: "t", 
-            value: THREE.ImageUtils.loadTexture('/textures/petal.jpg')
+            value: THREE.ImageUtils.loadTexture('./textures/petal.jpg')
         }
     };
 
