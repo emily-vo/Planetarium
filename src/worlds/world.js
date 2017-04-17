@@ -8,8 +8,6 @@ export default class World {
         this.scene = scene;
         this.timer = timer;
         this.assets = [];
-        this.rotation = new THREE.Vector3(0, 0, 0);
-        this.position = new THREE.Vector3(0, 0, 0);
         this.baseMesh = baseMesh;
         this.createScene();
     }
@@ -27,6 +25,19 @@ export default class World {
     // easy getter for face list
     worldFaces() {
         return this.baseMesh.geometry.faces;
+    }
+
+    spin(speed) {
+        // Spin the world  
+        this.baseMesh.rotation.y += speed;
+        this.baseMesh.updateMatrix();
+        this.baseMesh.geometry.applyMatrix( this.baseMesh.matrix );
+
+        for (var i = 0; i < this.assets.length; i++) {
+            var asset = this.assets[i];
+            if (i ==0) console.log(asset.vertex);
+            asset.setPosition(asset.vertex);
+        }   
     }
 
     // spawn asset at random vertex (adds to scene) and adds to the global list of assets
@@ -75,8 +86,8 @@ export default class World {
 
     // update assets
     tick() {
-        this.updateShaderUniforms();
-
+        this.updateShaderUniforms();     
+        // this.spin();
         // assets tick
         for (var i = 0; i < this.assets.length; i++) {
           this.assets[i].tick();
