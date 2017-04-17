@@ -5,3 +5,5 @@ Framework: Created a base class for the world and its assets. The base class for
 Example class: I created a simple extension of the framework I implemented that is a basic sphere with cubes. It is a simple demo that shows that cubes can easily be aligned with the surface normals, while having their own rotation. I did this by simply created a subclass of World in src/worlds/basicWorld.js, and a subclass of Asset in src/worlds/assets/cubes.js. 
 
 Flower planet: I procedurally created the flower petals by deforming a mesh with toolbox functions. I then placed them so that they looked like petals of a peruvian lily. This class is a subclass of assets, in src/worlds/assets/flower.js. The planet simply has a texture and spawns these flowers randomly. This planet class is in src/worlds/flowerWorld.js.
+
+See documentation/images for pictures of the different worlds. I consider these pictures of my development progress.
