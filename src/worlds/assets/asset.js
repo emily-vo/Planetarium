@@ -20,6 +20,9 @@ export default class Asset {
       // stores vertex and normal for access
       this.vertex;
       this.normal;
+
+      this.faceIdx;
+      this.vIdx;
     }
 
     // adds all item meshes
@@ -75,7 +78,7 @@ export default class Asset {
     // aligns items with the normals
     alignItemsWithNormal() {
       this.updateRotations();
-      this.up = this.normal;
+      //this.up = this.normal;
     }
 
     // updates the time for the shaders for the item meshes
@@ -83,8 +86,10 @@ export default class Asset {
       var delta = this.timer.getDelta();
       for (var i = 0; i < this.items.length; i++) {
         var shader = this.items[i].mesh.material;
-        if (shader.uniforms.time !== undefined) {
+        if (shader.uniforms !== undefined) {
+          if (shader.uniforms.time !== undefined) {
             shader.uniforms.time.value += delta;
+          }
         }
       }
     }

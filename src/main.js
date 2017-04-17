@@ -3,7 +3,7 @@ const THREE = require('three'); // older modules are imported like this. You sho
 import Framework from './framework'
 import World from './worlds/world'
 import BasicWorld from './worlds/basicWorld'
-
+import FlowerWorld from './worlds/flowerWorld'
 // initialize global clock
 var clock = new THREE.Clock();
 
@@ -39,103 +39,7 @@ function onLoad(framework) {
   camera.updateProjectionMatrix();
 
   // create simple world
-  basicWorld = new BasicWorld(scene, clock);
-
-  // Create flower meshes procedurally
-  var width = 1.0;
-  var height = 5;
-  var geometry = new THREE.PlaneGeometry( width, height, 1, 20);
-  var material = new THREE.MeshLambertMaterial( {color: 0xffffff, 
-    side: THREE.DoubleSide, wireframe: false} );
-  var geo = new THREE.PlaneGeometry( width, height, 1, 20);
-  var mat = new THREE.MeshLambertMaterial( {color: 0xffffff, 
-    side: THREE.DoubleSide, wireframe: false} );
-  var petal = new THREE.Mesh( geometry, material );
-  var outerPetal = new THREE.Mesh( geo, mat );
-
-  // create inner petal geometry
-  for (var i = 0; i < petal.geometry.vertices.length / 2; i++) {
-    var val = 0.25 * easeInQuadratic(petal.geometry.vertices[2 * i].y);
-    petal.geometry.vertices[2 * i].z = val;
-    petal.geometry.vertices[2 * i + 1].z = val;
-  }
-
-  for (var i = 0; i < petal.geometry.vertices.length; i++) {
-    if (petal.geometry.vertices[i].x == width / 2) {
-      var xval = width  + width / 4 - 
-      easeInQuadratic(petal.geometry.vertices[i].y) / (height * width);
-      petal.geometry.vertices[i].x = xval;
-    } else if (petal.geometry.vertices[i].x == - width / 2) {
-      var xval = - width - width / 4 + 
-      easeInQuadratic(petal.geometry.vertices[i].y) / (height * width);
-      petal.geometry.vertices[i].x = xval;
-    }
-  }
-
-  // create outer petal geometry
-  for (var i = 0; i < outerPetal.geometry.vertices.length / 2; i++) {
-    var val = 0.25 * easeInQuadratic(outerPetal.geometry.vertices[2 * i].y);
-    outerPetal.geometry.vertices[2 * i].z = val;
-    outerPetal.geometry.vertices[2 * i + 1].z = val;
-  }
-
-  for (var i = 0; i < outerPetal.geometry.vertices.length; i++) {
-    if (outerPetal.geometry.vertices[i].x == width / 2) {
-      var xval = width  + width / 4 - 
-        easeInQuadratic(outerPetal.geometry.vertices[i].y) / (height * width);
-      outerPetal.geometry.vertices[i].x = xval;
-    } else if (outerPetal.geometry.vertices[i].x == - width / 2) {
-      var xval = - width - width / 4 + 
-        easeInQuadratic(outerPetal.geometry.vertices[i].y) / (height * width);
-      outerPetal.geometry.vertices[i].x = xval;
-    }
-  }
-
-  petal.position.set( 0, 2, 0 );
-  petal.updateMatrix();
-  petal.geometry.applyMatrix( petal.matrix );
-  petal.position.set( 0, 0, 0 );
-  petal.rotation.set( 0, 0, 0 );
-  petal.scale.set( 1, 1, 1 );
-  petal.updateMatrix();
-
-  petal.rotation.x += (Math.PI / 3);
-  petal.updateMatrix();
-  petal.geometry.applyMatrix( petal.matrix );
-  
-  petal.position.set( 0, 0, 0 );
-  petal.rotation.set( 0, 0, 0 );
-  petal.scale.set( 1, 1, 1 );
-  petal.updateMatrix();
-
-  outerPetal.position.set( 0, 2.5, 0 );
-  outerPetal.updateMatrix();
-  outerPetal.geometry.applyMatrix( outerPetal.matrix );
-  outerPetal.position.set( 0, 0, 0 );
-  outerPetal.rotation.set( 0, 0, 0 );
-  outerPetal.scale.set( 1, 1, 1 );
-  outerPetal.updateMatrix();
-
-  outerPetal.rotation.x += (Math.PI / 2.5);
-  outerPetal.updateMatrix();
-  outerPetal.geometry.applyMatrix( outerPetal.matrix );
-  
-  outerPetal.position.set( 0, 0, 0 );
-  outerPetal.rotation.set( 0, 0, 0 );
-  outerPetal.scale.set( 1, 1, 1 );
-  outerPetal.updateMatrix();
-
-  for (var i = 0; i < 3; i++) {
-    var clone = petal.clone(); 
-    clone.rotation.y += ((Math.PI * 2) / 3) * (i);
-    //scene.add(clone);
-  }
-
-  for (var i = 0; i < 3; i++) {
-    var c = outerPetal.clone();
-    c.rotation.y += ((Math.PI * 2) / 3) * (i) + ((Math.PI * 2) / 6);
-    //scene.add(c);
-  }
+  basicWorld = new FlowerWorld(scene, clock);
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
@@ -143,37 +47,13 @@ function onLoad(framework) {
   });  
 }
 
-function lerp(a0, a1, t) {
-    return t+a0 + (1-t)*a1;
-}
-
-function bias(b, t) {
-    return Math.pow(t, Math.log(b) / Math.log(0.5));
-}
-
-function easeInQuadratic(t) {
-    return t*t;
-}
-
-function easeOutQuadratic(t) {
-    return 1 - easeInQuadratic(1-t);
-}
-
-// removes all geometries with the tag "world" or "asset"
-function clearScene() {
-}
-
 // called on frame updates
 function onUpdate(framework) {
   if (basicWorld !== undefined) {
-    if (clock.elapsedTime < 1) {
-      basicWorld.spin(Math.PI / 500);
-    }
-    
+    basicWorld.spin(Math.PI / 200);
     basicWorld.tick();
   }
 }
-
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
 Framework.init(onLoad, onUpdate);

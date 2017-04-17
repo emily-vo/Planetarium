@@ -3,6 +3,7 @@ import Asset from './assets/asset'
 
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
+
 export default class World {
     constructor(scene, timer, baseMesh) {
         this.scene = scene;
@@ -29,16 +30,19 @@ export default class World {
 
     spin(speed) {
         // Spin the world  
-        this.baseMesh.rotation.y += speed;
+        this.baseMesh.rotation.y = speed;
         this.baseMesh.updateMatrix();
         this.baseMesh.geometry.applyMatrix( this.baseMesh.matrix );
 
         for (var i = 0; i < this.assets.length; i++) {
             var asset = this.assets[i];
-            if (i ==0) console.log(asset.vertex);
             asset.setPosition(asset.vertex);
+            this.baseMesh.geometry.computeFaceNormals();
+            this.baseMesh.geometry.computeVertexNormals();
+            asset.alignItemsWithNormal(); 
         }   
     }
+
 
     // spawn asset at random vertex (adds to scene) and adds to the global list of assets
     spawnAsset(asset) {
@@ -63,10 +67,16 @@ export default class World {
         this.addAsset(asset, vertex); 
 
         // assign normal
-        asset.normal = faces[faceIdx].vertexNormals[vIdx];
-
-        // align asset with normal
+        
+        asset.faceIdx = faceIdx;
+        asset.vIdx = vIdx;
+        asset.normal = this.getNormal(asset);
         asset.alignItemsWithNormal();       
+    }
+
+    getNormal(asset) {
+        var faces = this.worldFaces();
+        return faces[asset.faceIdx].vertexNormals[asset.vIdx];
     }
 
     // adds assets to global list and adds their geometry to the scene
