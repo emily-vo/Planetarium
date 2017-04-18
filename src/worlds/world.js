@@ -36,7 +36,6 @@ export default class World {
 
         for (var i = 0; i < this.assets.length; i++) {
             var asset = this.assets[i];
-
             asset.setPosition(asset.vertex);
             this.baseMesh.geometry.computeFaceNormals();
             this.baseMesh.geometry.computeVertexNormals();
