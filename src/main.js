@@ -5,11 +5,12 @@ import World from './worlds/world'
 import BasicWorld from './worlds/basicWorld'
 import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
-
+import WaterWorld from './worlds/waterWorld'
 // initialize global clock
 var clock = new THREE.Clock();
 var cameraControl;
 var basicWorld;
+var waterWorld; 
 
 // called after the scene loads
 function onLoad(framework) {
@@ -44,9 +45,13 @@ function onLoad(framework) {
   var axisHelper = new THREE.AxisHelper( 10 );
   scene.add( axisHelper );
 
+  // new camera control
   cameraControl = new CameraControls(scene, clock, camera); 
- 
-  basicWorld = new FlowerWorld(scene, clock);
+
+  basicWorld = new FlowerWorld(scene, clock, directionalLight);
+
+  waterWorld = new WaterWorld(scene, clock, directionalLight); 
+  waterWorld.baseMesh.position.set(30,0,0);
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
@@ -56,30 +61,22 @@ function onLoad(framework) {
 
 // called on frame updates
 function onUpdate(framework) {
+  if (waterWorld !== undefined) {
+     // enable animation of water 
+     waterWorld.updateWaterTime();
+  }
 
   // timer based geometry animation 
   // spin the world, then slow it down to a stop 
   if (basicWorld !== undefined) {
-    if (clock.elapsedTime < 5) {
-      basicWorld.spin(Math.PI / 10000);
-    }
-    if (clock.elapsedTime >= 5 && clock.elapsedTime < 10) {
-      basicWorld.spin(Math.PI / 10000); // ease spin 
-    }
-    if (clock.elapsedTime>= 10 && clock.elapsedTime < 12) {
-      basicWorld.spin(Math.PI / 1000); 
+    basicWorld.spin(0, 5, Math.PI / 7000);
+    basicWorld.spinAccelerate(5,7,Math.PI / 4000);
+    basicWorld.spinDeccelerate(7,9,Math.PI / 4000); 
+    basicWorld.spin(9, 20,Math.PI / 6000); 
 
-
-    }
-    if (clock.elapsedTime>= 12 && clock.elapsedTime <= 14) {
-      basicWorld.spin(Math.PI / 1000); 
-    }
-
-    // TESTING HARDCODED CAMERA CONTROLS!!!!ZZZZ!!! 
-    cameraControl.zoomInZ(1, 3, 10); 
-    cameraControl.zoomOutZ(3,5);
-    cameraControl.simplePanX(5,7);
-
+    // temporarily turn of camera movements 
+    // cameraControl.zoomInZ(4.5, 6.5); 
+    // cameraControl.zoomOutZ(7.5,10);
     
     basicWorld.tick();
   }

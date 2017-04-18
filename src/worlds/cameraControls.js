@@ -8,19 +8,24 @@ export default class CameraControls {
 		this.scene = scene;
         this.timer = timer;
         this.camera = camera; 
+        this.focusPoints = []; 
 	}
 
 	simplePanX(timeStart, timeEnd) {
 		// pan .. todo, fix it 
+		var targetX = focusPoints[planetIndex].x; 
+		var targetY = focusPoints[planetIndex].y; 
+		var targetZ = focusPoints[planetIndex].z; 
+
 		if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
 			this.camera.position.set(this.camera.position.x + .1, 1, 20);
-			this.camera.lookAt(new THREE.Vector3(this.camera.position.x,this.camera.position.y,this.camera.position.z));
+			this.camera.lookAt(new THREE.Vector3(targetX,targetY,targetZ));
 			this.camera.updateProjectionMatrix();
 		}
 	}
 
 	// zoom into the x direction 
-	zoomInZ(timeStart, timeEnd, dist) {
+	zoomInZ(timeStart, timeEnd) {
 		var totalTime = timeEnd - timeStart; 
 		if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
 			if (this.camera.position.z > 10 ) {

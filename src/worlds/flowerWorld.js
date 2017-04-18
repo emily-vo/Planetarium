@@ -5,7 +5,7 @@ import World from './world'
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
 export default class FlowerWorld extends World {
-    constructor(scene, timer) {
+    constructor(scene, timer, light) {
     	// initialize example uniform variables and store in list
         var shaderUniforms = {
             time: { 
@@ -19,7 +19,11 @@ export default class FlowerWorld extends World {
             image: { // Check the Three.JS documentation for the different allowed types and values
                 type: "t", 
                 value: THREE.ImageUtils.loadTexture('./textures/grass.jpg')
-            }
+            },
+            light_vec: {
+                type: "v3",
+                value: new THREE.Vector3(light.position.x, light.position.y, light.position.z)
+            },
         };
     
         // initialize example shader and mesh

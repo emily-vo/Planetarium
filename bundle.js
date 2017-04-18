@@ -66,15 +66,19 @@
 	
 	var _flowerWorld2 = _interopRequireDefault(_flowerWorld);
 	
+	var _waterWorld = __webpack_require__(21);
+	
+	var _waterWorld2 = _interopRequireDefault(_waterWorld);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var THREE = __webpack_require__(6); // older modules are imported like this. You shouldn't have to worry about this much
-	
 	
 	// initialize global clock
 	var clock = new THREE.Clock();
 	var cameraControl;
 	var basicWorld;
+	var waterWorld;
 	
 	// called after the scene loads
 	function onLoad(framework) {
@@ -109,9 +113,15 @@
 	  var axisHelper = new THREE.AxisHelper(10);
 	  scene.add(axisHelper);
 	
+	  // new camera control
 	  cameraControl = new _cameraControls2.default(scene, clock, camera);
 	
 	  basicWorld = new _flowerWorld2.default(scene, clock);
+	
+	  waterWorld = new _waterWorld2.default(scene, clock);
+	  waterWorld.baseMesh.position.set(10, 0, 0);
+	  // waterWorld.setPosition(new THREE.Vector3(10,0,0));
+	  // waterWorld.assets.setPosition(10,0,0);
 	
 	  // add gui controls
 	  gui.add(camera, 'fov', 0, 180).onChange(function (newVal) {
@@ -125,23 +135,14 @@
 	  // timer based geometry animation 
 	  // spin the world, then slow it down to a stop 
 	  if (basicWorld !== undefined) {
-	    if (clock.elapsedTime < 5) {
-	      basicWorld.spin(Math.PI / 10000);
-	    }
-	    if (clock.elapsedTime >= 5 && clock.elapsedTime < 10) {
-	      basicWorld.spin(Math.PI / 10000); // ease spin 
-	    }
-	    if (clock.elapsedTime >= 10 && clock.elapsedTime < 12) {
-	      basicWorld.spin(Math.PI / 1000);
-	    }
-	    if (clock.elapsedTime >= 12 && clock.elapsedTime <= 14) {
-	      basicWorld.spin(Math.PI / 1000);
-	    }
+	    basicWorld.spin(0, 5, Math.PI / 7000);
+	    basicWorld.spinAccelerate(5, 7, Math.PI / 4000);
+	    basicWorld.spinDeccelerate(7, 9, Math.PI / 4000);
+	    basicWorld.spin(9, 20, Math.PI / 6000);
 	
-	    // TESTING HARDCODED CAMERA CONTROLS!!!!ZZZZ!!! 
-	    cameraControl.zoomInZ(1, 3, 10);
-	    cameraControl.zoomOutZ(3, 5);
-	    cameraControl.simplePanX(5, 7);
+	    // testing hardcoded camera controls 
+	    cameraControl.zoomInZ(4.5, 6.5);
+	    cameraControl.zoomOutZ(7.5, 10);
 	
 	    basicWorld.tick();
 	  }
@@ -48733,31 +48734,60 @@
 	        value: function worldFaces() {
 	            return this.baseMesh.geometry.faces;
 	        }
+	
+	        // world animation options 
+	
 	    }, {
 	        key: 'spin',
-	        value: function spin(speed) {
+	        value: function spin(tStart, tEnd, speed) {
 	            // Spin the world  
-	            this.baseMesh.rotation.y = speed;
-	            this.baseMesh.updateMatrix();
-	            this.baseMesh.geometry.applyMatrix(this.baseMesh.matrix);
+	            if (this.timer.elapsedTime >= tStart && this.timer.elapsedTime < tEnd) {
+	                this.baseMesh.rotation.y = speed;
+	                this.baseMesh.updateMatrix();
+	                this.baseMesh.geometry.applyMatrix(this.baseMesh.matrix);
 	
-	            for (var i = 0; i < this.assets.length; i++) {
-	                var asset = this.assets[i];
-	                asset.setPosition(asset.vertex);
-	                this.baseMesh.geometry.computeFaceNormals();
-	                this.baseMesh.geometry.computeVertexNormals();
-	                asset.alignItemsWithNormal();
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    var asset = this.assets[i];
+	                    asset.setPosition(asset.vertex);
+	                    this.baseMesh.geometry.computeFaceNormals();
+	                    this.baseMesh.geometry.computeVertexNormals();
+	                    asset.alignItemsWithNormal();
+	                }
 	            }
+	        }
+	    }, {
+	        key: 'spinAccelerate',
+	        value: function spinAccelerate(tStart, tEnd, speed) {
+	            if (this.timer.elapsedTime >= tStart && this.timer.elapsedTime < tEnd) {
+	                this.baseMesh.rotation.y += speed;
+	                this.baseMesh.updateMatrix();
+	                this.baseMesh.geometry.applyMatrix(this.baseMesh.matrix);
 	
-	            // easeSpin(speed) {
-	            //     // slow world down
-	            //     this.baseMesh.rotation.y -= speed; 
-	            //     this.baseMesh.updateMatrix();
-	            //     this.baseMesh.geometry.applyMatrix( this.baseMesh.matrix );
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    var asset = this.assets[i];
+	                    asset.setPosition(asset.vertex);
+	                    this.baseMesh.geometry.computeFaceNormals();
+	                    this.baseMesh.geometry.computeVertexNormals();
+	                    asset.alignItemsWithNormal();
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'spinDeccelerate',
+	        value: function spinDeccelerate(tStart, tEnd, speed) {
+	            if (this.timer.elapsedTime >= tStart && this.timer.elapsedTime < tEnd) {
+	                this.baseMesh.rotation.y -= speed;
+	                this.baseMesh.updateMatrix();
+	                this.baseMesh.geometry.applyMatrix(this.baseMesh.matrix);
 	
-	            //     for (var i = 0; i < this.assets.length; i++) {
-	            //         var asset = this.assets[i];
-	            //         if (i == 0) console.log(asset.vertex);
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    var asset = this.assets[i];
+	                    asset.setPosition(asset.vertex);
+	                    this.baseMesh.geometry.computeFaceNormals();
+	                    this.baseMesh.geometry.computeVertexNormals();
+	                    asset.alignItemsWithNormal();
+	                }
+	            }
 	        }
 	
 	        // spawn asset at random vertex (adds to scene) and adds to the global list of assets
@@ -49271,15 +49301,20 @@
 			this.scene = scene;
 			this.timer = timer;
 			this.camera = camera;
+			this.focusPoints = [];
 		}
 	
 		_createClass(CameraControls, [{
 			key: 'simplePanX',
 			value: function simplePanX(timeStart, timeEnd) {
 				// pan .. todo, fix it 
+				var targetX = focusPoints[planetIndex].x;
+				var targetY = focusPoints[planetIndex].y;
+				var targetZ = focusPoints[planetIndex].z;
+	
 				if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
 					this.camera.position.set(this.camera.position.x + .1, 1, 20);
-					this.camera.lookAt(new THREE.Vector3(this.camera.position.x, this.camera.position.y, this.camera.position.z));
+					this.camera.lookAt(new THREE.Vector3(targetX, targetY, targetZ));
 					this.camera.updateProjectionMatrix();
 				}
 			}
@@ -49288,7 +49323,7 @@
 	
 		}, {
 			key: 'zoomInZ',
-			value: function zoomInZ(timeStart, timeEnd, dist) {
+			value: function zoomInZ(timeStart, timeEnd) {
 				var totalTime = timeEnd - timeStart;
 				if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
 					if (this.camera.position.z > 10) {
@@ -49571,6 +49606,81 @@
 	function easeOutQuadratic(t) {
 	    return 1 - easeInQuadratic(1 - t);
 	}
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _asset = __webpack_require__(10);
+	
+	var _asset2 = _interopRequireDefault(_asset);
+	
+	var _cubes = __webpack_require__(13);
+	
+	var _cubes2 = _interopRequireDefault(_cubes);
+	
+	var _world = __webpack_require__(9);
+	
+	var _world2 = _interopRequireDefault(_world);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var THREE = __webpack_require__(6);
+	
+	// this class will mostly be unchanged from world to world. 
+	// variation in worlds will mostly rely on the various assets.
+	var WaterWorld = function (_World) {
+	    _inherits(WaterWorld, _World);
+	
+	    function WaterWorld(scene, timer) {
+	        _classCallCheck(this, WaterWorld);
+	
+	        // initialize example uniform variables and store in list
+	        var shaderUniforms = {
+	            time: {
+	                type: "float",
+	                value: 0
+	            },
+	            color: {
+	                type: "v4",
+	                value: new THREE.Vector4(1., 1., 1., 1.)
+	            }
+	        };
+	
+	        // initialize example shader and mesh
+	        var material = new THREE.ShaderMaterial({
+	            uniforms: shaderUniforms,
+	            vertexShader: __webpack_require__(16),
+	            fragmentShader: __webpack_require__(17)
+	        });
+	
+	        var geometry = new THREE.IcosahedronGeometry(6, 3);
+	        var baseMesh = new THREE.Mesh(geometry, material);
+	
+	        var _this = _possibleConstructorReturn(this, (WaterWorld.__proto__ || Object.getPrototypeOf(WaterWorld)).call(this, scene, timer, baseMesh));
+	
+	        for (var i = 0; i < 30; i++) {
+	            _this.spawnAsset(new _cubes2.default(scene, timer, _this));
+	        }
+	        return _this;
+	    }
+	
+	    return WaterWorld;
+	}(_world2.default);
+	
+	exports.default = WaterWorld;
 
 /***/ })
 /******/ ]);
