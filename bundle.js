@@ -58,7 +58,11 @@
 	
 	var _basicWorld2 = _interopRequireDefault(_basicWorld);
 	
-	var _flowerWorld = __webpack_require__(18);
+	var _cameraControls = __webpack_require__(18);
+	
+	var _cameraControls2 = _interopRequireDefault(_cameraControls);
+	
+	var _flowerWorld = __webpack_require__(19);
 	
 	var _flowerWorld2 = _interopRequireDefault(_flowerWorld);
 	
@@ -66,9 +70,10 @@
 	
 	var THREE = __webpack_require__(6); // older modules are imported like this. You shouldn't have to worry about this much
 	
+	
 	// initialize global clock
 	var clock = new THREE.Clock();
-	
+	var cameraControl;
 	var basicWorld;
 	
 	// called after the scene loads
@@ -96,11 +101,16 @@
 	  scene.add(backLight);
 	
 	  // set camera position
-	  camera.position.set(1, 1, 20);
+	  camera.position.set(0, 0, 20);
 	  camera.lookAt(new THREE.Vector3(0, 0, 0));
 	  camera.updateProjectionMatrix();
 	
-	  // create simple world
+	  // putting in a simple axis helper to help visualize 
+	  var axisHelper = new THREE.AxisHelper(10);
+	  scene.add(axisHelper);
+	
+	  cameraControl = new _cameraControls2.default(scene, clock, camera);
+	
 	  basicWorld = new _flowerWorld2.default(scene, clock);
 	
 	  // add gui controls
@@ -111,8 +121,28 @@
 	
 	// called on frame updates
 	function onUpdate(framework) {
+	
+	  // timer based geometry animation 
+	  // spin the world, then slow it down to a stop 
 	  if (basicWorld !== undefined) {
-	    basicWorld.spin(Math.PI / 200);
+	    if (clock.elapsedTime < 5) {
+	      basicWorld.spin(Math.PI / 10000);
+	    }
+	    if (clock.elapsedTime >= 5 && clock.elapsedTime < 10) {
+	      basicWorld.spin(Math.PI / 10000); // ease spin 
+	    }
+	    if (clock.elapsedTime >= 10 && clock.elapsedTime < 12) {
+	      basicWorld.spin(Math.PI / 1000);
+	    }
+	    if (clock.elapsedTime >= 12 && clock.elapsedTime <= 14) {
+	      basicWorld.spin(Math.PI / 1000);
+	    }
+	
+	    // TESTING HARDCODED CAMERA CONTROLS!!!!ZZZZ!!! 
+	    cameraControl.zoomInZ(1, 3, 10);
+	    cameraControl.zoomOutZ(3, 5);
+	    cameraControl.simplePanX(5, 7);
+	
 	    basicWorld.tick();
 	  }
 	}
@@ -48718,6 +48748,16 @@
 	                this.baseMesh.geometry.computeVertexNormals();
 	                asset.alignItemsWithNormal();
 	            }
+	
+	            // easeSpin(speed) {
+	            //     // slow world down
+	            //     this.baseMesh.rotation.y -= speed; 
+	            //     this.baseMesh.updateMatrix();
+	            //     this.baseMesh.geometry.applyMatrix( this.baseMesh.matrix );
+	
+	            //     for (var i = 0; i < this.assets.length; i++) {
+	            //         var asset = this.assets[i];
+	            //         if (i == 0) console.log(asset.vertex);
 	        }
 	
 	        // spawn asset at random vertex (adds to scene) and adds to the global list of assets
@@ -49089,7 +49129,7 @@
 	
 	        var _this = _possibleConstructorReturn(this, (BasicWorld.__proto__ || Object.getPrototypeOf(BasicWorld)).call(this, scene, timer, baseMesh));
 	
-	        for (var i = 0; i < 10; i++) {
+	        for (var i = 0; i < 30; i++) {
 	            _this.spawnAsset(new _cubes2.default(scene, timer, _this));
 	        }
 	        return _this;
@@ -49156,6 +49196,8 @@
 	            fragmentShader: __webpack_require__(15)
 	        });
 	
+	        // var material2 = new THREE.MeshLamb ertMaterial({color: 0xfffff} ); 
+	
 	        var geometry = new THREE.BoxGeometry(1, 1, 1);
 	        var mesh = new THREE.Mesh(geometry, material);
 	
@@ -49196,10 +49238,87 @@
 /* 17 */
 /***/ (function(module, exports) {
 
-	module.exports = "varying vec2 vUv;\nvarying float noise;\nuniform sampler2D image;\n\n\nvoid main() {\n\n  vec2 uv = vec2(1,1) - vUv;\n  vec4 color = texture2D( image, uv );\n\n  gl_FragColor = vec4( color.rgb, 1.0 );\n\n}"
+	module.exports = "varying vec2 vUv;\nvarying float noise;\nuniform sampler2D image;\n\n\nvoid main() {\n  vec2 uv = vec2(1,1) - vUv;\n  vec4 color = texture2D( image, uv );\n\n  gl_FragColor = vec4( color.rgb, 1.0 );\n}"
 
 /***/ }),
 /* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _world = __webpack_require__(9);
+	
+	var _world2 = _interopRequireDefault(_world);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var THREE = __webpack_require__(6);
+	
+	// this class will mostly be unchanged from world to world. 
+	// variation in worlds will mostly rely on the various assets.
+	var CameraControls = function () {
+		function CameraControls(scene, timer, camera) {
+			_classCallCheck(this, CameraControls);
+	
+			this.scene = scene;
+			this.timer = timer;
+			this.camera = camera;
+		}
+	
+		_createClass(CameraControls, [{
+			key: 'simplePanX',
+			value: function simplePanX(timeStart, timeEnd) {
+				// pan .. todo, fix it 
+				if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
+					this.camera.position.set(this.camera.position.x + .1, 1, 20);
+					this.camera.lookAt(new THREE.Vector3(this.camera.position.x, this.camera.position.y, this.camera.position.z));
+					this.camera.updateProjectionMatrix();
+				}
+			}
+	
+			// zoom into the x direction 
+	
+		}, {
+			key: 'zoomInZ',
+			value: function zoomInZ(timeStart, timeEnd, dist) {
+				var totalTime = timeEnd - timeStart;
+				if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
+					if (this.camera.position.z > 10) {
+						this.camera.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z - 0.3);
+						this.camera.lookAt(new THREE.Vector3(this.camera.position.x, 0, 0));
+						this.camera.updateProjectionMatrix();
+					}
+				}
+			}
+		}, {
+			key: 'zoomOutZ',
+			value: function zoomOutZ(timeStart, timeEnd) {
+				// zoom out 
+				if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
+					if (this.camera.position.z <= 20) {
+						this.camera.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z + .3);
+						// this.camera.lookAt(new THREE.Vector3(this.camera.position.x + .01,0,0));
+						this.camera.updateProjectionMatrix();
+					}
+				}
+			}
+		}]);
+	
+		return CameraControls;
+	}();
+	
+	exports.default = CameraControls;
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49212,7 +49331,7 @@
 	
 	var _asset2 = _interopRequireDefault(_asset);
 	
-	var _flower = __webpack_require__(19);
+	var _flower = __webpack_require__(20);
 	
 	var _flower2 = _interopRequireDefault(_flower);
 	
@@ -49278,7 +49397,7 @@
 	exports.default = FlowerWorld;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
