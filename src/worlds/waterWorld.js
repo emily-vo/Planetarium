@@ -1,11 +1,15 @@
 const THREE = require('three')
 import Asset from './assets/asset'
-import Cubes from './assets/cubes'
+import Seaweed from './assets/seaweed'
 import World from './world'
+
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
 export default class WaterWorld extends World {
     constructor(scene, timer, light) {
+        // this defines the position of the planet in space.
+        var wPos = new THREE.Vector3(30,0,0); 
+
         // initialize example uniform variables and store in list
         var shaderUniforms = {
             u_time: { 
@@ -41,29 +45,34 @@ export default class WaterWorld extends World {
         material.transparent = true;
 
     
-        var geometry = new THREE.IcosahedronGeometry(6, 4); // adjust second parameter: low poly (2) or high poly!!! (>3)
+        var geometry = new THREE.IcosahedronGeometry(6, 2); // adjust second parameter: low poly (2) or high poly!!! (>3)
         var baseMesh = new THREE.Mesh(geometry, material);
-        
+        baseMesh.position.set(wPos.x,wPos.y,wPos.z);
+        baseMesh.updateMatrix();
+        baseMesh.geometry.applyMatrix( baseMesh.matrix );
+
         super(scene, timer, baseMesh);
 
-        // make a base sphere 
+        // make a "base sphere"
         // add this somewhere to the class? not sure 
-        var baseSphereGeom = new THREE.IcosahedronGeometry(6,4);  // new THREE.BoxGeometry(6,6,6); consider making a box
+        var baseSphereGeom = new THREE.IcosahedronGeometry(6,1);  // new THREE.BoxGeometry(6,6,6); consider making a box
         var baseSphere = new THREE.Mesh(baseSphereGeom, basicMaterial); 
-        baseSphere.position.set(30,0,0); 
+        // baseSphere.position.set(wPos.x,wPos.y,wPos.z); 
+        // the inside sphere 
         scene.add(baseSphere);
+        
+        // create fish assets / seaweed assets!!! H  H A HA AH a
+        // this.spawnAsset(new Seaweed(scene, timer, this)); 
+        // this.spawnAsset(new Cubes(scene, timer, this));
+        // this.spawnAsset(new Flower(scene, timer, this)); 
 
-
-        // create fish assets 
-
-        // for (var i = 0; i < 30; i++) {
-        //     this.spawnAsset(new Cubes(scene, timer, this));
-        // }
-
+        for (var i = 0; i < 30; i++) {
+            this.spawnAsset(new Seaweed(scene, timer, this));
+        }
     }
 
+    // to update the uniform in the frag shader, enables animation
     updateWaterTime() {
         this.baseMesh.material.uniforms.u_time.value = this.timer.elapsedTime;
-        // console.log(this.timer.elapsedTime);
     }
 }

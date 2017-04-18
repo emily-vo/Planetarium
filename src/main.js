@@ -6,6 +6,7 @@ import BasicWorld from './worlds/basicWorld'
 import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
+
 // initialize global clock
 var clock = new THREE.Clock();
 var cameraControl;
@@ -51,7 +52,6 @@ function onLoad(framework) {
   basicWorld = new FlowerWorld(scene, clock, directionalLight);
 
   waterWorld = new WaterWorld(scene, clock, directionalLight); 
-  waterWorld.baseMesh.position.set(30,0,0);
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
@@ -66,13 +66,12 @@ function onUpdate(framework) {
      waterWorld.updateWaterTime();
   }
 
-  // timer based geometry animation 
-  // spin the world, then slow it down to a stop 
+  // flower world animation control  
   if (basicWorld !== undefined) {
-    basicWorld.spin(0, 5, Math.PI / 7000);
-    basicWorld.spinAccelerate(5,7,Math.PI / 4000);
-    basicWorld.spinDeccelerate(7,9,Math.PI / 4000); 
-    basicWorld.spin(9, 20,Math.PI / 6000); 
+    // basicWorld.spin(0, 5, Math.PI / 7000);
+    // basicWorld.spinAccelerate(5,7,Math.PI / 4000);
+    // basicWorld.spinDeccelerate(7,9,Math.PI / 4000); 
+    // basicWorld.spin(9, 20,Math.PI / 6000); 
 
     // temporarily turn of camera movements 
     // cameraControl.zoomInZ(4.5, 6.5); 
