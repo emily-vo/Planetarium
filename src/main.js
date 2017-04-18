@@ -3,8 +3,12 @@ const THREE = require('three'); // older modules are imported like this. You sho
 import Framework from './framework'
 import World from './worlds/world'
 import BasicWorld from './worlds/basicWorld'
+<<<<<<< HEAD
 import CameraControls from './worlds/cameraControls'
 
+=======
+import FlowerWorld from './worlds/flowerWorld'
+>>>>>>> 4eb2f99ffc5973160be90d273703e497de9b84a5
 // initialize global clock
 var clock = new THREE.Clock();
 
@@ -46,6 +50,7 @@ function onLoad(framework) {
   scene.add( axisHelper );
 
   // create simple world
+<<<<<<< HEAD
   basicWorld = new BasicWorld(scene, clock);
 
   // create camera controls
@@ -146,31 +151,14 @@ function onLoad(framework) {
     c.rotation.y += ((Math.PI * 2) / 3) * (i) + ((Math.PI * 2) / 6);
     //scene.add(c);
   }
+=======
+  basicWorld = new FlowerWorld(scene, clock);
+>>>>>>> 4eb2f99ffc5973160be90d273703e497de9b84a5
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
   });  
-}
-
-function lerp(a0, a1, t) {
-    return t+a0 + (1-t)*a1;
-}
-
-function bias(b, t) {
-    return Math.pow(t, Math.log(b) / Math.log(0.5));
-}
-
-function easeInQuadratic(t) {
-    return t*t;
-}
-
-function easeOutQuadratic(t) {
-    return 1 - easeInQuadratic(1-t);
-}
-
-// removes all geometries with the tag "world" or "asset"
-function clearScene() {
 }
 
 // called on frame updates
@@ -183,7 +171,7 @@ function onUpdate(framework) {
       basicWorld.spin(Math.PI / 10000);
     }
     if (clock.elapsedTime >= 5 && clock.elapsedTime < 10) {
-      basicWorld.easeSpin(Math.PI / 10000);
+      basicWorld.spin(Math.PI / 10000); // ease spin 
     }
     if (clock.elapsedTime>= 10 && clock.elapsedTime < 12) {
       basicWorld.spin(Math.PI / 1000); 
@@ -191,7 +179,7 @@ function onUpdate(framework) {
 
     }
     if (clock.elapsedTime>= 12 && clock.elapsedTime <= 14) {
-      basicWorld.easeSpin(Math.PI / 1000); 
+      basicWorld.spin(Math.PI / 1000); 
     }
 
     // TESTING HARDCODED CAMERA CONTROLS!!!!ZZZZ!!! 
@@ -203,7 +191,6 @@ function onUpdate(framework) {
     basicWorld.tick();
   }
 }
-
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
 Framework.init(onLoad, onUpdate);

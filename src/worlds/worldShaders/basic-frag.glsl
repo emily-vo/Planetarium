@@ -1,13 +1,11 @@
 varying vec2 vUv;
-varying vec4 finalColor;
+varying float noise;
+uniform sampler2D image;
+
 
 void main() {
+  vec2 uv = vec2(1,1) - vUv;
+  vec4 color = texture2D( image, uv );
 
-    // float d = clamp(dot(normal, normalize( f_position)), 0.0, 1.0);
-
-	// color the output 
-	// gl_FragColor = vec4(d * finalColor * 1.2, 1); // frag with Lambertian shading 
-	// gl_FragColor = vec4(color, 1); 
-
-	gl_FragColor = finalColor;
+  gl_FragColor = vec4( color.rgb, 1.0 );
 }

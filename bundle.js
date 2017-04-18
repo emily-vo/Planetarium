@@ -58,10 +58,13 @@
 	
 	var _basicWorld2 = _interopRequireDefault(_basicWorld);
 	
+	var _flowerWorld = __webpack_require__(18);
+	
+	var _flowerWorld2 = _interopRequireDefault(_flowerWorld);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var THREE = __webpack_require__(6); // older modules are imported like this. You shouldn't have to worry about this much
-	
 	
 	// initialize global clock
 	var clock = new THREE.Clock();
@@ -85,13 +88,20 @@
 	
 	  scene.add(directionalLight);
 	
+	  var backLight = new THREE.DirectionalLight(0xffffff, 1);
+	  backLight.color.setHSL(0.1, 1, 0.95);
+	  backLight.position.set(1, 1, -2);
+	  backLight.position.multiplyScalar(10);
+	
+	  scene.add(backLight);
+	
 	  // set camera position
 	  camera.position.set(1, 1, 20);
 	  camera.lookAt(new THREE.Vector3(0, 0, 0));
 	  camera.updateProjectionMatrix();
 	
 	  // create simple world
-	  basicWorld = new _basicWorld2.default(scene, clock);
+	  basicWorld = new _flowerWorld2.default(scene, clock);
 	
 	  // add gui controls
 	  gui.add(camera, 'fov', 0, 180).onChange(function (newVal) {
@@ -99,12 +109,10 @@
 	  });
 	}
 	
-	// removes all geometries with the tag "world" or "asset"
-	function clearScene() {}
-	
 	// called on frame updates
 	function onUpdate(framework) {
 	  if (basicWorld !== undefined) {
+	    basicWorld.spin(Math.PI / 200);
 	    basicWorld.tick();
 	  }
 	}
@@ -48659,6 +48667,7 @@
 	
 	// this class will mostly be unchanged from world to world. 
 	// variation in worlds will mostly rely on the various assets.
+	
 	var World = function () {
 	    function World(scene, timer, baseMesh) {
 	        _classCallCheck(this, World);
@@ -48666,8 +48675,6 @@
 	        this.scene = scene;
 	        this.timer = timer;
 	        this.assets = [];
-	        this.rotation = new THREE.Vector3(0, 0, 0);
-	        this.position = new THREE.Vector3(0, 0, 0);
 	        this.baseMesh = baseMesh;
 	        this.createScene();
 	    }
@@ -48696,6 +48703,22 @@
 	        value: function worldFaces() {
 	            return this.baseMesh.geometry.faces;
 	        }
+	    }, {
+	        key: 'spin',
+	        value: function spin(speed) {
+	            // Spin the world  
+	            this.baseMesh.rotation.y = speed;
+	            this.baseMesh.updateMatrix();
+	            this.baseMesh.geometry.applyMatrix(this.baseMesh.matrix);
+	
+	            for (var i = 0; i < this.assets.length; i++) {
+	                var asset = this.assets[i];
+	                asset.setPosition(asset.vertex);
+	                this.baseMesh.geometry.computeFaceNormals();
+	                this.baseMesh.geometry.computeVertexNormals();
+	                asset.alignItemsWithNormal();
+	            }
+	        }
 	
 	        // spawn asset at random vertex (adds to scene) and adds to the global list of assets
 	
@@ -48721,10 +48744,17 @@
 	            this.addAsset(asset, vertex);
 	
 	            // assign normal
-	            asset.normal = faces[faceIdx].vertexNormals[vIdx];
 	
-	            // align asset with normal
+	            asset.faceIdx = faceIdx;
+	            asset.vIdx = vIdx;
+	            asset.normal = this.getNormal(asset);
 	            asset.alignItemsWithNormal();
+	        }
+	    }, {
+	        key: 'getNormal',
+	        value: function getNormal(asset) {
+	            var faces = this.worldFaces();
+	            return faces[asset.faceIdx].vertexNormals[asset.vIdx];
 	        }
 	
 	        // adds assets to global list and adds their geometry to the scene
@@ -48754,7 +48784,7 @@
 	        key: 'tick',
 	        value: function tick() {
 	            this.updateShaderUniforms();
-	
+	            // this.spin();
 	            // assets tick
 	            for (var i = 0; i < this.assets.length; i++) {
 	                this.assets[i].tick();
@@ -48809,6 +48839,9 @@
 	    // stores vertex and normal for access
 	    this.vertex;
 	    this.normal;
+	
+	    this.faceIdx;
+	    this.vIdx;
 	  }
 	
 	  // adds all item meshes
@@ -48889,7 +48922,7 @@
 	    key: 'alignItemsWithNormal',
 	    value: function alignItemsWithNormal() {
 	      this.updateRotations();
-	      this.up = this.normal;
+	      //this.up = this.normal;
 	    }
 	
 	    // updates the time for the shaders for the item meshes
@@ -48900,8 +48933,10 @@
 	      var delta = this.timer.getDelta();
 	      for (var i = 0; i < this.items.length; i++) {
 	        var shader = this.items[i].mesh.material;
-	        if (shader.uniforms.time !== undefined) {
-	          shader.uniforms.time.value += delta;
+	        if (shader.uniforms !== undefined) {
+	          if (shader.uniforms.time !== undefined) {
+	            shader.uniforms.time.value += delta;
+	          }
 	        }
 	      }
 	    }
@@ -49143,25 +49178,280 @@
 /* 14 */
 /***/ (function(module, exports) {
 
-	module.exports = "uniform vec4 color;\n\nvarying vec2 vUv;\nvarying vec4 finalColor;\n\nvoid main() {\n    vUv = uv;\n    finalColor = color;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}"
+	module.exports = "varying vec2 vUv;\nvoid main() {\n    vUv = uv;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}"
 
 /***/ }),
 /* 15 */
 /***/ (function(module, exports) {
 
-	module.exports = "varying vec2 vUv;\nvarying vec4 finalColor;\n\nvoid main() {\n\tgl_FragColor = finalColor;\n}"
+	module.exports = "varying vec2 vUv;\nvarying float noise;\nuniform sampler2D image;\n\n\nvoid main() {\n\n  vec2 uv = vec2(1,1) - vUv;\n  vec4 color = texture2D( image, uv );\n\n  gl_FragColor = vec4( color.rgb, 1.0 );\n\n}"
 
 /***/ }),
 /* 16 */
 /***/ (function(module, exports) {
 
-	module.exports = "uniform vec4 color;\n\nvarying vec2 vUv;\nvarying vec4 finalColor;\n\nvoid main() {\n    vUv = uv;\n    finalColor = color;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}"
+	module.exports = "varying vec2 vUv;\nvoid main() {\n    vUv = uv;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}"
 
 /***/ }),
 /* 17 */
 /***/ (function(module, exports) {
 
-	module.exports = "varying vec2 vUv;\nvarying vec4 finalColor;\n\nvoid main() {\n\tgl_FragColor = finalColor;\n}"
+	module.exports = "varying vec2 vUv;\nvarying float noise;\nuniform sampler2D image;\n\n\nvoid main() {\n\n  vec2 uv = vec2(1,1) - vUv;\n  vec4 color = texture2D( image, uv );\n\n  gl_FragColor = vec4( color.rgb, 1.0 );\n\n}"
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _asset = __webpack_require__(10);
+	
+	var _asset2 = _interopRequireDefault(_asset);
+	
+	var _flower = __webpack_require__(19);
+	
+	var _flower2 = _interopRequireDefault(_flower);
+	
+	var _world = __webpack_require__(9);
+	
+	var _world2 = _interopRequireDefault(_world);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var THREE = __webpack_require__(6);
+	
+	// this class will mostly be unchanged from world to world. 
+	// variation in worlds will mostly rely on the various assets.
+	var FlowerWorld = function (_World) {
+	    _inherits(FlowerWorld, _World);
+	
+	    function FlowerWorld(scene, timer) {
+	        _classCallCheck(this, FlowerWorld);
+	
+	        // initialize example uniform variables and store in list
+	        var shaderUniforms = {
+	            time: {
+	                type: "float",
+	                value: 0
+	            },
+	            color: {
+	                type: "v4",
+	                value: new THREE.Vector4(1., 1., 1., 1.)
+	            },
+	            image: { // Check the Three.JS documentation for the different allowed types and values
+	                type: "t",
+	                value: THREE.ImageUtils.loadTexture('./textures/grass.jpg')
+	            }
+	        };
+	
+	        // initialize example shader and mesh
+	        var material = new THREE.ShaderMaterial({
+	            uniforms: shaderUniforms,
+	            vertexShader: __webpack_require__(16),
+	            fragmentShader: __webpack_require__(17)
+	        });
+	
+	        var geometry = new THREE.IcosahedronGeometry(6, 3);
+	        var baseMesh = new THREE.Mesh(geometry, material);
+	
+	        var _this = _possibleConstructorReturn(this, (FlowerWorld.__proto__ || Object.getPrototypeOf(FlowerWorld)).call(this, scene, timer, baseMesh));
+	
+	        for (var i = 0; i < 10; i++) {
+	            _this.spawnAsset(new _flower2.default(scene, timer, _this));
+	        }
+	        return _this;
+	    }
+	
+	    return FlowerWorld;
+	}(_world2.default);
+	
+	exports.default = FlowerWorld;
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _asset = __webpack_require__(10);
+	
+	var _asset2 = _interopRequireDefault(_asset);
+	
+	var _item = __webpack_require__(11);
+	
+	var _item2 = _interopRequireDefault(_item);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var THREE = __webpack_require__(6);
+	
+	// this class will mostly be unchanged from world to world. 
+	// variation in worlds will mostly rely on the various assets.
+	var Flower = function (_Asset) {
+	    _inherits(Flower, _Asset);
+	
+	    function Flower(scene, timer, world) {
+	        _classCallCheck(this, Flower);
+	
+	        // Create inside petals
+	        var _this = _possibleConstructorReturn(this, (Flower.__proto__ || Object.getPrototypeOf(Flower)).call(this, scene, timer, world));
+	
+	        for (var i = 0; i < 3; i++) {
+	            var c = createPetal();
+	            var item = new _item2.default(c);
+	            setAbsoluteRotation(c, 'Y', Math.PI * 2 / 3 * i + Math.PI * 2 / 6);
+	            setAbsoluteScale(c, 0.5, 0.5, 0.5);
+	            setAbsolutePosition(c, 0, 1, 0);
+	            //item.localPosition.y += 3;
+	            _this.items.push(item);
+	        }
+	
+	        // Create outside petals
+	        for (var i = 0; i < 3; i++) {
+	            var c = createPetal();
+	            var item = new _item2.default(c);
+	            setAbsolutePosition(c, 0, -0.5, 0);
+	            setAbsoluteRotation(c, 'Y', Math.PI * 2 / 3 * i);
+	            setAbsoluteScale(c, 0.5, 0.5, 0.5);
+	            setAbsolutePosition(c, 0, 1, 0);
+	            //item.localPosition.y += 3;
+	            _this.items.push(item);
+	        }
+	        return _this;
+	    }
+	
+	    return Flower;
+	}(_asset2.default);
+	
+	// Allows the mesh to assume it is untransformed
+	
+	
+	exports.default = Flower;
+	function resetTransform(mesh) {
+	    mesh.updateMatrix();
+	    mesh.geometry.applyMatrix(mesh.matrix);
+	    mesh.position.set(0, 0, 0);
+	    mesh.rotation.set(0, 0, 0);
+	    mesh.scale.set(1, 1, 1);
+	    mesh.updateMatrix();
+	}
+	
+	function setAbsolutePosition(mesh, x, y, z) {
+	    mesh.position.set(x, y, z);
+	    resetTransform(mesh);
+	}
+	
+	function setAbsoluteScale(mesh, x, y, z) {
+	    mesh.scale.set(x, y, z);
+	    resetTransform(mesh);
+	}
+	
+	function setAbsoluteRotation(mesh, axis, rotation) {
+	    switch (axis) {
+	        case 'X':
+	            mesh.rotation.x = rotation;
+	            break;
+	
+	        case 'Y':
+	            mesh.rotation.y = rotation;
+	            break;
+	
+	        case 'Z':
+	            mesh.rotation.z = rotation;
+	            break;
+	    }
+	    resetTransform(mesh);
+	}
+	
+	// Uses toolbox functions to create flower meshes
+	function createPetal() {
+	    var shaderUniforms = {
+	        time: {
+	            type: "float",
+	            value: 0
+	        },
+	        color: {
+	            type: "v4",
+	            value: new THREE.Vector4(1., 0., 0., 1.)
+	        },
+	        image: { // Check the Three.JS documentation for the different allowed types and values
+	            type: "t",
+	            value: THREE.ImageUtils.loadTexture('./textures/petal.jpg')
+	        }
+	    };
+	
+	    var material = new THREE.ShaderMaterial({
+	        uniforms: shaderUniforms,
+	        vertexShader: __webpack_require__(14),
+	        fragmentShader: __webpack_require__(15),
+	        side: THREE.DoubleSide
+	        //lights: true
+	    });
+	
+	    // Create flower meshes procedurally
+	    var width = 1.0;
+	    var height = 5;
+	    var geometry = new THREE.PlaneGeometry(width, height, 1, 20);
+	    var petal = new THREE.Mesh(geometry, material);
+	
+	    // create inner petal geometry
+	    for (var i = 0; i < petal.geometry.vertices.length / 2; i++) {
+	        var val = 0.25 * easeInQuadratic(petal.geometry.vertices[2 * i].y);
+	        petal.geometry.vertices[2 * i].z = val;
+	        petal.geometry.vertices[2 * i + 1].z = val;
+	    }
+	
+	    for (var i = 0; i < petal.geometry.vertices.length; i++) {
+	        if (petal.geometry.vertices[i].x == width / 2) {
+	            var xval = width + width / 4 - easeInQuadratic(petal.geometry.vertices[i].y) / (height * width);
+	            petal.geometry.vertices[i].x = xval;
+	        } else if (petal.geometry.vertices[i].x == -width / 2) {
+	            var xval = -width - width / 4 + easeInQuadratic(petal.geometry.vertices[i].y) / (height * width);
+	            petal.geometry.vertices[i].x = xval;
+	        }
+	    }
+	
+	    setAbsolutePosition(petal, 0, 2, 0);
+	    setAbsoluteRotation(petal, 'X', Math.PI / 3);
+	
+	    return petal;
+	}
+	
+	function lerp(a0, a1, t) {
+	    return t + a0 + (1 - t) * a1;
+	}
+	
+	function bias(b, t) {
+	    return Math.pow(t, Math.log(b) / Math.log(0.5));
+	}
+	
+	function easeInQuadratic(t) {
+	    return t * t;
+	}
+	
+	function easeOutQuadratic(t) {
+	    return 1 - easeInQuadratic(1 - t);
+	}
 
 /***/ })
 /******/ ]);
