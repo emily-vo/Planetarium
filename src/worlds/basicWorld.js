@@ -30,7 +30,7 @@ export default class BasicWorld extends World {
         
         super(scene, timer, baseMesh);
 
-        for (var i = 0; i < 10; i++) {
+        for (var i = 0; i < 30; i++) {
         	this.spawnAsset(new Cubes(scene, timer, this));
         }
     }

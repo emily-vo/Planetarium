@@ -3,9 +3,12 @@ const THREE = require('three'); // older modules are imported like this. You sho
 import Framework from './framework'
 import World from './worlds/world'
 import BasicWorld from './worlds/basicWorld'
+import CameraControls from './worlds/cameraControls'
 
 // initialize global clock
 var clock = new THREE.Clock();
+
+var cameraControl;
 
 var basicWorld;
 
@@ -16,7 +19,7 @@ function onLoad(framework) {
   var camera = framework.camera;
   var renderer = framework.renderer;
   var gui = framework.gui;
-  var stats = framework.stats;
+  var stats = framework.stats; 
 
   // initialize a simple box and material
   var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
@@ -34,12 +37,19 @@ function onLoad(framework) {
   scene.add(backLight);
 
   // set camera position
-  camera.position.set(1, 1, 20);
+  camera.position.set(0, 0, 20);
   camera.lookAt(new THREE.Vector3(0,0,0));
   camera.updateProjectionMatrix();
 
+  // putting in a simple axis helper to help visualize 
+  var axisHelper = new THREE.AxisHelper( 10 );
+  scene.add( axisHelper );
+
   // create simple world
   basicWorld = new BasicWorld(scene, clock);
+
+  // create camera controls
+  cameraControl = new CameraControls(scene, clock, camera); 
 
   // Create flower meshes procedurally
   var width = 1.0;
@@ -165,10 +175,30 @@ function clearScene() {
 
 // called on frame updates
 function onUpdate(framework) {
+
+  // timer based geometry animation 
+  // spin the world, then slow it down to a stop 
   if (basicWorld !== undefined) {
-    if (clock.elapsedTime < 1) {
-      basicWorld.spin(Math.PI / 500);
+    if (clock.elapsedTime < 5) {
+      basicWorld.spin(Math.PI / 10000);
     }
+    if (clock.elapsedTime >= 5 && clock.elapsedTime < 10) {
+      basicWorld.easeSpin(Math.PI / 10000);
+    }
+    if (clock.elapsedTime>= 10 && clock.elapsedTime < 12) {
+      basicWorld.spin(Math.PI / 1000); 
+
+
+    }
+    if (clock.elapsedTime>= 12 && clock.elapsedTime <= 14) {
+      basicWorld.easeSpin(Math.PI / 1000); 
+    }
+
+    // TESTING HARDCODED CAMERA CONTROLS!!!!ZZZZ!!! 
+    cameraControl.zoomInZ(1, 3, 10); 
+    cameraControl.zoomOutZ(3,5);
+    cameraControl.simplePanX(5,7);
+
     
     basicWorld.tick();
   }

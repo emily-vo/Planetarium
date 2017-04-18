@@ -28,14 +28,27 @@ export default class World {
     }
 
     spin(speed) {
-        // Spin the world  
+        // Spin the world (consistently speeds up) 
         this.baseMesh.rotation.y += speed;
         this.baseMesh.updateMatrix();
         this.baseMesh.geometry.applyMatrix( this.baseMesh.matrix );
 
         for (var i = 0; i < this.assets.length; i++) {
             var asset = this.assets[i];
-            if (i ==0) console.log(asset.vertex);
+            if (i == 0) console.log(asset.vertex);
+            asset.setPosition(asset.vertex);
+        }   
+    }
+
+    easeSpin(speed) {
+        // slow world down
+        this.baseMesh.rotation.y -= speed; 
+        this.baseMesh.updateMatrix();
+        this.baseMesh.geometry.applyMatrix( this.baseMesh.matrix );
+
+        for (var i = 0; i < this.assets.length; i++) {
+            var asset = this.assets[i];
+            if (i == 0) console.log(asset.vertex);
             asset.setPosition(asset.vertex);
         }   
     }

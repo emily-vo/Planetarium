@@ -26,6 +26,8 @@ export default class Cubes extends Asset {
               fragmentShader: require('./assetShaders/basic-frag.glsl')
         });
 
+        // var material2 = new THREE.MeshLamb ertMaterial({color: 0xfffff} ); 
+
         var geometry = new THREE.BoxGeometry(1, 1, 1);
         var mesh = new THREE.Mesh(geometry, material);
 
