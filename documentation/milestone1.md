@@ -7,3 +7,14 @@ Example class: I created a simple extension of the framework I implemented that 
 Flower planet: I procedurally created the flower petals by deforming a mesh with toolbox functions. I then placed them so that they looked like petals of a peruvian lily. This class is a subclass of assets, in src/worlds/assets/flower.js. The planet simply has a texture and spawns these flowers randomly. This planet class is in src/worlds/flowerWorld.js.
 
 See documentation/images for pictures of the different worlds. I consider these pictures of my development progress.
+
+
+Andrea Lin, Milestone 1
+---------------------------------------
+Camera Controls: Created a class which controls the main camera and its movement. Implemented simple panning function, a zoom in and a zoom out. Right now the camera movements are hard coded to move to certain positions, so this week I am going to continue to work on the class so that it can take in a target position and move anywhere (i.e. pan from planet to planet). 
+
+Planet Animation: Implemented spinAccelerate() and spinDeccelerate(), which controls the speeding up and slowing down of a planet, and will be used to transition from planet to planet in the final animation. In the onUpdate() function in main, included some choreographed movement of the planets to simulate simple spinning of the planets. Also adjusted the parameters of the original spin function that Emily created, so that it takes in a start time and end time for better control. 
+
+Water Planet: I procedurally created a terrain made a planet of water using fbm on the surface of a sphere. The water is animated in the frag shader based on a global timer in the program. The material is also translucent by altering the alpha channel in the frag shader. Also implemented basic lambertian shading. For next week, I want to continue working on the color of the water, perhaps doing some kind of lerping functions to make the color of the ocean multi-colored/more interesting than just blue. The water can either be rendered low poly/high poly based on the base geometry of the ocean, but I haven't decided yet which one looks the best. For now, I'm just keeping it at high detail. 
+
+Asset: some kind of asset... boat? fish? 
