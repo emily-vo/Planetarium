@@ -17,7 +17,9 @@ Planet Animation: Implemented spinAccelerate() and spinDeccelerate(), which cont
 
 Water Planet: I procedurally created a terrain for a water planet using fbm to disturb the surface of a sphere. The water is animated in the frag shader based on a global timer in the program. The material is also translucent by altering the alpha channel in the frag shader. Also implemented basic lambertian shading. For next week, I want to continue working on the color of the water, perhaps doing some kind of lerping functions to make the color of the ocean multi-colored/more interesting than just blue. The water can either be rendered low poly/high poly based on the base geometry of the ocean, but I haven't decided yet which one looks the best. For now, I'm just keeping it at high detail.
 
-Asset: some kind of asset... boat? fish? seaweed
+Asset: created a seaweed asset, which has basic spawning functionality and shader. Will continue to polish this next week! Also working on creating koi fish asset which moves around in the world. One example koi is in the scene.
+
+References are in documentation/andrea-images. They include videos of my progress.
 
 
 Suzanne Knop, Milestone 1
@@ -26,4 +28,4 @@ Audio Extraction: I learned how to create basic audio nodes using the Web Audio 
 
 Audio Analysis: I was able to retrieve basic volume / amplitude data from the audio file using the Web Audio API, but will figure out how to get different kinds of data next week (bpm, pitch, tone).
 
-Public Functions: In src/audio.js, I implemented getSizeFromSound(), which will be used to determine size-related transformations of the planets and their assets. I wrote headers for getColorFromSound() and getRateFromSound(), which will be used to procedurally determine colors and velocities (i.e. for spinning), respectively. 
+Public Functions: In src/audio.js, I implemented getSizeFromSound(), which will be used to determine size-related transformations of the planets and their assets. I wrote headers for getColorFromSound() and getRateFromSound(), which will be used to procedurally determine colors and velocities (i.e. for spinning), respectively.

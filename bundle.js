@@ -49804,17 +49804,22 @@
 	            vertexShader: __webpack_require__(23),
 	            fragmentShader: __webpack_require__(24)
 	        });
+	        var koiMesh;
+	        var objLoader = new THREE.OBJLoader();
+	        objLoader.load("koi.obj", function (obj) {
+	            var koi = obj.children[0].geometry;
+	            koiMesh = new THREE.Mesh(koi, material);
+	        });
 	
-	        // var material2 = new THREE.MeshLamb ertMaterial({color: 0xfffff} ); 
-	
-	        var geometry = new THREE.BoxGeometry(1, 1, 1);
+	        var geometry = new THREE.BoxGeometry(0.1, 2, 0.1);
 	        var mesh = new THREE.Mesh(geometry, material);
+	        // var mesh = new THREE.Mesh(koiMesh, material);
 	
 	        var weed = new _item2.default(mesh);
 	
 	        // The asset class must have a normal and a vertex assigned before alignment can occur
 	        // Make sure to call updateRotations from the asset class to update the item rotations
-	        weed.localRotation = new THREE.Vector3(45, 45, 0);
+	        weed.localRotation = new THREE.Vector3(0, 0, 0);
 	
 	        _this.items.push(weed);
 	        return _this;

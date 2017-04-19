@@ -39,8 +39,8 @@ function onLoad(framework) {
   scene.add(backLight);
 
   // set camera position
-  camera.position.set(0, 0, 20);
-  camera.lookAt(new THREE.Vector3(0,0,0));
+  camera.position.set(0, 0, 20); 
+  camera.lookAt(new THREE.Vector3(0,0,0)); // reset x = 0 to look at flower plan
   camera.updateProjectionMatrix();
 
   // putting in a simple axis helper to help visualize
@@ -72,6 +72,7 @@ function onUpdate(framework) {
 
   // flower world animation control
   if (basicWorld !== undefined) {
+<<<<<<< HEAD
     // basicWorld.spin(0, 5, Math.PI / 7000);
     // basicWorld.spinAccelerate(5,7,Math.PI / 4000);
     // basicWorld.spinDeccelerate(7,9,Math.PI / 4000);
@@ -81,6 +82,17 @@ function onUpdate(framework) {
     // cameraControl.zoomInZ(4.5, 6.5);
     // cameraControl.zoomOutZ(7.5,10);
 
+=======
+    basicWorld.spin(0, 5, Math.PI / 7000);
+    basicWorld.spinAccelerate(5,7,Math.PI / 4000);
+    basicWorld.spinDeccelerate(7,9,Math.PI / 4000); 
+    basicWorld.spin(9, 20,Math.PI / 6000); 
+
+    // temporarily turn of camera movements 
+    cameraControl.zoomInZ(4.5, 6.5); 
+    cameraControl.zoomOutZ(7.5,10);
+    
+>>>>>>> master
     basicWorld.tick();
   }
 }
