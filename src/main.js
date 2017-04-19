@@ -6,21 +6,22 @@ import BasicWorld from './worlds/basicWorld'
 import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
+import Audio from './audio'
 
 // initialize global clock
 var clock = new THREE.Clock();
 var cameraControl;
 var basicWorld;
-var waterWorld; 
+var waterWorld;
 
 // called after the scene loads
 function onLoad(framework) {
-  // initialize framework  
+  // initialize framework
   var scene = framework.scene;
   var camera = framework.camera;
   var renderer = framework.renderer;
   var gui = framework.gui;
-  var stats = framework.stats; 
+  var stats = framework.stats;
 
   // initialize a simple box and material
   var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
@@ -42,41 +43,44 @@ function onLoad(framework) {
   camera.lookAt(new THREE.Vector3(0,0,0));
   camera.updateProjectionMatrix();
 
-  // putting in a simple axis helper to help visualize 
+  // putting in a simple axis helper to help visualize
   var axisHelper = new THREE.AxisHelper( 10 );
   scene.add( axisHelper );
 
   // new camera control
-  cameraControl = new CameraControls(scene, clock, camera); 
+  cameraControl = new CameraControls(scene, clock, camera);
 
   basicWorld = new FlowerWorld(scene, clock, directionalLight);
 
-  waterWorld = new WaterWorld(scene, clock, directionalLight); 
+  waterWorld = new WaterWorld(scene, clock, directionalLight);
+
+  // audio
+  Audio.init();
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
-  });  
+  });
 }
 
 // called on frame updates
 function onUpdate(framework) {
   if (waterWorld !== undefined) {
-     // enable animation of water 
+     // enable animation of water
      waterWorld.updateWaterTime();
   }
 
-  // flower world animation control  
+  // flower world animation control
   if (basicWorld !== undefined) {
     // basicWorld.spin(0, 5, Math.PI / 7000);
     // basicWorld.spinAccelerate(5,7,Math.PI / 4000);
-    // basicWorld.spinDeccelerate(7,9,Math.PI / 4000); 
-    // basicWorld.spin(9, 20,Math.PI / 6000); 
+    // basicWorld.spinDeccelerate(7,9,Math.PI / 4000);
+    // basicWorld.spin(9, 20,Math.PI / 6000);
 
-    // temporarily turn of camera movements 
-    // cameraControl.zoomInZ(4.5, 6.5); 
+    // temporarily turn of camera movements
+    // cameraControl.zoomInZ(4.5, 6.5);
     // cameraControl.zoomOutZ(7.5,10);
-    
+
     basicWorld.tick();
   }
 }
