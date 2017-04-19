@@ -47,19 +47,18 @@ export default class WaterWorld extends World {
     
         var geometry = new THREE.IcosahedronGeometry(6, 2); // adjust second parameter: low poly (2) or high poly!!! (>3)
         var baseMesh = new THREE.Mesh(geometry, material);
-        baseMesh.position.set(wPos.x,wPos.y,wPos.z);
-        baseMesh.updateMatrix();
-        baseMesh.geometry.applyMatrix( baseMesh.matrix );
 
         super(scene, timer, baseMesh);
-
+        this.setMeshPosition(baseMesh, wPos.x, wPos.y, wPos.z);
+        
         // make a "base sphere"
         // add this somewhere to the class? not sure 
         var baseSphereGeom = new THREE.IcosahedronGeometry(6,1);  // new THREE.BoxGeometry(6,6,6); consider making a box
-        var baseSphere = new THREE.Mesh(baseSphereGeom, basicMaterial); 
-        // baseSphere.position.set(wPos.x,wPos.y,wPos.z); 
+        this.baseSphere = new THREE.Mesh(baseSphereGeom, basicMaterial); 
+
         // the inside sphere 
-        scene.add(baseSphere);
+        scene.add(this.baseSphere);
+        this.setMeshPosition(this.baseSphere, wPos.x, wPos.y, wPos.z);
         
         // create fish assets / seaweed assets!!! H  H A HA AH a
         // this.spawnAsset(new Seaweed(scene, timer, this)); 

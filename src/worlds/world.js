@@ -79,8 +79,6 @@ export default class World {
     }
 
 
-
-
     // spawn asset at random vertex (adds to scene) and adds to the global list of assets
     spawnAsset(asset) {
         var vertices = this.worldVertices();
@@ -129,6 +127,20 @@ export default class World {
         for (var i = 0; i < this.assets.length; i++) {
             this.assets[i].updateShaderUniforms();
         }
+    }
+
+    resetTransform(mesh) {
+        mesh.updateMatrix();
+        mesh.geometry.applyMatrix( mesh.matrix );
+        mesh.position.set( 0, 0, 0 );
+        mesh.rotation.set( 0, 0, 0 );
+        mesh.scale.set( 1, 1, 1 );
+        mesh.updateMatrix();
+    }
+
+    setMeshPosition(mesh, x, y, z) {
+        mesh.position.set(x, y, z);
+        this.resetTransform(mesh);
     }
 
     // update assets
