@@ -68,14 +68,14 @@ function onUpdate(framework) {
 
   // flower world animation control  
   if (basicWorld !== undefined) {
-    // basicWorld.spin(0, 5, Math.PI / 7000);
-    // basicWorld.spinAccelerate(5,7,Math.PI / 4000);
-    // basicWorld.spinDeccelerate(7,9,Math.PI / 4000); 
-    // basicWorld.spin(9, 20,Math.PI / 6000); 
+    basicWorld.spin(0, 5, Math.PI / 7000);
+    basicWorld.spinAccelerate(5,7,Math.PI / 4000);
+    basicWorld.spinDeccelerate(7,9,Math.PI / 4000); 
+    basicWorld.spin(9, 20,Math.PI / 6000); 
 
     // temporarily turn of camera movements 
-    // cameraControl.zoomInZ(4.5, 6.5); 
-    // cameraControl.zoomOutZ(7.5,10);
+    cameraControl.zoomInZ(4.5, 6.5); 
+    cameraControl.zoomOutZ(7.5,10);
     
     basicWorld.tick();
   }
