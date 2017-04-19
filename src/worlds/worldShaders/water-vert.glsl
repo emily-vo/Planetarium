@@ -101,7 +101,7 @@ void main() {
 	float waveHeight = 2.0; // smaller values will give bigger waves 
 	// get noise height based on position 
 	// TO ANIMATE: add time to the x parameter of this function 
-    float noiseHeight = fbm(float(position.x / waveHeight), float(position.y / waveHeight), float(position.z / waveHeight));
+    float noiseHeight = fbm(float(position.x / waveHeight) + time, float(position.y / waveHeight), float(position.z / waveHeight));
     vec3 noisePosition = (vec3(
     	position.x + noiseHeight / 300.0 + normal.x * noiseHeight / 20.0 , 
     	position.y + noiseHeight / 300.0 + normal.y * noiseHeight/ 20.0 , 

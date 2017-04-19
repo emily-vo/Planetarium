@@ -38,8 +38,8 @@ function onLoad(framework) {
   scene.add(backLight);
 
   // set camera position
-  camera.position.set(0, 0, 20);
-  camera.lookAt(new THREE.Vector3(0,0,0));
+  camera.position.set(0, 0, 20); 
+  camera.lookAt(new THREE.Vector3(0,0,0)); // reset x = 0 to look at flower plan
   camera.updateProjectionMatrix();
 
   // putting in a simple axis helper to help visualize 
