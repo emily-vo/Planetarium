@@ -55,7 +55,7 @@ function onLoad(framework) {
   waterWorld = new WaterWorld(scene, clock, directionalLight);
 
   // audio
-  Audio.init();
+  // Audio.init(); //UNCOMMENT TO TURN AUDIO ON
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {

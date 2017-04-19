@@ -1,8 +1,9 @@
-
+const THREE = require('three');
 var context;
 var sourceNode;
 var jsNode;
 var analyser;
+var splitter;
 
 function init() {
   if (! window.AudioContext) { // check if the default naming is enabled, if not use the chrome one.
@@ -12,19 +13,7 @@ function init() {
   context = new AudioContext();
   setupAudioNodes();
   loadSound("./audio/the-deli-flowers.mp3");
-
-  jsNode.onaudioprocess = function() {
-     // get the average, bincount is fftsize / 2
-     var array =  new Uint8Array(analyser.frequencyBinCount);
-     analyser.getByteFrequencyData(array);
-     var average = getAverageVolume(array);
-
-
-     console.log(average)
-    //  console.log("av2: " + average2)
-   }
 }
-
 
 // load the specified sound
 function loadSound(url) {
@@ -39,19 +28,16 @@ function loadSound(url) {
   request.send();
 }
 
-
 function playSound(buffer) {
     sourceNode.buffer = buffer;
     sourceNode.start(0);
 }
 
-
 function setupAudioNodes() {
   sourceNode = context.createBufferSource();
   sourceNode.connect(context.destination);
 
-  jsNode = context.createScriptProcessor(2048, 1, 1); //ScriptProcessorNode
-  jsNode.connect(context.destination);
+  // jsNode = context.createScriptProcessor(2048, 1, 1); //ScriptProcessorNode
 
   analyser = context.createAnalyser();
   analyser.smoothingTimeConstant = 0.3;
@@ -60,10 +46,7 @@ function setupAudioNodes() {
   splitter = context.createChannelSplitter(); // splits into left and right stream
 
   sourceNode.connect(analyser);
-  analyser.connect(jsNode);
 }
-
-
 
 function getAverageVolume(array) {
    var values = 0;
@@ -73,7 +56,27 @@ function getAverageVolume(array) {
    return values / array.length;
 }
 
+// Volume / amplitude
+function getSizeFromSound() {
+  var arr =  new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(arr);
+  return getAverageVolume(arr);
+}
+
+function getColorFromSound() {
+  //TODO: implement according to pitch
+  var color = new THREE.Color(0,0,0);
+  return color;
+}
+
+function getRateFromSound() {
+  //TODO: implement according to bpm
+  return 0;
+}
 
 export default {
-  init: init
+  init: init,
+  getSizeFromSound: getSizeFromSound,
+  getColorFromSound: getColorFromSound,
+  getRateFromSound: getRateFromSound
 }

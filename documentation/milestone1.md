@@ -22,6 +22,8 @@ Asset: some kind of asset... boat? fish? seaweed
 
 Suzanne Knop, Milestone 1
 ---------------------------------------
-Audio Extraction:
+Audio Extraction: I learned how to create basic audio nodes using the Web Audio API, and wrote loading and playing functions which can be found in src/audio.js.
 
-Helper Functions: 
+Audio Analysis: I was able to retrieve basic volume / amplitude data from the audio file using the Web Audio API, but will figure out how to get different kinds of data next week (bpm, pitch, tone).
+
+Public Functions: In src/audio.js, I implemented getSizeFromSound(), which will be used to determine size-related transformations of the planets and their assets. I wrote headers for getColorFromSound() and getRateFromSound(), which will be used to procedurally determine colors and velocities (i.e. for spinning), respectively. 
