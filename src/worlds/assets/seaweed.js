@@ -28,15 +28,15 @@ export default class Seaweed extends Asset {
         });
 
         // trying to import koi 
-        var koiMesh; 
-        var objLoader = new THREE.OBJLoader();
-        objLoader.load('koi.obj', function(obj) {
-            var koi = obj.children[0].geometry;
-            koiMesh = new THREE.Mesh(koi, material);
-            koiMesh.position.set(0,5,0); 
-            // test: visualizing the koi fish 
-            scene.add(koiMesh);
-        });
+        // var koiMesh; 
+        // var objLoader = new THREE.OBJLoader();
+        // objLoader.load('koi.obj', function(obj) {
+        //     var koi = obj.children[0].geometry;
+        //     koiMesh = new THREE.Mesh(koi, material);
+        //     koiMesh.position.set(0,5,0); 
+        //     // test: visualizing the koi fish 
+        //     scene.add(koiMesh);
+        // });
 
         // for now, just visualize box 
         var geometry = new THREE.BoxGeometry(0.1, 2, 0.1);
