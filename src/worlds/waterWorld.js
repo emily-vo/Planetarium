@@ -72,6 +72,10 @@ export default class WaterWorld extends World {
             this.spawnAsset(seaweed);
             seaweeds.push(seaweed); 
         }
+
+        // create koi assets
+        var koi = new Koi(scene, timer, this);
+        this.spawnAsset(koi);
     }
 
     // to update the uniform in the frag shader, enables animation

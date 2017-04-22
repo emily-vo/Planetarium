@@ -10,35 +10,42 @@ export default class Koi extends Asset {
 
         // add basic cube mesh item as example asset
         this.shaderUniforms = {
-        time: { 
-            type: "float", 
-            value: 0
-        },
-        u_time: { 
-            type: "float", 
-            value: timer.elapsedTime
-        },
-        light_vec: {
-            type: "v3",
-            value: new THREE.Vector3(world.light.position.x, world.light.position.y, world.light.position.z)
-        },
-    };
+            time: { 
+                type: "float", 
+                value: 0
+            },
+            u_time: { 
+                type: "float", 
+                value: timer.elapsedTime
+            },
+            light_vec: {
+                type: "v3",
+                value: new THREE.Vector3(world.light.position.x, world.light.position.y, world.light.position.z)
+            },
+        };
 
         var material = new THREE.ShaderMaterial({
-              uniforms: this.shaderUniforms,
-              vertexShader: require('./assetShaders/basic-vert.glsl'),
-              fragmentShader: require('./assetShaders/koi-frag.glsl')
+            uniforms: this.shaderUniforms,
+            vertexShader: require('./assetShaders/basic-vert.glsl'),
+            fragmentShader: require('./assetShaders/koi-frag.glsl')
         });
 
-        var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var mesh = new THREE.Mesh(geometry, material);
+        // load koi obj 
+        // var koiGeo; 
+        // var objLoader = new THREE.OBJLoader();
+        // objLoader.load('textures/koi.obj', function(obj) {
+        //     var koiGeo = obj.children[0].geometry;
+        // });
 
-        var redCube = new Item(mesh);
+        var geometry = new THREE.BoxGeometry(1, 1, 1);
+        var mesh = new THREE.Mesh(koiGeo, material);
+
+        var koiItem = new Item(mesh);
 
         // The asset class must have a normal and a vertex assigned before alignment can occur
         // Make sure to call updateRotations from the asset class to update the item rotations
-        redCube.localRotation = new THREE.Vector3(45, 45, 0);
+        koiItem.localRotation = new THREE.Vector3(45, 45, 0);
 
-        this.items.push(redCube);
+        this.items.push(koiItem);
     }
 }

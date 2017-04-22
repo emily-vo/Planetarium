@@ -73,7 +73,7 @@ function onUpdate(framework) {
   if (waterWorld !== undefined) {
      // enable animation of water 
      waterWorld.updateWaterTime();
-     
+
     // waterWorld.spin(0, 5, Math.PI / 7000);
     // waterWorld.spinAccelerate(5,7,Math.PI / 4000);
     // waterWorld.spinDeccelerate(7,9,Math.PI / 4000); 
