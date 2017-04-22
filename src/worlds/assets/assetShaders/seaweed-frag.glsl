@@ -4,11 +4,22 @@ varying vec3 f_normal;
 varying float noise;
 uniform sampler2D image;
 
+// cosine based palette from IQ 
+vec3 palette( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
+{
+    return a + b*cos( 6.28318*(c*t+d) );
+}
 
 void main() {
 
+    // compute colors
+    // float speed = 0.1; 
+    // vec3 col = palette(speed * u_time, vec3(
+    // 0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,0.7,0.4),vec3(0.0,0.15,0.20) );
+
   vec2 uv = vec2(1,1) - vUv;
-  vec4 color = vec4(0.921, 0.258, 0.258,1);
+  vec4 color = vec4(0.403, 0.552, 0.384,1);
+  vec4 darkGreen = vec4(0.109, 0.360, 0.078,1); 
 
   // hardcoded light vector 
   vec3 light_vec = vec3(1.0, 1.0, 2.0); 

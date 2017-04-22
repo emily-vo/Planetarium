@@ -39,7 +39,7 @@ export default class WaterWorld extends World {
         var basicMaterial = new THREE.ShaderMaterial({
               uniforms: shaderUniforms,
               vertexShader: require('./worldShaders/basic-vert.glsl'),
-              fragmentShader: require('./worldShaders/water-frag.glsl')
+              fragmentShader: require('./worldShaders/water-base-frag.glsl')
         });
         // enable transparency of the material 
         material.transparent = true;
