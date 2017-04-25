@@ -112,9 +112,9 @@ function basicChoreography() {
   if (world3) {
      // enable animation of water 
      world3.recreateEntireWorld(16); 
-     world3.spinAccelerate(15, 16, Math.PI / 5000); 
-     world3.spinDeccelerate(16,17, Math.PI / 5000);
-     world3.spin(17,25, Math.PI / 5000);
+     world3.spinAccelerate(15, 17, Math.PI / 5000); 
+     world3.spinDeccelerate(17,19, Math.PI / 5000);
+     world3.spin(19,25, Math.PI / 5000);
 
     // delete world from view at 25 seconds 
     world3.deleteEntireWorld(25); 

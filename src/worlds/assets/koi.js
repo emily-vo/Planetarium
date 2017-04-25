@@ -1,6 +1,7 @@
 const THREE = require('three')
 import Asset from './asset'
 import Item from './item'
+const OBJLoader = require('jser-three-obj-loader')(THREE)
 
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
@@ -33,12 +34,15 @@ export default class Koi extends Asset {
         // load koi obj 
         var koiGeo; 
         // var objLoader = new THREE.OBJLoader();
-        // objLoader.load('textures/koi.obj', function(obj) {
+        // objLoader.load('house.obj', function(obj) {
         //     var koiGeo = obj.children[0].geometry;
         // });
+
         koiGeo = new THREE.BoxGeometry(0.5, 0.5, 1.0);
 
         var mesh = new THREE.Mesh(koiGeo, this.material);
+        // mesh.position.set(10, 30, 0); 
+        // mesh.scale.set(10,10,100); 
 
         var koiItem = new Item(mesh);
 
