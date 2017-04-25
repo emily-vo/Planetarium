@@ -27,7 +27,7 @@ void main() {
 
   // out color
   // gl_FragColor = vec4( lambert * turquoise, 0.2) + globalIllum * vec4(darkBlue, 1.0);
-  gl_FragColor = vec4(lambert * turquoise, 0.2) + globalIllum * vec4(col, 1.0); 
+  gl_FragColor = vec4(lambert * col, 0.2) + globalIllum * vec4(col, 1.0); 
 
   // set transparency 
   gl_FragColor.a = 0.6;
