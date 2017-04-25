@@ -6,6 +6,7 @@ import BasicWorld from './worlds/basicWorld'
 import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
+import Audio from './audio'
 
 // initialize global clock
 var clock = new THREE.Clock();
@@ -16,12 +17,12 @@ var world3;
 
 // called after the scene loads
 function onLoad(framework) {
-  // initialize framework  
+  // initialize framework
   var scene = framework.scene;
   var camera = framework.camera;
   var renderer = framework.renderer;
   var gui = framework.gui;
-  var stats = framework.stats; 
+  var stats = framework.stats;
 
   // initialize a simple box and material
   var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
@@ -39,16 +40,16 @@ function onLoad(framework) {
   scene.add(backLight);
 
   // set camera position
-  camera.position.set(0, 0, 20); 
+  camera.position.set(0, 0, 20);
   camera.lookAt(new THREE.Vector3(0,0,0)); // reset x = 0 to look at flower plan
   camera.updateProjectionMatrix();
 
-  // putting in a simple axis helper to help visualize 
+  // putting in a simple axis helper to help visualize
   var axisHelper = new THREE.AxisHelper( 10 );
   scene.add( axisHelper );
 
   // new camera control
-  cameraControl = new CameraControls(scene, clock, camera); 
+  cameraControl = new CameraControls(scene, clock, camera);
 
   // world 1 
   basicWorld = new FlowerWorld(scene, clock, directionalLight);
@@ -63,10 +64,13 @@ function onLoad(framework) {
   world3 = new BasicWorld(scene, clock, directionalLight);  
   world3.deleteEntireWorld(0);
 
+  // audio
+  // Audio.init(); //UNCOMMENT TO TURN AUDIO ON
+
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
-  });  
+  });
 }
 
 // basic choreography set up 
@@ -116,7 +120,6 @@ function basicChoreography() {
     world3.deleteEntireWorld(25); 
     world3.tick(); 
   }
-
 
   // temporarily turn of camera movements 
   // cameraControl.zoomInZ(4.5, 6.5); 

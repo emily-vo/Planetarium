@@ -34,7 +34,7 @@ export default class FlowerWorld extends World {
               //lights: true
         });
     
-        var geometry = new THREE.IcosahedronGeometry(6, 3);
+        var geometry = new THREE.IcosahedronGeometry(6, 1);
         var baseMesh = new THREE.Mesh(geometry, material);
         
         super(scene, timer, baseMesh);

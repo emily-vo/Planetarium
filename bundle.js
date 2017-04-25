@@ -70,6 +70,10 @@
 	
 	var _waterWorld2 = _interopRequireDefault(_waterWorld);
 	
+	var _audio = __webpack_require__(27);
+	
+	var _audio2 = _interopRequireDefault(_audio);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var THREE = __webpack_require__(6); // older modules are imported like this. You shouldn't have to worry about this much
@@ -83,7 +87,7 @@
 	
 	// called after the scene loads
 	function onLoad(framework) {
-	  // initialize framework  
+	  // initialize framework
 	  var scene = framework.scene;
 	  var camera = framework.camera;
 	  var renderer = framework.renderer;
@@ -107,10 +111,10 @@
 	
 	  // set camera position
 	  camera.position.set(0, 0, 20);
-	  camera.lookAt(new THREE.Vector3(0, 0, 0));
+	  camera.lookAt(new THREE.Vector3(0, 0, 0)); // reset x = 0 to look at flower plan
 	  camera.updateProjectionMatrix();
 	
-	  // putting in a simple axis helper to help visualize 
+	  // putting in a simple axis helper to help visualize
 	  var axisHelper = new THREE.AxisHelper(10);
 	  scene.add(axisHelper);
 	
@@ -121,6 +125,9 @@
 	
 	  waterWorld = new _waterWorld2.default(scene, clock, directionalLight);
 	
+	  // audio
+	  // Audio.init(); //UNCOMMENT TO TURN AUDIO ON
+	
 	  // add gui controls
 	  gui.add(camera, 'fov', 0, 180).onChange(function (newVal) {
 	    camera.updateProjectionMatrix();
@@ -130,20 +137,21 @@
 	// called on frame updates
 	function onUpdate(framework) {
 	  if (waterWorld !== undefined) {
-	    // enable animation of water 
+	    // enable animation of water
 	    waterWorld.updateWaterTime();
 	  }
 	
-	  // flower world animation control  
+	  // flower world animation control
 	  if (basicWorld !== undefined) {
-	    // basicWorld.spin(0, 5, Math.PI / 7000);
-	    // basicWorld.spinAccelerate(5,7,Math.PI / 4000);
-	    // basicWorld.spinDeccelerate(7,9,Math.PI / 4000); 
-	    // basicWorld.spin(9, 20,Math.PI / 6000); 
 	
-	    // temporarily turn of camera movements 
-	    // cameraControl.zoomInZ(4.5, 6.5); 
-	    // cameraControl.zoomOutZ(7.5,10);
+	    basicWorld.spin(0, 5, Math.PI / 7000);
+	    basicWorld.spinAccelerate(5, 7, Math.PI / 4000);
+	    basicWorld.spinDeccelerate(7, 9, Math.PI / 4000);
+	    basicWorld.spin(9, 20, Math.PI / 6000);
+	
+	    // temporarily turn of camera movements
+	    cameraControl.zoomInZ(4.5, 6.5);
+	    cameraControl.zoomOutZ(7.5, 10);
 	
 	    basicWorld.tick();
 	  }
@@ -49436,7 +49444,7 @@
 	            fragmentShader: __webpack_require__(17)
 	        });
 	
-	        var geometry = new THREE.IcosahedronGeometry(6, 3);
+	        var geometry = new THREE.IcosahedronGeometry(6, 1);
 	        var baseMesh = new THREE.Mesh(geometry, material);
 	
 	        var _this = _possibleConstructorReturn(this, (FlowerWorld.__proto__ || Object.getPrototypeOf(FlowerWorld)).call(this, scene, timer, baseMesh));
@@ -49716,19 +49724,15 @@
 	
 	        // make a "base sphere"
 	        // add this somewhere to the class? not sure 
-	        var baseSphereGeom = new THREE.IcosahedronGeometry(6, 1); // new THREE.BoxGeometry(6,6,6); consider making a box
+	        var baseSphereGeom = new THREE.IcosahedronGeometry(6, 4); // new THREE.BoxGeometry(6,6,6); consider making a box
 	        _this.baseSphere = new THREE.Mesh(baseSphereGeom, basicMaterial);
 	
 	        // the inside sphere 
 	        scene.add(_this.baseSphere);
 	        _this.setMeshPosition(_this.baseSphere, wPos.x, wPos.y, wPos.z);
 	
-	        // create fish assets / seaweed assets!!! H  H A HA AH a
-	        // this.spawnAsset(new Seaweed(scene, timer, this)); 
-	        // this.spawnAsset(new Cubes(scene, timer, this));
-	        // this.spawnAsset(new Flower(scene, timer, this)); 
-	
-	        for (var i = 0; i < 30; i++) {
+	        // create seaweed assets!
+	        for (var i = 0; i < 50; i++) {
 	            _this.spawnAsset(new _seaweed2.default(scene, timer, _this));
 	        }
 	        return _this;
@@ -49804,15 +49808,22 @@
 	            vertexShader: __webpack_require__(23),
 	            fragmentShader: __webpack_require__(24)
 	        });
+	
+	        // trying to import koi 
 	        var koiMesh;
 	        var objLoader = new THREE.OBJLoader();
-	        objLoader.load("koi.obj", function (obj) {
+	        objLoader.load('koi.obj', function (obj) {
 	            var koi = obj.children[0].geometry;
 	            koiMesh = new THREE.Mesh(koi, material);
+	            koiMesh.position.set(0, 5, 0);
+	            // test: visualizing the koi fish 
+	            scene.add(koiMesh);
 	        });
 	
+	        // for now, just visualize box 
 	        var geometry = new THREE.BoxGeometry(0.1, 2, 0.1);
 	        var mesh = new THREE.Mesh(geometry, material);
+	
 	        // var mesh = new THREE.Mesh(koiMesh, material);
 	
 	        var weed = new _item2.default(mesh);
@@ -49840,19 +49851,114 @@
 /* 24 */
 /***/ (function(module, exports) {
 
-	module.exports = "varying vec2 vUv;\nvarying vec3 f_position; \nvarying vec3 f_normal; \nvarying float noise;\nuniform sampler2D image;\n\n\nvoid main() {\n\n  vec2 uv = vec2(1,1) - vUv;\n  vec4 color = vec4(0,1,0,1);\n\n  gl_FragColor = vec4( color.rgb, 1.0 );\n\n}"
+	module.exports = "varying vec2 vUv;\nvarying vec3 f_position; \nvarying vec3 f_normal; \nvarying float noise;\nuniform sampler2D image;\n\n\nvoid main() {\n\n  vec2 uv = vec2(1,1) - vUv;\n  vec4 color = vec4(0.921, 0.258, 0.258,1);\n\n  // hardcoded light vector \n  vec3 light_vec = vec3(1.0, 1.0, 2.0); \n  // simple lambertian lighting\n  vec3 d = normalize(light_vec - f_position);\n  float lambert = clamp(dot(d, f_normal), 0.0, 1.0); \n  float globalIllum = 0.2; \n\n  // out color\n  gl_FragColor = vec4( lambert * color.rgb, 1.0) + globalIllum * vec4(color.rgb, 1.0);\n}"
 
 /***/ }),
 /* 25 */
 /***/ (function(module, exports) {
 
-	module.exports = "varying vec2 vUv;\nvarying vec3 f_normal; \nvarying vec3 f_position;\nuniform float u_time; \n// noise function returns range [-1,1]\nfloat noise1(float x, float y, float z){\n\tfloat value1 = fract(sin(dot(vec2(z, y) ,vec2(1027.9898, 29381.233))) * 333019.5453);\n\tfloat value2 = fract(sin(x) * 43758.5453);\n\treturn dot(value1, value2); \n}\n\nfloat noise_3(float x, float y, float z) {\n\tfloat value1 = fract(sin(dot(vec2(x, y) ,vec2(12.9898, 78.233))) * 43758.5453);\n\tfloat value2 = fract(sin(z) * 202229.5453);\n\n\treturn dot(value1, value2); \n}\n\nfloat noise(float x, float y, float z){\n\tfloat value1 = fract(sin(dot(vec2(x, y) ,vec2(3427.9898, 9847.233))) * 202.5453);\n\tfloat value2 = fract(cos(z) * 20247.5453);\n\n\treturn fract(dot(value1, value2)); \n}\n\n\n// lerp\nfloat lerp(float a, float b, float t) {\n\treturn a * (1.0 - t) + b * t; \n}\n\n// cosine interp \nfloat cos_interp(float a, float b, float t) {\n\tfloat cos_t = (1.0 - cos(t * 3.14159265358979)) * 0.5;\n\treturn lerp(a , b , cos_t);\n}\n\n// Interpolate Noise function\n// Given a position, use surrounding lattice points to interpolate and find influence \n// takes in (x,y,z) position, and the current octave level\nfloat interpolateNoise(float x, float y, float z) {\n\t// define the lattice points surrounding the input position \n\tfloat x0 = floor(x);\n\tfloat x1 = x0 + 1.0; \n\tfloat y0 = floor(y);\n\tfloat y1 = y0 + 1.0;\n\tfloat z0 = floor(z);\n\tfloat z1 = z0 + 1.0; \n\n\t// VALUE BASED NOISE\n\tvec3 p0 = vec3(x0, y0, z0); vec3 p1 = vec3(x0, y0, z1);\n\tvec3 p2 = vec3(x0, y1, z0); vec3 p3 = vec3(x0, y1, z1);\n\tvec3 p4 = vec3(x1, y0, z0); vec3 p5 = vec3(x1, y0, z1);\n\tvec3 p6 = vec3(x1, y1, z0); vec3 p7 = vec3(x1, y1, z1);\n\n\t// use noise function to generate random value\n\t// depending on the current octave, sample noise using a different function \n\tfloat v0, v1, v2, v3, v4, v5, v6, v7;\n\tv0 = noise(p0.x, p0.y, p0.z); v1 = noise(p1.x, p1.y, p1.z);\n\tv2 = noise(p2.x, p2.y, p2.z); v3 = noise(p3.x, p3.y, p3.z);\n    v4 = noise(p4.x, p4.y, p4.z); v5 = noise(p5.x, p5.y, p5.z);\n\tv6 = noise(p6.x, p6.y, p6.z); v7 = noise(p7.x, p7.y, p7.z);\n\n\t// trilinear interpolation of all 8 values\n\t// coordinates in the unit cube: \n\tfloat unitX = x - x0;\n\tfloat unitY = y - y0;\n\tfloat unitZ = z - z0;\n\n\tfloat xCos1 = cos_interp(v0, v4, unitX);\n\tfloat xCos2 = cos_interp(v1, v5, unitX);\n\tfloat xCos3 = cos_interp(v2, v6, unitX);\n\tfloat xCos4 = cos_interp(v3, v7, unitX);\n\n\tfloat yCos1 = cos_interp(xCos1, xCos3, unitY);\n\tfloat yCos2 = cos_interp(xCos2, xCos4, unitY);\n\n\tfloat average = cos_interp(yCos1, yCos2, unitZ);\n\n\treturn average;\n}\n\n// multioctave\nfloat fbm(float x, float y, float z) {\n\tfloat total = 0.0; \n\t// make a little less fractal-y \n\t// total += interpolateNoise(x * 64.0, y * 64.0, z * 64.0) * 1.0;\n\t// total += interpolateNoise(x * 32.0, y * 32.0, z * 32.0) * 2.0; \n\t// total += interpolateNoise(x * 16.0, y * 16.0, z * 16.0) * 4.0; \n\ttotal += interpolateNoise(x * 8.0, y * 8.0, z * 8.0) * 8.0; \n\ttotal += interpolateNoise(x * 4.0, y * 4.0, z * 4.0) * 16.0; \n\ttotal += interpolateNoise(x * 2.0, y * 2.0, z * 2.0) * 32.0; \n\ttotal += interpolateNoise(x * 1.0, y * 1.0, z * 1.0) * 64.0; \n\n\treturn total;\n}\n\n// main \nvoid main() {\n\tfloat time = u_time / 2.0;\n\tfloat waveHeight = 2.0; // smaller values will give bigger waves \n\t// get noise height based on position \n\t// TO ANIMATE: add time to the x parameter of this function \n    float noiseHeight = fbm(float(position.x / waveHeight), float(position.y / waveHeight), float(position.z / waveHeight));\n    vec3 noisePosition = (vec3(\n    \tposition.x + noiseHeight / 300.0 + normal.x * noiseHeight / 20.0 , \n    \tposition.y + noiseHeight / 300.0 + normal.y * noiseHeight/ 20.0 , \n    \tposition.z + noiseHeight / 300.0 + normal.z * noiseHeight/ 20.0)); \n\n\tf_normal = normal; \n\tf_position = position; \n    vUv = uv;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( noisePosition, 1.0 );\n}"
+	module.exports = "varying vec2 vUv;\nvarying vec3 f_normal; \nvarying vec3 f_position;\nuniform float u_time; \n// noise function returns range [-1,1]\nfloat noise1(float x, float y, float z){\n\tfloat value1 = fract(sin(dot(vec2(z, y) ,vec2(1027.9898, 29381.233))) * 333019.5453);\n\tfloat value2 = fract(sin(x) * 43758.5453);\n\treturn dot(value1, value2); \n}\n\nfloat noise_3(float x, float y, float z) {\n\tfloat value1 = fract(sin(dot(vec2(x, y) ,vec2(12.9898, 78.233))) * 43758.5453);\n\tfloat value2 = fract(sin(z) * 202229.5453);\n\n\treturn dot(value1, value2); \n}\n\nfloat noise(float x, float y, float z){\n\tfloat value1 = fract(sin(dot(vec2(x, y) ,vec2(3427.9898, 9847.233))) * 202.5453);\n\tfloat value2 = fract(cos(z) * 20247.5453);\n\n\treturn fract(dot(value1, value2)); \n}\n\n\n// lerp\nfloat lerp(float a, float b, float t) {\n\treturn a * (1.0 - t) + b * t; \n}\n\n// cosine interp \nfloat cos_interp(float a, float b, float t) {\n\tfloat cos_t = (1.0 - cos(t * 3.14159265358979)) * 0.5;\n\treturn lerp(a , b , cos_t);\n}\n\n// Interpolate Noise function\n// Given a position, use surrounding lattice points to interpolate and find influence \n// takes in (x,y,z) position, and the current octave level\nfloat interpolateNoise(float x, float y, float z) {\n\t// define the lattice points surrounding the input position \n\tfloat x0 = floor(x);\n\tfloat x1 = x0 + 1.0; \n\tfloat y0 = floor(y);\n\tfloat y1 = y0 + 1.0;\n\tfloat z0 = floor(z);\n\tfloat z1 = z0 + 1.0; \n\n\t// VALUE BASED NOISE\n\tvec3 p0 = vec3(x0, y0, z0); vec3 p1 = vec3(x0, y0, z1);\n\tvec3 p2 = vec3(x0, y1, z0); vec3 p3 = vec3(x0, y1, z1);\n\tvec3 p4 = vec3(x1, y0, z0); vec3 p5 = vec3(x1, y0, z1);\n\tvec3 p6 = vec3(x1, y1, z0); vec3 p7 = vec3(x1, y1, z1);\n\n\t// use noise function to generate random value\n\t// depending on the current octave, sample noise using a different function \n\tfloat v0, v1, v2, v3, v4, v5, v6, v7;\n\tv0 = noise(p0.x, p0.y, p0.z); v1 = noise(p1.x, p1.y, p1.z);\n\tv2 = noise(p2.x, p2.y, p2.z); v3 = noise(p3.x, p3.y, p3.z);\n    v4 = noise(p4.x, p4.y, p4.z); v5 = noise(p5.x, p5.y, p5.z);\n\tv6 = noise(p6.x, p6.y, p6.z); v7 = noise(p7.x, p7.y, p7.z);\n\n\t// trilinear interpolation of all 8 values\n\t// coordinates in the unit cube: \n\tfloat unitX = x - x0;\n\tfloat unitY = y - y0;\n\tfloat unitZ = z - z0;\n\n\tfloat xCos1 = cos_interp(v0, v4, unitX);\n\tfloat xCos2 = cos_interp(v1, v5, unitX);\n\tfloat xCos3 = cos_interp(v2, v6, unitX);\n\tfloat xCos4 = cos_interp(v3, v7, unitX);\n\n\tfloat yCos1 = cos_interp(xCos1, xCos3, unitY);\n\tfloat yCos2 = cos_interp(xCos2, xCos4, unitY);\n\n\tfloat average = cos_interp(yCos1, yCos2, unitZ);\n\n\treturn average;\n}\n\n// multioctave\nfloat fbm(float x, float y, float z) {\n\tfloat total = 0.0; \n\t// make a little less fractal-y \n\t// total += interpolateNoise(x * 64.0, y * 64.0, z * 64.0) * 1.0;\n\t// total += interpolateNoise(x * 32.0, y * 32.0, z * 32.0) * 2.0; \n\t// total += interpolateNoise(x * 16.0, y * 16.0, z * 16.0) * 4.0; \n\ttotal += interpolateNoise(x * 8.0, y * 8.0, z * 8.0) * 8.0; \n\ttotal += interpolateNoise(x * 4.0, y * 4.0, z * 4.0) * 16.0; \n\ttotal += interpolateNoise(x * 2.0, y * 2.0, z * 2.0) * 32.0; \n\ttotal += interpolateNoise(x * 1.0, y * 1.0, z * 1.0) * 64.0; \n\n\treturn total;\n}\n\n// main \nvoid main() {\n\tfloat time = u_time / 2.0;\n\tfloat waveHeight = 2.0; // smaller values will give bigger waves \n\t// get noise height based on position \n\t// TO ANIMATE: add time to the x parameter of this function \n    float noiseHeight = fbm(float(position.x / waveHeight) + time, float(position.y / waveHeight), float(position.z / waveHeight));\n    vec3 noisePosition = (vec3(\n    \tposition.x + noiseHeight / 300.0 + normal.x * noiseHeight / 20.0 , \n    \tposition.y + noiseHeight / 300.0 + normal.y * noiseHeight/ 20.0 , \n    \tposition.z + noiseHeight / 300.0 + normal.z * noiseHeight/ 20.0)); \n\n\tf_normal = normal; \n\tf_position = position; \n    vUv = uv;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( noisePosition, 1.0 );\n}"
 
 /***/ }),
 /* 26 */
 /***/ (function(module, exports) {
 
-	module.exports = "varying vec2 vUv;\nvarying vec3 f_normal; \nvarying vec3 f_position;\nuniform sampler2D image;\nuniform vec3 light_vec; \n\n\nvoid main() {\n  vec3 turquoise = vec3(27.0 / 255.0, 193.0 / 255.0, 163.0 / 255.0);\n  vec3 darkBlue = vec3(0.2,0.5,1.0);\n\n  // simple lambertian lighting\n  vec3 d = normalize(light_vec - f_position);\n  float lambert = clamp(dot(d, f_normal), 0.0, 1.0); \n  float globalIllum = 0.2; \n\n  // out color\n  gl_FragColor = vec4( lambert * turquoise, 0.2) + globalIllum * vec4(darkBlue, 1.0);\n\n  // set transparency \n  gl_FragColor.a = 0.8;\n}"
+	module.exports = "varying vec2 vUv;\nvarying vec3 f_normal; \nvarying vec3 f_position;\nuniform sampler2D image;\nuniform vec3 light_vec; \n\n\nvoid main() {\n  vec3 turquoise = vec3(27.0 / 255.0, 193.0 / 255.0, 163.0 / 255.0);\n  vec3 darkBlue = vec3(0.2,0.5,1.0);\n\n  // simple lambertian lighting\n  vec3 d = normalize(light_vec - f_position);\n  float lambert = clamp(dot(d, f_normal), 0.0, 1.0); \n  float globalIllum = 0.2; \n\n  // out color\n  gl_FragColor = vec4( lambert * turquoise, 0.2) + globalIllum * vec4(darkBlue, 1.0);\n\n  // set transparency \n  gl_FragColor.a = 0.6;\n}"
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var THREE = __webpack_require__(6);
+	var context;
+	var sourceNode;
+	var jsNode;
+	var analyser;
+	var splitter;
+	
+	function init() {
+	  if (!window.AudioContext) {
+	    // check if the default naming is enabled, if not use the chrome one.
+	    if (!window.webkitAudioContext) alert('no audiocontext found');
+	    window.AudioContext = window.webkitAudioContext;
+	  }
+	  context = new AudioContext();
+	  setupAudioNodes();
+	  loadSound("./audio/the-deli-flowers.mp3");
+	}
+	
+	// load the specified sound
+	function loadSound(url) {
+	  var request = new XMLHttpRequest();
+	  request.open('GET', url, true);
+	  request.responseType = 'arraybuffer';
+	  request.onload = function () {
+	    context.decodeAudioData(request.response, function (buffer) {
+	      playSound(buffer);
+	    }, function (e) {
+	      console.log(e);
+	    });
+	  };
+	  request.send();
+	}
+	
+	function playSound(buffer) {
+	  sourceNode.buffer = buffer;
+	  sourceNode.start(0);
+	}
+	
+	function setupAudioNodes() {
+	  sourceNode = context.createBufferSource();
+	  sourceNode.connect(context.destination);
+	
+	  // jsNode = context.createScriptProcessor(2048, 1, 1); //ScriptProcessorNode
+	
+	  analyser = context.createAnalyser();
+	  analyser.smoothingTimeConstant = 0.3;
+	  analyser.fftSize = 1024;
+	
+	  splitter = context.createChannelSplitter(); // splits into left and right stream
+	
+	  sourceNode.connect(analyser);
+	}
+	
+	function getAverageVolume(array) {
+	  var values = 0;
+	  for (var i = 0; i < array.length; i++) {
+	    values += array[i];
+	  }
+	  return values / array.length;
+	}
+	
+	// Volume / amplitude
+	function getSizeFromSound() {
+	  var arr = new Uint8Array(analyser.frequencyBinCount);
+	  analyser.getByteFrequencyData(arr);
+	  return getAverageVolume(arr);
+	}
+	
+	function getColorFromSound() {
+	  //TODO: implement according to pitch
+	  var color = new THREE.Color(0, 0, 0);
+	  return color;
+	}
+	
+	function getRateFromSound() {
+	  //TODO: implement according to bpm
+	  return 0;
+	}
+	
+	exports.default = {
+	  init: init,
+	  getSizeFromSound: getSizeFromSound,
+	  getColorFromSound: getColorFromSound,
+	  getRateFromSound: getRateFromSound
+	};
 
 /***/ })
 /******/ ]);
