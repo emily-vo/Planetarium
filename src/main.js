@@ -52,15 +52,16 @@ function onLoad(framework) {
 
   basicWorld = new FlowerWorld(scene, clock, directionalLight);
 
-  waterWorld = new WaterWorld(scene, clock, directionalLight);
+  // waterWorld = new WaterWorld(scene, clock, directionalLight);
 
   // audio
-  // Audio.init(); //UNCOMMENT TO TURN AUDIO ON
+  Audio.init(); //UNCOMMENT TO TURN AUDIO ON
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
   });
+  // TODO: add audio on/off button
 }
 
 // called on frame updates
@@ -81,8 +82,13 @@ function onUpdate(framework) {
     // temporarily turn of camera movements
     cameraControl.zoomInZ(4.5, 6.5);
     cameraControl.zoomOutZ(7.5,10);
-    
+
     basicWorld.tick();
+  }
+
+  if (Audio.isPlaying()) {
+    console.log("size: " + Audio.getSizeFromSound())
+    Audio.getColorFromSound()
   }
 }
 

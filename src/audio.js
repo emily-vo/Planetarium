@@ -1,4 +1,6 @@
 const THREE = require('three');
+import pitchHelper from './pitchHelper'
+var playing = false;
 var context;
 var sourceNode;
 var jsNode;
@@ -30,7 +32,14 @@ function loadSound(url) {
 
 function playSound(buffer) {
     sourceNode.buffer = buffer;
+    // sourceNode.detune.value = 2 * 100;
+    // console.log(sourceNode.detune)
     sourceNode.start(0);
+    playing = true;
+}
+
+function isPlaying() {
+  return playing;
 }
 
 function setupAudioNodes() {
@@ -41,7 +50,7 @@ function setupAudioNodes() {
 
   analyser = context.createAnalyser();
   analyser.smoothingTimeConstant = 0.3;
-  analyser.fftSize = 1024;
+  analyser.fftSize = 2048;
 
   splitter = context.createChannelSplitter(); // splits into left and right stream
 
@@ -66,6 +75,7 @@ function getSizeFromSound() {
 function getColorFromSound() {
   //TODO: implement according to pitch
   var color = new THREE.Color(0,0,0);
+  console.log(sourceNode.detune)
   return color;
 }
 
@@ -76,6 +86,7 @@ function getRateFromSound() {
 
 export default {
   init: init,
+  isPlaying: isPlaying,
   getSizeFromSound: getSizeFromSound,
   getColorFromSound: getColorFromSound,
   getRateFromSound: getRateFromSound
