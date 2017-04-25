@@ -12,7 +12,8 @@ import Audio from './audio'
 var clock = new THREE.Clock();
 var cameraControl;
 var basicWorld;
-var waterWorld;
+var waterWorld; 
+var world3; 
 
 // called after the scene loads
 function onLoad(framework) {
@@ -50,9 +51,18 @@ function onLoad(framework) {
   // new camera control
   cameraControl = new CameraControls(scene, clock, camera);
 
+  // world 1 
   basicWorld = new FlowerWorld(scene, clock, directionalLight);
-
+  // basicWorld.deleteEntireWorld(0); 
+  // world 2 
   waterWorld = new WaterWorld(scene, clock, directionalLight);
+  // remove waterWorld from scene  
+  waterWorld.deleteEntireWorld(0); 
+  waterWorld.removeInnerSphere(0); 
+
+  // TODO: make a world 3 
+  world3 = new BasicWorld(scene, clock, directionalLight);  
+  world3.deleteEntireWorld(0);
 
   // audio
   // Audio.init(); //UNCOMMENT TO TURN AUDIO ON
@@ -63,27 +73,63 @@ function onLoad(framework) {
   });
 }
 
-// called on frame updates
-function onUpdate(framework) {
-  if (waterWorld !== undefined) {
-     // enable animation of water
-     waterWorld.updateWaterTime();
-  }
+// basic choreography set up 
+function basicChoreography() {
+  // move first world 
+  if (basicWorld) {
+    basicWorld.spin(0, 2, Math.PI / 3000);
+    basicWorld.spinAccelerate(2,4,Math.PI / 4000);
+    basicWorld.spinDeccelerate(4,6,Math.PI / 4000); 
+    basicWorld.spinAccelerate(6,8,Math.PI / 4000);
 
-  // flower world animation control
-  if (basicWorld !== undefined) {
+    // deletes the world from view at 8 seconds
+    basicWorld.deleteEntireWorld(8);
 
-    basicWorld.spin(0, 5, Math.PI / 7000);
-    basicWorld.spinAccelerate(5,7,Math.PI / 4000);
-    basicWorld.spinDeccelerate(7,9,Math.PI / 4000);
-    basicWorld.spin(9, 20,Math.PI / 6000);
-
-    // temporarily turn of camera movements
-    cameraControl.zoomInZ(4.5, 6.5);
-    cameraControl.zoomOutZ(7.5,10);
-    
     basicWorld.tick();
   }
+
+  // move second world 
+  if (waterWorld) {
+     // enable animation of water 
+     waterWorld.updateWaterTime();
+
+     // render the world 
+     waterWorld.recreateEntireWorld(8); 
+     waterWorld.addInnerSphere(8);
+
+    waterWorld.spinAccelerate(7,8.2,Math.PI / 6000);
+    waterWorld.spinDeccelerate(8.2,9.3,Math.PI / 6000); 
+    waterWorld.spin(9, 15,Math.PI / 1000); 
+    waterWorld.spinAccelerate(15,16, Math.PI / 3000); 
+
+    // delete world from view at 16 seconds 
+    waterWorld.deleteEntireWorld(16); 
+    waterWorld.removeInnerSphere(16); 
+    waterWorld.tick(); 
+  }
+
+  // move third world 
+  if (world3) {
+     // enable animation of water 
+     world3.recreateEntireWorld(16); 
+     world3.spinAccelerate(15, 16, Math.PI / 5000); 
+     world3.spinDeccelerate(16,17, Math.PI / 5000);
+     world3.spin(17,25, Math.PI / 5000);
+
+    // delete world from view at 25 seconds 
+    world3.deleteEntireWorld(25); 
+    world3.tick(); 
+  }
+
+  // temporarily turn of camera movements 
+  // cameraControl.zoomInZ(4.5, 6.5); 
+  // cameraControl.zoomOutZ(7.5,10);
+}
+
+// called on frame updates
+function onUpdate(framework) {
+  basicChoreography(); 
+
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
