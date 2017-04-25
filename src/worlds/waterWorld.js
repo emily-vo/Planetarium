@@ -71,7 +71,7 @@ export default class WaterWorld extends World {
         this.setMeshPosition(this.innerSphere, wPos.x, wPos.y, wPos.z);
         
         // create seaweed assets!
-        for (var i = 0; i < 30; i++) {
+        for (var i = 0; i < 25; i++) {
             var seaweed = new Seaweed(scene, timer, this);
             this.spawnAsset(seaweed);
             seaweeds.push(seaweed); 
