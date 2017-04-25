@@ -32,6 +32,13 @@ export default class Asset {
       }
     }
 
+    // remove all meshes (in an optional timed interval)
+    deleteFromScene() {
+      for (var i = 0; i < this.items.length; i++) {
+        this.scene.remove(this.items[i].mesh);
+      }
+    }
+
     // sets the overall asset position and moves the items accordingly
     setPosition(position) {
       this.position = position;

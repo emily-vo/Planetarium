@@ -10,12 +10,58 @@ export default class World {
         this.timer = timer;
         this.assets = [];
         this.baseMesh = baseMesh;
-        this.createScene();
+        this.createScene(); 
+        // this.isRendered = true;  // is the world rendered 
+    }
+
+    // removes all types of assets from the scene
+    deleteAssets() {
+        this.scene.remove(this.baseMesh);
+        var timeMod = this.timer.elapsedTime % 1.0;  
+        for (var i = 0; i < this.assets.length; i++) {
+            this.assets[i].deleteFromScene();
+        }
+        this.isRendered = false; 
+    }
+
+    // removes only the base mesh from the scene 
+    deleteBaseMesh() {
+        this.scene.remove(this.baseMesh); 
+    }
+
+    // removes both base mesh and assets from the scene   
+    deleteEntireWorld(time) {
+        if (this.timer.elapsedTime >= time) {
+            if (this.isRendered) {
+                this.deleteAssets(); 
+                this.deleteBaseMesh(); 
+                this.isRendered = false; 
+            }
+        }
+    }
+
+    // recreate assets 
+    recreateAssets() {
+        for (var i = 0; i < this.assets.length; i++) {
+            this.assets[i].addToScene();
+        }
     }
 
     // for now, just adds the base mesh
     createScene() {
         this.scene.add(this.baseMesh);
+        this.isRendered = true;
+    }
+
+    // recreates both base mesh and assets to the scene   
+    recreateEntireWorld(time) {
+        if (this.timer.elapsedTime >= time) {
+            if (!this.isRendered) {
+                this.createScene(); 
+                this.recreateAssets(); 
+                this.isRendered = true; 
+            }
+        }
     }
 
     // easy getter for vertex list

@@ -24,27 +24,27 @@ export default class Koi extends Asset {
             },
         };
 
-        var material = new THREE.ShaderMaterial({
+        this.material = new THREE.ShaderMaterial({
             uniforms: this.shaderUniforms,
-            vertexShader: require('./assetShaders/basic-vert.glsl'),
+            vertexShader: require('./assetShaders/koi-vert.glsl'),
             fragmentShader: require('./assetShaders/koi-frag.glsl')
         });
 
         // load koi obj 
-        // var koiGeo; 
+        var koiGeo; 
         // var objLoader = new THREE.OBJLoader();
         // objLoader.load('textures/koi.obj', function(obj) {
         //     var koiGeo = obj.children[0].geometry;
         // });
+        koiGeo = new THREE.BoxGeometry(0.5, 0.5, 1.0);
 
-        var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var mesh = new THREE.Mesh(koiGeo, material);
+        var mesh = new THREE.Mesh(koiGeo, this.material);
 
         var koiItem = new Item(mesh);
 
         // The asset class must have a normal and a vertex assigned before alignment can occur
         // Make sure to call updateRotations from the asset class to update the item rotations
-        koiItem.localRotation = new THREE.Vector3(45, 45, 0);
+        // koiItem.localRotation = new THREE.Vector3(90, 45, 0);
 
         this.items.push(koiItem);
     }
