@@ -5,7 +5,7 @@ import Item from './item'
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
 export default class Koi extends Asset {
-    constructor(scene, timer, world) {
+    constructor(scene, timer, world, assetGeo) {
         super(scene, timer, world);
 
         // add basic cube mesh item as example asset
@@ -20,7 +20,7 @@ export default class Koi extends Asset {
             },
             light_vec: {
                 type: "v3",
-                value: new THREE.Vector3(world.light.position.x, world.light.position.y, world.light.position.z)
+                value: new THREE.Vector3(this.world.light.position.x, this.world.light.position.y, this.world.light.position.z)
             },
         };
 
@@ -30,18 +30,8 @@ export default class Koi extends Asset {
             fragmentShader: require('./assetShaders/koi-frag.glsl')
         });
 
-        // load koi obj 
-        var koiGeo; 
-        // var objLoader = new THREE.OBJLoader();
-        // objLoader.load('house.obj', function(obj) {
-        //     var koiGeo = obj.children[0].geometry;
-        // });
 
-        koiGeo = new THREE.BoxGeometry(0.5, 0.5, 1.0);
-
-        var mesh = new THREE.Mesh(koiGeo, this.material);
-        // mesh.position.set(10, 30, 0); 
-        // mesh.scale.set(10,10,100); 
+        var mesh = new THREE.Mesh(assetGeo, this.material);
 
         var koiItem = new Item(mesh);
 

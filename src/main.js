@@ -1,6 +1,5 @@
 
 const THREE = require('three'); // older modules are imported like this. You shouldn't have to worry about this much
-// const OBJLoader = require('jser-three-obj-loader')(THREE)
 import Framework from './framework'
 import World from './worlds/world'
 import BasicWorld from './worlds/basicWorld'
@@ -9,24 +8,10 @@ import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
 import Audio from './audio'
 
-// const OBJLoader = require('three-obj-loader')(THREE)
-var OBJLoader = require('three-obj-loader');
-OBJLoader(THREE);
- 
-console.log(typeof THREE.OBJLoader);
-
- var objLoader = new THREE.OBJLoader();
- var koiGeo;
- objLoader.load('feather.obj', function(obj) {
-     koiGeo = obj.children[0].geometry;
- });
-
-
-
 // initialize global clock
 var clock = new THREE.Clock();
 var cameraControl;
-var basicWorld;
+var flowerWorld;
 var waterWorld; 
 var world3; 
 
@@ -64,23 +49,29 @@ function onLoad(framework) {
   scene.add( axisHelper );
 
   // new camera control
-  cameraControl = new CameraControls(scene, clock, camera);
-
   // world 1 
-  basicWorld = new FlowerWorld(scene, clock, directionalLight);
-  // basicWorld.deleteEntireWorld(0); 
+  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
+  // flowerWorld.deleteEntireWorld(0);
   // world 2 
-  waterWorld = new WaterWorld(scene, clock, directionalLight);
-  // remove waterWorld from scene  
-  waterWorld.deleteEntireWorld(0); 
-  waterWorld.removeInnerSphere(0); 
+
+  // Mesh loading
+  var objLoader = new THREE.OBJLoader();
+  var koiGeo;
+  var mesh;
+  objLoader.load('house.obj', function(obj) {
+      koiGeo = obj.children[0].geometry;
+      waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
+      // remove waterWorld from scene  
+      waterWorld.deleteEntireWorld(0); 
+      waterWorld.removeInnerSphere(0); 
+  });
 
   // TODO: make a world 3 
   world3 = new BasicWorld(scene, clock, directionalLight);  
   world3.deleteEntireWorld(0);
 
   // audio
-  // Audio.init(); //UNCOMMENT TO TURN AUDIO ON
+  Audio.init(); //UNCOMMENT TO TURN AUDIO ON
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
@@ -91,16 +82,16 @@ function onLoad(framework) {
 // basic choreography set up 
 function basicChoreography() {
   // move first world 
-  if (basicWorld) {
-    basicWorld.spin(0, 2, Math.PI / 3000);
-    basicWorld.spinAccelerate(2,4,Math.PI / 4000);
-    basicWorld.spinDeccelerate(4,6,Math.PI / 4000); 
-    basicWorld.spinAccelerate(6,8,Math.PI / 4000);
+  if (flowerWorld) {
+    flowerWorld.spin(0, 2, Math.PI / 3000);
+    flowerWorld.spinAccelerate(2,4,Math.PI / 4000);
+    flowerWorld.spinDeccelerate(4,6,Math.PI / 4000); 
+    flowerWorld.spinAccelerate(6,8,Math.PI / 4000);
 
     // deletes the world from view at 8 seconds
-    basicWorld.deleteEntireWorld(8);
+    flowerWorld.deleteEntireWorld(8);
 
-    basicWorld.tick();
+    flowerWorld.tick();
   }
 
   // move second world 

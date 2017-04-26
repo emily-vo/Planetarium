@@ -10,7 +10,7 @@ var kois = [];
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
 export default class WaterWorld extends World {
-    constructor(scene, timer, light) {
+    constructor(scene, timer, light, koiGeo) {
         // this defines the position of the planet in space.
         var wPos = new THREE.Vector3(0,0,0);
 
@@ -77,13 +77,13 @@ export default class WaterWorld extends World {
             seaweeds.push(seaweed); 
         }
 
-        // create koi assets
+       
+        
         for (var i = 0; i < 10; i++) {
-            var koi = new Koi(scene, timer, this);
-            this.spawnAsset(koi);
+            var koi = new Koi(scene, timer, this, koiGeo);
             kois.push(koi); 
-        }
-
+            this.spawnAsset(koi);
+        } 
     }
 
     // remove the random base sphere from scene lol sad
