@@ -136,7 +136,9 @@ function basicChoreography() {
     world3.deleteEntireWorld(25); 
     world3.tick(); 
   }
-
+  if (crystalWorld) {
+    crystalWorld.tick();
+  }
   // temporarily turn of camera movements 
   // cameraControl.zoomInZ(4.5, 6.5); 
   // cameraControl.zoomOutZ(7.5,10);

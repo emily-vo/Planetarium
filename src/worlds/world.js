@@ -168,7 +168,11 @@ export default class World {
 
     // update shader times
     updateShaderUniforms() {
-        //this.baseMesh.material.uniforms;
+        this.baseMesh.material.uniforms;
+        if (this.baseMesh.material.uniforms !== undefined) {
+            // console.log(this.timer.getElapsedTime());
+            this.baseMesh.material.uniforms.time.value += this.timer.getDelta();
+        }
         for (var i = 0; i < this.assets.length; i++) {
             this.assets[i].updateShaderUniforms();
         }

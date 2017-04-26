@@ -6,6 +6,7 @@ uniform vec3 u_lightPos;
 uniform vec3 u_lightCol;
 uniform float u_lightIntensity;
 uniform vec3 u_camPos;
+uniform float time;
 
 varying vec3 f_position;
 varying vec3 f_normal;
@@ -19,9 +20,9 @@ void main() {
 
     //Read from texture using relation to the view vector and a little bit of noise
     if (u_useTexture == 1) {
-        color = texture2D(texture, f_uv);
+        color = texture2D(texture, f_uv*vec2(noise));
     }
 
     gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, 0.2);
-    //gl_FragColor = color;
+    //gl_FragColor.a = 0.2;
 }

@@ -1,11 +1,11 @@
-
 varying vec2 f_uv;
 varying vec3 f_normal;
 varying vec3 f_position;
 varying float noise;
+uniform float time;
 
 float random(float a, float b, float c) {
-    return fract(sin(dot(vec3(a, b, c), vec3(12.9898, 78.233, 78.233)))*43758.5453);
+    return fract(sin(dot(vec3(a, b, c), vec3(12.9898, 78.233, 578.233)))*43758.5453);
 }
 
 float lerp(float a, float b, float t) {
@@ -99,9 +99,9 @@ float generateNoise(float x, float y, float z) {
 
 void main() {
     // Pass noise to the fragment shader
-	noise =  generateNoise(position.x, position.y, position.z);
+    noise =  generateNoise(position.x + time, position.y + time, position.z + time);
     f_uv = uv;
     f_normal = normal;
-    f_position = position;
+    vec3 a_position = position + vec3(noise);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }

@@ -23,7 +23,7 @@ export default class Crystal extends Asset {
             },
             u_ambient: {
                 type: 'v3',
-                value: new THREE.Color('#414347')
+                value: new THREE.Color('#111111')
             },
             u_lightPos: {
                 type: 'v3',
@@ -40,6 +40,10 @@ export default class Crystal extends Asset {
             u_camPos: {
                 type: 'v3',
                 value: camera.position
+            }, 
+            time: {
+                type: 'float',
+                value: timer.elapsedTime
             }
         };
     
@@ -51,13 +55,18 @@ export default class Crystal extends Asset {
               //lights: true
         });
 
-        var numCrystals = 3 + Math.random() * 3;
-        for (var i = 0; i < 1; i++) {
-          var geo = createCrystalGeo();   
-          var mesh = new THREE.Mesh(geo, material);
-          setAbsoluteRotation(mesh, 'X', Math.PI / 2);
-          setAbsolutePosition(mesh, 0, Math.random() * 2 + 1, 0);
-          this.items.push(new Item(mesh));
+        material.transparent = true;
+        material.shading = THREE.FlatShading;
+
+        var mesh = createMainCrystalMesh(material);   
+        this.items.push(new Item(mesh));
+
+
+        var numCrystals = 1 + Math.random() * 3;
+        //numCrystals = 0;
+        for (var i = 0; i < numCrystals; i++) {
+          //var mesh = createSmallerCrystalMesh(material);   
+          //this.items.push(new Item(mesh));
         }
     }
 }
@@ -99,10 +108,9 @@ function setAbsoluteRotation(mesh, axis, rotation) {
     resetTransform(mesh);
 }
 
-// Uses toolbox functions to create flower meshes
-function createCrystalGeo() {
-  var thickness = Math.random() / 20;
-  var pts = [], count = Math.floor(Math.random()) * 3 + 3;
+function createMainCrystalMesh(material) {
+  var thickness = 0.5;
+  var pts = [], count = Math.floor(Math.random() * 3) + 3;
 
   for ( var i = 0; i < count; i ++ ) {
     var l = thickness;
@@ -113,10 +121,49 @@ function createCrystalGeo() {
 
   var shape = new THREE.Shape( pts );
 
-  var extrudeSettings = { amount: Math.random() * 5 + 2, bevelEnabled: true, bevelSegments: Math.floor(Math.random() * 2) + 1, steps: 5, bevelSize: 1, bevelThickness: 1.0};
+  var length = thickness * Math.random() * 4;
+  var extrudeSettings = { amount: length, 
+    bevelEnabled: true, bevelSegments: Math.floor(Math.random() * 2) + 1, 
+    steps: 5, bevelSize: thickness, bevelThickness: thickness * 4};
   var geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+  material.needsUpdate = true;
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.geometry.dynamic = true;
+
+  setAbsoluteRotation(mesh, 'X', Math.PI / 2);
+  setAbsoluteRotation(mesh, 'Y', Math.PI / 2 * Math.random() / 10);
+  // setAbsoluteRotation(mesh, 'Z', Math.random() / 2);
+  setAbsolutePosition(mesh, 0, length - 1, 0);
+
+  return mesh;
+}
+// Uses toolbox functions to create flower meshes
+function createSmallerCrystalMesh(material) {
+  var thickness = 0.25;
+  var pts = [], count = Math.floor(Math.random() * 3) + 3;
+
+  for ( var i = 0; i < count; i ++ ) {
+    var l = thickness;
+    var a = 2 * i / count * Math.PI;
+    pts.push( new THREE.Vector2 ( Math.cos( a ) * l, Math.sin( a ) * l ) );
+
+  }
+
+  var shape = new THREE.Shape( pts );
+
+  var length = thickness * Math.random() * 5;
+  var extrudeSettings = { amount: length, 
+    bevelEnabled: true, bevelSegments: Math.floor(Math.random() * 2) + 1, 
+    steps: 5, bevelSize: thickness, bevelThickness: thickness * 2};
   var geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
-  return geometry;
+  
+  var mesh = new THREE.Mesh(geometry, material);
+
+  setAbsoluteRotation(mesh, 'X', Math.PI / 2);
+  // setAbsoluteRotation(mesh, 'Z', Math.random() / 2);
+  setAbsolutePosition(mesh, 0, length - 1, 0);
+
+  return mesh;
 }
 
 function lerp(a0, a1, t) {
