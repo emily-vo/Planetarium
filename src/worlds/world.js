@@ -124,7 +124,6 @@ export default class World {
         }
     }
 
-
     // spawn asset at random vertex (adds to scene) and adds to the global list of assets
     spawnAsset(asset) {
         var vertices = this.worldVertices();

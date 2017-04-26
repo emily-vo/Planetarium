@@ -6,6 +6,8 @@ import BasicWorld from './worlds/basicWorld'
 import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
+import CrystalWorld from './worlds/crystalWorld'
+
 import Audio from './audio'
 
 // initialize global clock
@@ -14,6 +16,7 @@ var cameraControl;
 var flowerWorld;
 var waterWorld; 
 var world3; 
+var crystalWorld;
 
 // called after the scene loads
 function onLoad(framework) {
@@ -48,12 +51,14 @@ function onLoad(framework) {
   var axisHelper = new THREE.AxisHelper( 10 );
   scene.add( axisHelper );
 
+
+  // ALL WORLD CREATION IS COMMENTED OUT
+  /*
   // new camera control
   // world 1 
   flowerWorld = new FlowerWorld(scene, clock, directionalLight);
-  // flowerWorld.deleteEntireWorld(0);
+  
   // world 2 
-
   // Mesh loading
   var objLoader = new THREE.OBJLoader();
   var koiGeo;
@@ -66,12 +71,17 @@ function onLoad(framework) {
       waterWorld.removeInnerSphere(0); 
   });
 
-  // TODO: make a world 3 
+  // test world for suzanne
   world3 = new BasicWorld(scene, clock, directionalLight);  
   world3.deleteEntireWorld(0);
+  */
+
+  // crystal world 
+  crystalWorld = new CrystalWorld(scene, camera, clock, directionalLight);
 
   // audio
   Audio.init(); //UNCOMMENT TO TURN AUDIO ON
+
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
