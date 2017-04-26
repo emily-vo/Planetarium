@@ -1,7 +1,6 @@
 const THREE = require('three')
 import Asset from './asset'
 import Item from './item'
-const OBJLoader = require('jser-three-obj-loader')(THREE)
 
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.

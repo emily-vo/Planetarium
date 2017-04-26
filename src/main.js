@@ -1,5 +1,6 @@
 
 const THREE = require('three'); // older modules are imported like this. You shouldn't have to worry about this much
+// const OBJLoader = require('jser-three-obj-loader')(THREE)
 import Framework from './framework'
 import World from './worlds/world'
 import BasicWorld from './worlds/basicWorld'
@@ -7,6 +8,20 @@ import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
 import Audio from './audio'
+
+// const OBJLoader = require('three-obj-loader')(THREE)
+var OBJLoader = require('three-obj-loader');
+OBJLoader(THREE);
+ 
+console.log(typeof THREE.OBJLoader);
+
+ var objLoader = new THREE.OBJLoader();
+ var koiGeo;
+ objLoader.load('feather.obj', function(obj) {
+     koiGeo = obj.children[0].geometry;
+ });
+
+
 
 // initialize global clock
 var clock = new THREE.Clock();
