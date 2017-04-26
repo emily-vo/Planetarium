@@ -22,7 +22,7 @@ void main() {
     if (u_useTexture == 1) {
         color = texture2D(texture, vec2(noise));
     }
-
-    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, 0.4);
+    vec4 ambient = texture2D(texture, vec2(noise)) / 4.0; 
+    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + ambient.rgb, 0.4);
     //gl_FragColor = color;
 }
