@@ -83,15 +83,19 @@ function detectPitch() {
   }
 }
 
-function getColorFromSound() {
-  var color = null;
-  // console.log(sourceNode.detune)
+// Returns a new color based on the given color
+function getColorFromSound(oldColor) {
+  var color = oldColor;
     var pitch = detectPitch()
     if (pitch) {
       var hex = Math.floor(pitch).toString(16)
       hex = ("000" + hex).substr(-3)
-      // console.log(hex)
       color = new THREE.Color("#" + hex)
+
+      var r = 0.8 * oldColor.r + 0.2 * color.r
+      var g = 0.8 * oldColor.g + 0.2 * color.g
+      var b = 0.8 * oldColor.b + 0.2 * color.b      
+      color = new THREE.Color(r,g,b)
     }
   return color;
 }
