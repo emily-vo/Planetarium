@@ -15,6 +15,7 @@ function init() {
   context = new AudioContext();
   setupAudioNodes();
   loadSound("./audio/smooth-operator.mp3");
+  // loadSound("./audio/the-deli-flowers.mp3");
 }
 
 // load the specified sound
@@ -32,8 +33,6 @@ function loadSound(url) {
 
 function playSound(buffer) {
     sourceNode.buffer = buffer;
-    // sourceNode.detune.value = 2 * 100;
-    // console.log(sourceNode.detune)
     sourceNode.start(0);
     playing = true;
 }

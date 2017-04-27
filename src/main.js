@@ -93,7 +93,15 @@ function onUpdate(framework) {
     var size = Audio.getSizeFromSound()
     var color = Audio.getColorFromSound()
     if (color) {
-      scene.background = color
+      // pitch gradient
+      var bg = scene.background ? scene.background : new THREE.Color(0,0,0)
+      console.log(bg)
+      var r = 0.8 * bg.r + 0.2 * color.r
+      var g = 0.8 * bg.g + 0.2 * color.g
+      var b = 0.8 * bg.b + 0.2 * color.b
+      // var g = bg.g + (color.g - bg.g) / 2
+      // var b = bg.b + (color.b - bg.b) / 2
+      scene.background = new THREE.Color(r, g, b)
     }
   }
 }
