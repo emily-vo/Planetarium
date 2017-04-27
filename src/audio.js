@@ -14,7 +14,7 @@ function init() {
   }
   context = new AudioContext();
   setupAudioNodes();
-  loadSound("./audio/the-deli-flowers.mp3");
+  loadSound("./audio/smooth-operator.mp3");
 }
 
 // load the specified sound
@@ -72,10 +72,28 @@ function getSizeFromSound() {
   return getAverageVolume(arr);
 }
 
+
+function detectPitch() {
+	var buffer = new Uint8Array(analyser.fftSize);
+	analyser.getByteTimeDomainData(buffer);
+
+	var fundamentalFreq = pitchHelper.findFundamentalFreq(buffer,context.sampleRate);
+
+	if (fundamentalFreq !== -1) {
+    return fundamentalFreq
+  }
+}
+
 function getColorFromSound() {
-  //TODO: implement according to pitch
-  var color = new THREE.Color(0,0,0);
-  console.log(sourceNode.detune)
+  var color = null;
+  // console.log(sourceNode.detune)
+    var pitch = detectPitch()
+    if (pitch) {
+      var hex = Math.floor(pitch).toString(16)
+      hex = ("000" + hex).substr(-3)
+      // console.log(hex)
+      color = new THREE.Color("#" + hex)
+    }
   return color;
 }
 
@@ -83,6 +101,9 @@ function getRateFromSound() {
   //TODO: implement according to bpm
   return 0;
 }
+
+
+
 
 export default {
   init: init,

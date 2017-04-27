@@ -28,26 +28,29 @@ function findFundamentalFreq(buffer, sampleRate) {
 }
 
 
-var frameId;
-function detectPitch(analyser) {
-	var buffer = new Uint8Array(analyser.fftSize);
-	analyser.getByteTimeDomainData(buffer);
-	var fundalmentalFreq = findFundamentalFreq(buffer, audioContext.sampleRate);
 
-	if (fundalmentalFreq !== -1) {
-		var note = findClosestNote(fundalmentalFreq, notesArray); // See the 'Finding the right note' section.
-		var cents = findCentsOffPitch(fundalmentalFreq, note.frequency); // See the 'Calculating the cents off pitch' section.
-		updateNote(note.note); // Function that updates the note on the page (see demo source code).
-		updateCents(cents); // Function that updates the cents on the page and the gauge control (see demo source code).
-	}
-	else {
-		updateNote('--');
-		updateCents(-50);
-	}
+var findClosestNote = function (freq, notes) {
+		// Use binary search to find the closest note
+		var low = -1;
+		var high = notes.length;
+		while (high - low > 1) {
+			var pivot = Math.round((low + high) / 2);
+			if (notes[pivot].frequency <= freq) {
+				low = pivot;
+			} else {
+				high = pivot;
+			}
+		}
 
-	frameId = window.requestAnimationFrame(detectPitch);
-}
+		if (Math.abs(notes[high].frequency - freq) <= Math.abs(notes[low].frequency - freq)) {
+			// notes[high] is closer to the frequency we found
+			return notes[high];
+		}
+
+		return notes[low];
+	};
 
 export default {
-  detectPitch: detectPitch
+  findFundamentalFreq: findFundamentalFreq,
+  findClosestNote: findClosestNote
 }

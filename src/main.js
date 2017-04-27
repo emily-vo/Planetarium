@@ -14,10 +14,13 @@ var cameraControl;
 var basicWorld;
 var waterWorld;
 
+var scene;
+
+
 // called after the scene loads
 function onLoad(framework) {
   // initialize framework
-  var scene = framework.scene;
+  scene = framework.scene;
   var camera = framework.camera;
   var renderer = framework.renderer;
   var gui = framework.gui;
@@ -87,8 +90,11 @@ function onUpdate(framework) {
   }
 
   if (Audio.isPlaying()) {
-    console.log("size: " + Audio.getSizeFromSound())
-    Audio.getColorFromSound()
+    var size = Audio.getSizeFromSound()
+    var color = Audio.getColorFromSound()
+    if (color) {
+      scene.background = color
+    }
   }
 }
 
