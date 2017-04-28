@@ -18,7 +18,7 @@ export default class FlowerWorld extends World {
             }, 
             image: { // Check the Three.JS documentation for the different allowed types and values
                 type: "t", 
-                value: THREE.ImageUtils.loadTexture('./textures/grass.jpg')
+                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
             },
             light_vec: {
                 type: "v3",
@@ -34,7 +34,7 @@ export default class FlowerWorld extends World {
               //lights: true
         });
     
-        var geometry = new THREE.IcosahedronGeometry(6, 1);
+        var geometry = new THREE.IcosahedronGeometry(4, 1);
         var baseMesh = new THREE.Mesh(geometry, material);
         
         super(scene, timer, baseMesh);

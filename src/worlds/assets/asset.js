@@ -32,6 +32,13 @@ export default class Asset {
       }
     }
 
+    // remove all meshes (in an optional timed interval)
+    deleteFromScene() {
+      for (var i = 0; i < this.items.length; i++) {
+        this.scene.remove(this.items[i].mesh);
+      }
+    }
+
     // sets the overall asset position and moves the items accordingly
     setPosition(position) {
       this.position = position;
@@ -84,8 +91,10 @@ export default class Asset {
     // updates the time for the shaders for the item meshes
     updateShaderUniforms() {
       var delta = this.timer.getDelta();
+
       for (var i = 0; i < this.items.length; i++) {
         var shader = this.items[i].mesh.material;
+
         if (shader.uniforms !== undefined) {
           if (shader.uniforms.time !== undefined) {
             shader.uniforms.time.value += delta;

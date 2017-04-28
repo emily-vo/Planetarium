@@ -6,17 +6,21 @@ import BasicWorld from './worlds/basicWorld'
 import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
+import CrystalWorld from './worlds/crystalWorld'
+
 import Audio from './audio'
 
 // initialize global clock
 var clock = new THREE.Clock();
 var cameraControl;
-var basicWorld;
+var flowerWorld;
 var waterWorld;
+var world3;
+var crystalWorld;
 
 var scene
 
-var audioControl = { 'mute': false }
+var audioControl = { 'mute': false, 'music': 'smooth operator' }
 
 
 // called after the scene loads
@@ -52,15 +56,37 @@ function onLoad(framework) {
   var axisHelper = new THREE.AxisHelper( 10 );
   scene.add( axisHelper );
 
-  // new camera control
-  cameraControl = new CameraControls(scene, clock, camera);
 
-  basicWorld = new FlowerWorld(scene, clock, directionalLight);
-  //
-  // waterWorld = new WaterWorld(scene, clock, directionalLight);
+  // ALL WORLD CREATION IS COMMENTED OUT
+  /*
+  // new camera control
+  // world 1
+  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
+
+  // world 2
+  // Mesh loading
+  var objLoader = new THREE.OBJLoader();
+  var koiGeo;
+  var mesh;
+  objLoader.load('house.obj', function(obj) {
+      koiGeo = obj.children[0].geometry;
+      waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
+      // remove waterWorld from scene
+      waterWorld.deleteEntireWorld(0);
+      waterWorld.removeInnerSphere(0);
+  });
+
+
+  // test world for suzanne
+  world3 = new BasicWorld(scene, clock, directionalLight);
+  world3.deleteEntireWorld(0);
+  */
+
+  // crystal world
+  crystalWorld = new CrystalWorld(scene, camera, clock, directionalLight);
 
   // audio
-  Audio.init(); //UNCOMMENT TO TURN AUDIO ON
+  Audio.init(); //COMMENT TO TURN AUDIO ON
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
@@ -73,33 +99,73 @@ function onLoad(framework) {
     } else {
       Audio.unmute()
     }
+  });
+
+  gui.add(audioControl, 'music', ['the-deli-flowers', 'smooth-operator', 'cello-suite']).onChange(function(newVal) {
+    Audio.setMusic(newVal);
   })
 
 }
 
-// called on frame updates
-function onUpdate(framework) {
-  if (waterWorld !== undefined) {
+// basic choreography set up
+function basicChoreography() {
+  // move first world
+  if (flowerWorld) {
+    flowerWorld.spin(0, 2, Math.PI / 3000);
+    flowerWorld.spinAccelerate(2,4,Math.PI / 4000);
+    flowerWorld.spinDeccelerate(4,6,Math.PI / 4000);
+    flowerWorld.spinAccelerate(6,8,Math.PI / 4000);
+
+    // deletes the world from view at 8 seconds
+    flowerWorld.deleteEntireWorld(8);
+
+    flowerWorld.tick();
+  }
+
+  // move second world
+  if (waterWorld) {
      // enable animation of water
      waterWorld.updateWaterTime();
+
+     // render the world
+     waterWorld.recreateEntireWorld(8);
+     waterWorld.addInnerSphere(8);
+
+    waterWorld.spinAccelerate(7,8.2,Math.PI / 6000);
+    waterWorld.spinDeccelerate(8.2,9.3,Math.PI / 6000);
+    waterWorld.spin(9, 15,Math.PI / 1000);
+    waterWorld.spinAccelerate(15,16, Math.PI / 3000);
+
+    // delete world from view at 16 seconds
+    waterWorld.deleteEntireWorld(16);
+    waterWorld.removeInnerSphere(16);
+    waterWorld.tick();
   }
 
-  // flower world animation control
-  if (basicWorld !== undefined) {
+  // move third world
+  if (world3) {
+     // enable animation of water
+     world3.recreateEntireWorld(16);
+     world3.spinAccelerate(15, 17, Math.PI / 5000);
+     world3.spinDeccelerate(17,19, Math.PI / 5000);
+     world3.spin(19,25, Math.PI / 5000);
 
-    basicWorld.spin(0, 5, Math.PI / 7000);
-    basicWorld.spinAccelerate(5,7,Math.PI / 4000);
-    basicWorld.spinDeccelerate(7,9,Math.PI / 4000);
-    basicWorld.spin(9, 20,Math.PI / 6000);
-
-    // temporarily turn of camera movements
-    cameraControl.zoomInZ(4.5, 6.5);
-    cameraControl.zoomOutZ(7.5,10);
-
-    basicWorld.tick();
+    // delete world from view at 25 seconds
+    world3.deleteEntireWorld(25);
+    world3.tick();
   }
+  if (crystalWorld) {
+    crystalWorld.tick();
+  }
+  // temporarily turn of camera movements
+  // cameraControl.zoomInZ(4.5, 6.5);
+  // cameraControl.zoomOutZ(7.5,10);
+}
 
-  //TODO: turn off music functionality
+// called on frame updates
+function onUpdate(framework) {
+  basicChoreography();
+
   if (Audio.isPlaying()) {
     var size = Audio.getSizeFromSound()
     var bg = scene.background ? scene.background : new THREE.Color(0,0,0)

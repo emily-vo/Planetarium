@@ -5,7 +5,7 @@ import World from './world'
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
 export default class BasicWorld extends World {
-    constructor(scene, timer) {
+    constructor(scene, timer, light) {
     	// initialize example uniform variables and store in list
         var shaderUniforms = {
             time: { 
@@ -15,7 +15,11 @@ export default class BasicWorld extends World {
             color: {
                 type: "v4",
                 value: new THREE.Vector4( 1., 1., 1., 1. )
-            }
+            },
+            light_vec: {
+                type: "v3",
+                value: new THREE.Vector3(light.position.x, light.position.y, light.position.z)
+            },
         };
     
         // initialize example shader and mesh
