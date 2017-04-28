@@ -3,7 +3,7 @@ import pitchHelper from './pitchHelper'
 var playing = false;
 var context;
 var sourceNode;
-var jsNode;
+var gainNode;
 var analyser;
 var splitter;
 
@@ -32,18 +32,32 @@ function loadSound(url) {
 }
 
 function playSound(buffer) {
-    sourceNode.buffer = buffer;
-    sourceNode.start(0);
-    playing = true;
+  sourceNode.buffer = buffer;
+  sourceNode.start(0);
+  playing = true;
+}
+
+function stopSound() {
+  sourceNode.stop();
+  playing = false;
+}
+
+function mute() {
+  gainNode.gain.value = 0;
+}
+
+function unmute(){
+  gainNode.gain.value = 1;
 }
 
 function isPlaying() {
   return playing;
 }
 
+
 function setupAudioNodes() {
   sourceNode = context.createBufferSource();
-  sourceNode.connect(context.destination);
+  // sourceNode.connect(context.destination);
 
   // jsNode = context.createScriptProcessor(2048, 1, 1); //ScriptProcessorNode
 
@@ -51,9 +65,13 @@ function setupAudioNodes() {
   analyser.smoothingTimeConstant = 0.3;
   analyser.fftSize = 2048;
 
-  splitter = context.createChannelSplitter(); // splits into left and right stream
+  // splitter = context.createChannelSplitter(); // splits into left and right stream
 
   sourceNode.connect(analyser);
+
+  gainNode = context.createGain();
+  sourceNode.connect(gainNode);
+  gainNode.connect(context.destination);
 }
 
 function getAverageVolume(array) {
@@ -94,7 +112,7 @@ function getColorFromSound(oldColor) {
 
       var r = 0.8 * oldColor.r + 0.2 * color.r
       var g = 0.8 * oldColor.g + 0.2 * color.g
-      var b = 0.8 * oldColor.b + 0.2 * color.b      
+      var b = 0.8 * oldColor.b + 0.2 * color.b
       color = new THREE.Color(r,g,b)
     }
   return color;
@@ -110,6 +128,8 @@ function getRateFromSound() {
 
 export default {
   init: init,
+  mute: mute,
+  unmute: unmute,
   isPlaying: isPlaying,
   getSizeFromSound: getSizeFromSound,
   getColorFromSound: getColorFromSound,

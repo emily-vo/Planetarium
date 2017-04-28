@@ -14,7 +14,9 @@ var cameraControl;
 var basicWorld;
 var waterWorld;
 
-var scene;
+var scene
+
+var audioControl = { 'mute': false }
 
 
 // called after the scene loads
@@ -54,7 +56,7 @@ function onLoad(framework) {
   cameraControl = new CameraControls(scene, clock, camera);
 
   basicWorld = new FlowerWorld(scene, clock, directionalLight);
-
+  //
   // waterWorld = new WaterWorld(scene, clock, directionalLight);
 
   // audio
@@ -64,7 +66,15 @@ function onLoad(framework) {
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
   });
-  // TODO: add audio on/off button
+
+  gui.add(audioControl, 'mute').onChange(function(newVal) {
+    if (newVal) {
+      Audio.mute()
+    } else {
+      Audio.unmute()
+    }
+  })
+
 }
 
 // called on frame updates
@@ -89,6 +99,7 @@ function onUpdate(framework) {
     basicWorld.tick();
   }
 
+  //TODO: turn off music functionality
   if (Audio.isPlaying()) {
     var size = Audio.getSizeFromSound()
     var bg = scene.background ? scene.background : new THREE.Color(0,0,0)
