@@ -15,7 +15,6 @@ function init() {
   context = new AudioContext();
   setupAudioNodes();
   loadSound("./audio/smooth-operator.mp3");
-  // loadSound("./audio/the-deli-flowers.mp3");
 }
 
 // load the specified sound
@@ -54,6 +53,11 @@ function isPlaying() {
   return playing;
 }
 
+function setMusic(name) {
+  stopSound();
+  setupAudioNodes();
+  loadSound('./audio/' + name + '.mp3');
+}
 
 function setupAudioNodes() {
   sourceNode = context.createBufferSource();
@@ -124,12 +128,11 @@ function getRateFromSound() {
 }
 
 
-
-
 export default {
   init: init,
   mute: mute,
   unmute: unmute,
+  setMusic: setMusic,
   isPlaying: isPlaying,
   getSizeFromSound: getSizeFromSound,
   getColorFromSound: getColorFromSound,
