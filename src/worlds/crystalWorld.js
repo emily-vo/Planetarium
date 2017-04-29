@@ -7,10 +7,11 @@ import Crystal from './assets/crystal'
 export default class CrystalWorld extends World {
     constructor(scene, camera, timer, light, musicAnalyser) {
     	// initialize example uniform variables and store in list
+        var texloader = new THREE.TextureLoader();
         var shaderUniforms = {
             texture: {
                 type: "t", 
-                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+                value: texloader.load('./textures/iridescent.bmp')
             },
             u_useTexture: {
                 type: 'i',
@@ -43,6 +44,10 @@ export default class CrystalWorld extends World {
             time: {
                 type: 'float',
                 value: timer.elapsedTime
+            }, 
+            alpha: {
+                type: 'float', 
+                value: 0.0
             }
         };
     
@@ -54,21 +59,62 @@ export default class CrystalWorld extends World {
               //lights: true
         });
         material.shading = THREE.FlatShading;
+        material.transparent = true;
 
         var geometry = new THREE.IcosahedronGeometry(6, 1);
         var baseMesh = new THREE.Mesh(geometry, material);
         
-        super(scene, timer, baseMesh);
 
-        this.k = 0;
-        this.height = 0;
-        this.analyser = musicAnalyser;
+        super(scene, timer, baseMesh);
         this.camera = camera;
-        this.musicData;
+        this.analyser = musicAnalyser;
+        this.alpha = 0.9;
         this.spawnAtEveryVertex();
     }
 
-     spawnAtEveryVertex() {
+    fadeIn(start, end) {
+        if (this.alpha === undefined) {
+            this.alpha = 1.0;
+        }
+
+        if (Math.abs(this.timer.elapsedTime - start) < 0.1) {
+        }
+        else if (this.timer.elapsedTime >= start && this.timer.elapsedTime < end) { 
+            var t = (this.timer.elapsedTime - start) / (end - start);
+            var delta =  1 / (end - start);
+            this.baseMesh.material.uniforms.alpha.value += delta * t;
+
+            if (this.baseMesh.material.uniforms.alpha.value > 0.9) {
+                this.baseMesh.material.uniforms.alpha.value = 0.9;
+            }
+
+            for (var i = 0; i < this.assets.length; i++) {
+                this.assets[i].material.uniforms.alpha.value = this.baseMesh.material.uniforms.alpha.value;
+            }
+        }
+    }
+
+    fadeOut(start, end) {
+        if (this.alpha === undefined) {
+            this.alpha = 0.0;
+        }
+        
+        if (Math.abs(this.timer.elapsedTime - start) < 0.1) {
+        }
+        else if (this.timer.elapsedTime >= start && this.timer.elapsedTime < end) { 
+            var t = (this.timer.elapsedTime - start) / (end - start);
+            var delta =  -1 / (end - start);
+            this.baseMesh.material.uniforms.alpha.value += delta * t;
+            if (this.baseMesh.material.uniforms.alpha.value < 0) {
+                this.baseMesh.material.uniforms.alpha.value = 0;
+            }
+            for (var i = 0; i < this.assets.length; i++) {
+                this.assets[i].material.uniforms.alpha.value = this.baseMesh.material.uniforms.alpha.value;
+            }
+        }
+    }
+
+    spawnAtEveryVertex() {
         var faces = this.worldFaces();
         var vertices = this.worldVertices();
         for (var i = 0; i < faces.length; i++) {
@@ -95,6 +141,10 @@ export default class CrystalWorld extends World {
             asset.alignItemsWithNormal(); 
             //asset.up = asset.normal; 
         }
+    }
+
+    spawnRing() {
+
     }
 
     animateAsset(asset, spinningSpeed) {

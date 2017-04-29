@@ -9,11 +9,11 @@ export default class Crystal extends Asset {
         super(scene, timer, world);
         
         this.face;
-
+        var texloader = new THREE.TextureLoader();
         var shaderUniforms = {
             texture: {
                 type: "t", 
-                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+                value: texloader.load('./textures/iridescent.bmp')
             },
             u_useTexture: {
                 type: 'i',
@@ -46,6 +46,10 @@ export default class Crystal extends Asset {
             time: {
                 type: 'float',
                 value: timer.elapsedTime
+            }, 
+            alpha: {
+                type: 'float', 
+                value: 0.9
             }
         };
     
@@ -58,7 +62,7 @@ export default class Crystal extends Asset {
 
         material.transparent = true;
         material.shading = THREE.FlatShading;
-
+        this.material = material;
         var mesh = createMainCrystalMesh(material);   
         this.items.push(new Item(mesh));
     }

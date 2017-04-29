@@ -8,13 +8,13 @@ var jsNode;
 var splitter;
 var array = new Array();
 
-function init() {
+function init(path) {
   if (! window.AudioContext) { // check if the default naming is enabled, if not use the chrome one.
       if (! window.webkitAudioContext) alert('no audiocontext found');
       window.AudioContext = window.webkitAudioContext;
   }
   context = new AudioContext();
-  loadSound("./audio/the-deli-flowers.mp3");
+  loadSound(path);
 }
 
 // load the specified sound
