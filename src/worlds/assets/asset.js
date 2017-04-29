@@ -26,14 +26,14 @@ export default class Asset {
     }
 
     // adds all item meshes
-    addToScene() {
+    show() {
       for (var i = 0; i < this.items.length; i++) {
         this.scene.add(this.items[i].mesh);
       }
     }
 
     // remove all meshes (in an optional timed interval)
-    deleteFromScene() {
+    hide() {
       for (var i = 0; i < this.items.length; i++) {
         this.scene.remove(this.items[i].mesh);
       }
@@ -90,14 +90,12 @@ export default class Asset {
 
     // updates the time for the shaders for the item meshes
     updateShaderUniforms() {
-      var delta = this.timer.getDelta();
-
       for (var i = 0; i < this.items.length; i++) {
         var shader = this.items[i].mesh.material;
 
         if (shader.uniforms !== undefined) {
           if (shader.uniforms.time !== undefined) {
-            shader.uniforms.time.value += delta;
+            shader.uniforms.time.value = this.timer.elapsedTime;
           }
         }
       }
@@ -105,6 +103,7 @@ export default class Asset {
 
     // can override / update this function for each asset
     tick() {
+      this.updatePositions();
       this.updateShaderUniforms();
     }
 }

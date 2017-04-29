@@ -1,9 +1,12 @@
 const THREE = require('three');
 var context;
-var sourceNode;
-var jsNode;
+var sourceNode, sourceJs;
 var analyser;
+var buffer;
+
+var jsNode;
 var splitter;
+var array = new Array();
 
 function init() {
   if (! window.AudioContext) { // check if the default naming is enabled, if not use the chrome one.
@@ -11,7 +14,6 @@ function init() {
       window.AudioContext = window.webkitAudioContext;
   }
   context = new AudioContext();
-  setupAudioNodes();
   loadSound("./audio/the-deli-flowers.mp3");
 }
 
@@ -22,14 +24,31 @@ function loadSound(url) {
   request.responseType = 'arraybuffer';
   request.onload = function() {
     context.decodeAudioData(request.response, function(buffer) {
-      playSound(buffer);
+      if(!buffer) {
+          // Error decoding file data
+          return;
+      }
+
+      sourceJs = context.createScriptProcessor(2048, 1, 1);
+      sourceJs.buffer = buffer;
+      sourceJs.connect(context.destination);
+      analyser = context.createAnalyser();
+      analyser.smoothingTimeConstant = 0.6;
+      analyser.fftSize = 512;
+
+      sourceNode = context.createBufferSource();
+      sourceNode.buffer = buffer;
+
+      sourceNode.connect(analyser);
+      analyser.connect(sourceJs);
+      sourceNode.connect(context.destination);
     }, (e) => {console.log(e)});
+
   }
   request.send();
 }
 
-function playSound(buffer) {
-    sourceNode.buffer = buffer;
+function playSound() {
     sourceNode.start(0);
 }
 
@@ -74,7 +93,21 @@ function getRateFromSound() {
   return 0;
 }
 
+function getArray() {
+  return array;
+}
+function getSourceJS() {
+  return sourceJs;
+}
+function getAnalyser() {
+  return analyser;
+}
+
 export default {
+  playSound: playSound,
+  getAnalyser: getAnalyser,
+  getSourceJS: getSourceJS,
+  getArray: getArray,
   init: init,
   getSizeFromSound: getSizeFromSound,
   getColorFromSound: getColorFromSound,

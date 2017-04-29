@@ -18,7 +18,7 @@ export default class FlowerWorld extends World {
             }, 
             image: { // Check the Three.JS documentation for the different allowed types and values
                 type: "t", 
-                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+                value: THREE.ImageUtils.loadTexture('./textures/grass.jpg')
             },
             light_vec: {
                 type: "v3",

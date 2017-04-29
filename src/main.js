@@ -11,26 +11,38 @@ import CrystalWorld from './worlds/crystalWorld'
 import Audio from './audio'
 
 // initialize global clock
-var clock = new THREE.Clock();
-var cameraControl;
+var clock =new THREE.Clock(false);
+
+var koiGeo;
+
+// worlds 
 var flowerWorld;
 var waterWorld; 
-var world3; 
 var crystalWorld;
+
+// scene nodes
+var scene;
+var camera;
+var directionalLight;
+
+// animation control
+var cameraControl;
+
+var audioPlaying = false;
 
 // called after the scene loads
 function onLoad(framework) {
   // initialize framework
-  var scene = framework.scene;
-  var camera = framework.camera;
+  scene = framework.scene;
+  camera = framework.camera;
   var renderer = framework.renderer;
   var gui = framework.gui;
   var stats = framework.stats;
 
   // initialize a simple box and material
-  var directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+  directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
   directionalLight.color.setHSL(0.1, 1, 0.95);
-  directionalLight.position.set(1, 1, 2);
+  directionalLight.position.set(1, 5, 2);
   directionalLight.position.multiplyScalar(10);
 
   scene.add(directionalLight);
@@ -44,44 +56,19 @@ function onLoad(framework) {
 
   // set camera position
   camera.position.set(0, 0, 20);
-  camera.lookAt(new THREE.Vector3(0,0,0)); // reset x = 0 to look at flower plan
+  camera.lookAt(new THREE.Vector3(0,0,0)); 
   camera.updateProjectionMatrix();
 
   // putting in a simple axis helper to help visualize
   var axisHelper = new THREE.AxisHelper( 10 );
   scene.add( axisHelper );
 
-
-  // ALL WORLD CREATION IS COMMENTED OUT
-  /*
-  // new camera control
-  // world 1 
-  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
-  
-  // world 2 
-  // Mesh loading
   var objLoader = new THREE.OBJLoader();
-  var koiGeo;
-  var mesh;
+  
   objLoader.load('house.obj', function(obj) {
-      koiGeo = obj.children[0].geometry;
-      waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
-      // remove waterWorld from scene  
-      waterWorld.deleteEntireWorld(0); 
-      waterWorld.removeInnerSphere(0); 
+    koiGeo = obj.children[0].geometry;
+    Audio.init(); 
   });
-
-  // test world for suzanne
-  world3 = new BasicWorld(scene, clock, directionalLight);  
-  world3.deleteEntireWorld(0);
-  */
-
-  // crystal world 
-  crystalWorld = new CrystalWorld(scene, camera, clock, directionalLight);
-
-  // audio
-  Audio.init(); //UNCOMMENT TO TURN AUDIO ON
-
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
@@ -89,56 +76,99 @@ function onLoad(framework) {
   });
 }
 
-// basic choreography set up 
-function basicChoreography() {
-  // move first world 
-  if (flowerWorld) {
-    flowerWorld.spin(0, 2, Math.PI / 3000);
-    flowerWorld.spinAccelerate(2,4,Math.PI / 4000);
-    flowerWorld.spinDeccelerate(4,6,Math.PI / 4000); 
-    flowerWorld.spinAccelerate(6,8,Math.PI / 4000);
+function tryInitWorlds() {
+  if (Audio.getAnalyser() !== undefined) {
+      if (crystalWorld === undefined) {
+        crystalWorld = new CrystalWorld(scene, camera, clock, 
+          directionalLight, Audio.getAnalyser());
+      }
+      if (flowerWorld === undefined) {
+        flowerWorld = new FlowerWorld(scene, clock, directionalLight);
+      }
+      if (waterWorld == undefined) {
+        waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
+        if (!audioPlaying) {
+          Audio.playSound();
+          clock.start();
+          audioPlaying = true;
+        } 
+      }
+       
+  }
+}
 
-    // deletes the world from view at 8 seconds
-    flowerWorld.deleteEntireWorld(8);
+function timeTarget(time) {
+  var epsilon = 0.1;
+  return Math.abs(clock.elapsedTime - time) < epsilon;
+}
 
+function flowerWorldChoreo() {
+  if (timeTarget(0)) {
+    flowerWorld.toggleDisplay(true);
+  }
+
+  if (flowerWorld.displayed) {
+    flowerWorld.spin(0, 2, Math.PI / 1000);
+    flowerWorld.spinAccelerate(2, 4, Math.PI / 4000);
+    flowerWorld.spinDeccelerate(4, 6, Math.PI / 4000); 
+    flowerWorld.spinAccelerate(6, 8, Math.PI / 4000);
     flowerWorld.tick();
   }
 
-  // move second world 
-  if (waterWorld) {
-     // enable animation of water 
-     waterWorld.updateWaterTime();
+  if (timeTarget(8)) {
+    flowerWorld.toggleDisplay(false);
+  }
+}
 
-     // render the world 
-     waterWorld.recreateEntireWorld(8); 
-     waterWorld.addInnerSphere(8);
-
-    waterWorld.spinAccelerate(7,8.2,Math.PI / 6000);
-    waterWorld.spinDeccelerate(8.2,9.3,Math.PI / 6000); 
-    waterWorld.spin(9, 15,Math.PI / 1000); 
-    waterWorld.spinAccelerate(15,16, Math.PI / 3000); 
-
-    // delete world from view at 16 seconds 
-    waterWorld.deleteEntireWorld(16); 
-    waterWorld.removeInnerSphere(16); 
-    waterWorld.tick(); 
+function waterWorldChoreo() {
+  if (timeTarget(8)) {
+    waterWorld.toggleDisplay(true);
   }
 
-  // move third world 
-  if (world3) {
-     // enable animation of water 
-     world3.recreateEntireWorld(16); 
-     world3.spinAccelerate(15, 17, Math.PI / 5000); 
-     world3.spinDeccelerate(17,19, Math.PI / 5000);
-     world3.spin(19,25, Math.PI / 5000);
-
-    // delete world from view at 25 seconds 
-    world3.deleteEntireWorld(25); 
-    world3.tick(); 
+  if (waterWorld.displayed) {
+    waterWorld.spinAccelerate(7, 8.2, Math.PI / 6000);
+    waterWorld.spinDeccelerate(8.2, 9.3, Math.PI / 6000); 
+    waterWorld.spin(9, 15, Math.PI / 1000); 
+    waterWorld.spinAccelerate(15, 16, Math.PI / 3000); 
+    waterWorld.tick();
   }
-  if (crystalWorld) {
+
+  if (timeTarget(16)) {
+    waterWorld.toggleDisplay(false);
+  }
+}
+
+function crystalWorldChoreo() {
+  if (timeTarget(16)) {
+    crystalWorld.toggleDisplay(true);
+  }
+
+  if (crystalWorld.displayed) {
+    crystalWorld.spin(16, 18, Math.PI / 1000);
+    crystalWorld.spinAccelerate(18, 20, Math.PI / 4000);
+    crystalWorld.spinDeccelerate(20, 22, Math.PI / 4000); 
+    crystalWorld.spinAccelerate(22, 24, Math.PI / 4000);
     crystalWorld.tick();
   }
+
+  if (timeTarget(24)) {
+    crystalWorld.toggleDisplay(false);
+  }
+}
+
+function defined() {
+  return flowerWorld && waterWorld && crystalWorld;
+}
+
+// basic choreography set up 
+function basicChoreography() { 
+  // move first world 
+  if (defined()) {
+    flowerWorldChoreo();
+    waterWorldChoreo();
+    crystalWorldChoreo();
+  }
+    
   // temporarily turn of camera movements 
   // cameraControl.zoomInZ(4.5, 6.5); 
   // cameraControl.zoomOutZ(7.5,10);
@@ -146,8 +176,10 @@ function basicChoreography() {
 
 // called on frame updates
 function onUpdate(framework) {
-  basicChoreography(); 
+  if (clock) clock.getDelta();
 
+  tryInitWorlds();
+  basicChoreography(); 
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate

@@ -5,7 +5,7 @@ import Crystal from './assets/crystal'
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
 export default class CrystalWorld extends World {
-    constructor(scene, camera, timer, light) {
+    constructor(scene, camera, timer, light, musicAnalyser) {
     	// initialize example uniform variables and store in list
         var shaderUniforms = {
             texture: {
@@ -59,10 +59,12 @@ export default class CrystalWorld extends World {
         var baseMesh = new THREE.Mesh(geometry, material);
         
         super(scene, timer, baseMesh);
-        this.timer.start();
-        this.camera = camera;
-        console.log(this.timer);
 
+        this.k = 0;
+        this.height = 0;
+        this.analyser = musicAnalyser;
+        this.camera = camera;
+        this.musicData;
         this.spawnAtEveryVertex();
     }
 
@@ -85,10 +87,77 @@ export default class CrystalWorld extends World {
 
             asset.normal = faces[i].vertexNormals[0];
             asset.normal = face.normal;
-
+            asset.vertex = v;
+            asset.face = face;
             this.addAsset(asset, v); 
 
-            asset.alignItemsWithNormal();  
+
+            asset.alignItemsWithNormal(); 
+            //asset.up = asset.normal; 
         }
+    }
+
+    animateAsset(asset, spinningSpeed) {
+        var vertices = this.worldVertices();
+        var v0 = vertices[asset.face.a];
+        var v1 = vertices[asset.face.b];
+        var v2 = vertices[asset.face.c];
+
+        var x = (v0.x + v1.x + v2.x) / 3;
+        var y = (v0.y + v1.y + v2.y) / 3;
+        var z = (v0.z + v1.z + v2.z) / 3;
+
+        var v = new THREE.Vector3(x, y, z);
+        asset.vertex = v;
+
+        
+        var pos = v;
+        var up = asset.normal.clone();
+
+        var oldPos = new THREE.Vector3();
+        oldPos.addVectors ( pos, up.multiplyScalar(this.height / 120) );
+    
+        var newPos = new THREE.Vector3();
+        newPos.addVectors ( pos, up.multiplyScalar(this.musicData[this.k] / 120) );
+        
+        this.height = this.musicData[this.k];
+    
+        var lerped = new THREE.Vector3();
+        lerped.lerpVectors(oldPos, newPos, this.timer.getDelta());
+    
+        if (this.k < this.musicData.length) {
+           this.k++; 
+        }
+    
+        asset.position = lerped;
+    }
+
+    spinIndefinitely(speed) {
+      this.baseMesh.rotation.y = speed;
+      this.baseMesh.updateMatrix();
+      this.baseMesh.geometry.applyMatrix( this.baseMesh.matrix );
+      var bufferLength = this.analyser.frequencyBinCount;
+      this.musicData = new Uint8Array(bufferLength);
+      this.analyser.getByteFrequencyData(this.musicData);
+
+      for (var i = 0; i < this.assets.length; i++) {
+          var asset = this.assets[i];
+          this.animateAsset(asset, speed); 
+          this.baseMesh.geometry.computeFaceNormals();
+          this.baseMesh.geometry.computeVertexNormals();
+          asset.alignItemsWithNormal();
+      }  
+
+      this.k = 0;
+    }
+
+    tick() {
+      this.spinIndefinitely(Math.PI/200);
+      this.updateShaderUniforms();     
+
+      // assets tick
+      for (var i = 0; i < this.assets.length; i++) {
+        this.assets[i].tick();
+      }
     }
 }

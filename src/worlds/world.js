@@ -10,58 +10,23 @@ export default class World {
         this.timer = timer;
         this.assets = [];
         this.baseMesh = baseMesh;
-        this.createScene(); 
-        // this.isRendered = true;  // is the world rendered 
+        this.displayed = false;
     }
 
-    // removes all types of assets from the scene
-    deleteAssets() {
-        this.scene.remove(this.baseMesh);
-        var timeMod = this.timer.elapsedTime % 1.0;  
-        for (var i = 0; i < this.assets.length; i++) {
-            this.assets[i].deleteFromScene();
-        }
-        this.isRendered = false; 
-    }
-
-    // removes only the base mesh from the scene 
-    deleteBaseMesh() {
-        this.scene.remove(this.baseMesh); 
-    }
-
-    // removes both base mesh and assets from the scene   
-    deleteEntireWorld(time) {
-        if (this.timer.elapsedTime >= time) {
-            if (this.isRendered) {
-                this.deleteAssets(); 
-                this.deleteBaseMesh(); 
-                this.isRendered = false; 
+    toggleDisplay(displayed) {
+        if (!this.displayed && displayed) {
+            this.scene.add(this.baseMesh);
+            for (var i = 0; i < this.assets.length; i++) {
+              this.assets[i].show();
             }
         }
-    }
-
-    // recreate assets 
-    recreateAssets() {
-        for (var i = 0; i < this.assets.length; i++) {
-            this.assets[i].addToScene();
-        }
-    }
-
-    // for now, just adds the base mesh
-    createScene() {
-        this.scene.add(this.baseMesh);
-        this.isRendered = true;
-    }
-
-    // recreates both base mesh and assets to the scene   
-    recreateEntireWorld(time) {
-        if (this.timer.elapsedTime >= time) {
-            if (!this.isRendered) {
-                this.createScene(); 
-                this.recreateAssets(); 
-                this.isRendered = true; 
+        else if (this.displayed && !displayed){
+            this.scene.remove(this.baseMesh);
+            for (var i = 0; i < this.assets.length; i++) {
+              this.assets[i].hide();
             }
         }
+        this.displayed = displayed;
     }
 
     // easy getter for vertex list
@@ -74,6 +39,19 @@ export default class World {
         return this.baseMesh.geometry.faces;
     }
 
+    spinIndefinitely(speed) {
+      this.baseMesh.rotation.y = speed;
+      this.baseMesh.updateMatrix();
+      this.baseMesh.geometry.applyMatrix( this.baseMesh.matrix );
+
+      for (var i = 0; i < this.assets.length; i++) {
+          var asset = this.assets[i];
+          asset.setPosition(asset.vertex);
+          this.baseMesh.geometry.computeFaceNormals();
+          this.baseMesh.geometry.computeVertexNormals();
+          asset.alignItemsWithNormal(); 
+      }  
+    }
     // world animation options 
     spin(tStart, tEnd, speed) {
         // Spin the world  
@@ -163,15 +141,13 @@ export default class World {
     addAsset(asset, position) {
         this.assets.push(asset);
         asset.setPosition(position);
-        asset.addToScene();
     }
 
     // update shader times
     updateShaderUniforms() {
         this.baseMesh.material.uniforms;
         if (this.baseMesh.material.uniforms !== undefined) {
-            // console.log(this.timer.getElapsedTime());
-            this.baseMesh.material.uniforms.time.value += this.timer.getDelta();
+            this.baseMesh.material.uniforms.time.value = this.timer.elapsedTime;
         }
         for (var i = 0; i < this.assets.length; i++) {
             this.assets[i].updateShaderUniforms();
@@ -194,11 +170,12 @@ export default class World {
 
     // update assets
     tick() {
-        this.updateShaderUniforms();     
-        // this.spin();
-        // assets tick
-        for (var i = 0; i < this.assets.length; i++) {
-          this.assets[i].tick();
+        if (this.displayed) {
+            this.updateShaderUniforms();     
+            // assets tick
+            for (var i = 0; i < this.assets.length; i++) {
+              this.assets[i].tick();
+            } 
         }
     }
 }
