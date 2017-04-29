@@ -72,7 +72,15 @@
 	
 	var _waterWorld2 = _interopRequireDefault(_waterWorld);
 	
+<<<<<<< HEAD
 	var _audio = __webpack_require__(31);
+=======
+	var _crystalWorld = __webpack_require__(31);
+	
+	var _crystalWorld2 = _interopRequireDefault(_crystalWorld);
+	
+	var _audio = __webpack_require__(37);
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	
 	var _audio2 = _interopRequireDefault(_audio);
 	
@@ -97,9 +105,13 @@
 	// initialize global clock
 	var clock = new THREE.Clock();
 	var cameraControl;
-	var basicWorld;
+	var flowerWorld;
 	var waterWorld;
 	var world3;
+<<<<<<< HEAD
+=======
+	var crystalWorld;
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	
 	// called after the scene loads
 	function onLoad(framework) {
@@ -134,7 +146,10 @@
 	  var axisHelper = new THREE.AxisHelper(10);
 	  scene.add(axisHelper);
 	
+	  // ALL WORLD CREATION IS COMMENTED OUT
+	  /*
 	  // new camera control
+<<<<<<< HEAD
 	  cameraControl = new _cameraControls2.default(scene, clock, camera);
 	
 	  // world 1 
@@ -149,9 +164,34 @@
 	  // TODO: make a world 3 
 	  world3 = new _basicWorld2.default(scene, clock, directionalLight);
 	  world3.deleteEntireWorld(0);
+=======
+	  // world 1 
+	  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
+	  
+	  // world 2 
+	  // Mesh loading
+	  var objLoader = new THREE.OBJLoader();
+	  var koiGeo;
+	  var mesh;
+	  objLoader.load('house.obj', function(obj) {
+	      koiGeo = obj.children[0].geometry;
+	      waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
+	      // remove waterWorld from scene  
+	      waterWorld.deleteEntireWorld(0); 
+	      waterWorld.removeInnerSphere(0); 
+	  });
+	   // test world for suzanne
+	  world3 = new BasicWorld(scene, clock, directionalLight);  
+	  world3.deleteEntireWorld(0);
+	  */
+	
+	  // crystal world 
+	  crystalWorld = new _crystalWorld2.default(scene, camera, clock, directionalLight);
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	
 	  // audio
-	  // Audio.init(); //UNCOMMENT TO TURN AUDIO ON
+	  _audio2.default.init(); //UNCOMMENT TO TURN AUDIO ON
+	
 	
 	  // add gui controls
 	  gui.add(camera, 'fov', 0, 180).onChange(function (newVal) {
@@ -162,6 +202,7 @@
 	// basic choreography set up 
 	function basicChoreography() {
 	  // move first world 
+<<<<<<< HEAD
 	  if (basicWorld) {
 	    basicWorld.spin(0, 2, Math.PI / 3000);
 	    basicWorld.spinAccelerate(2, 4, Math.PI / 4000);
@@ -172,12 +213,25 @@
 	    basicWorld.deleteEntireWorld(8);
 	
 	    basicWorld.tick();
+=======
+	  if (flowerWorld) {
+	    flowerWorld.spin(0, 2, Math.PI / 3000);
+	    flowerWorld.spinAccelerate(2, 4, Math.PI / 4000);
+	    flowerWorld.spinDeccelerate(4, 6, Math.PI / 4000);
+	    flowerWorld.spinAccelerate(6, 8, Math.PI / 4000);
+	
+	    // deletes the world from view at 8 seconds
+	    flowerWorld.deleteEntireWorld(8);
+	
+	    flowerWorld.tick();
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	  }
 	
 	  // move second world 
 	  if (waterWorld) {
 	    // enable animation of water 
 	    waterWorld.updateWaterTime();
+<<<<<<< HEAD
 	
 	    // render the world 
 	    waterWorld.recreateEntireWorld(8);
@@ -207,6 +261,37 @@
 	    world3.tick();
 	  }
 	
+=======
+	
+	    // render the world 
+	    waterWorld.recreateEntireWorld(8);
+	    waterWorld.addInnerSphere(8);
+	
+	    waterWorld.spinAccelerate(7, 8.2, Math.PI / 6000);
+	    waterWorld.spinDeccelerate(8.2, 9.3, Math.PI / 6000);
+	    waterWorld.spin(9, 15, Math.PI / 1000);
+	    waterWorld.spinAccelerate(15, 16, Math.PI / 3000);
+	
+	    // delete world from view at 16 seconds 
+	    waterWorld.deleteEntireWorld(16);
+	    waterWorld.removeInnerSphere(16);
+	    waterWorld.tick();
+	  }
+	
+	  // move third world 
+	  if (world3) {
+	    // enable animation of water 
+	    world3.recreateEntireWorld(16);
+	    world3.spinAccelerate(15, 17, Math.PI / 5000);
+	    world3.spinDeccelerate(17, 19, Math.PI / 5000);
+	    world3.spin(19, 25, Math.PI / 5000);
+	
+	    // delete world from view at 25 seconds 
+	    world3.deleteEntireWorld(25);
+	    world3.tick();
+	  }
+	
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	  // temporarily turn of camera movements 
 	  // cameraControl.zoomInZ(4.5, 6.5); 
 	  // cameraControl.zoomOutZ(7.5,10);
@@ -49223,7 +49308,7 @@
 	            },
 	            image: { // Check the Three.JS documentation for the different allowed types and values
 	                type: "t",
-	                value: THREE.ImageUtils.loadTexture('./textures/grass.jpg')
+	                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
 	            },
 	            light_vec: {
 	                type: "v3",
@@ -49478,7 +49563,7 @@
 	var WaterWorld = function (_World) {
 	    _inherits(WaterWorld, _World);
 	
-	    function WaterWorld(scene, timer, light) {
+	    function WaterWorld(scene, timer, light, koiGeo) {
 	        _classCallCheck(this, WaterWorld);
 	
 	        // this defines the position of the planet in space.
@@ -49545,6 +49630,15 @@
 	            var seaweed = new _seaweed2.default(scene, timer, _this);
 	            _this.spawnAsset(seaweed);
 	            seaweeds.push(seaweed);
+<<<<<<< HEAD
+=======
+	        }
+	
+	        for (var i = 0; i < 10; i++) {
+	            var koi = new _koi2.default(scene, timer, _this, koiGeo);
+	            kois.push(koi);
+	            _this.spawnAsset(koi);
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	        }
 	
 	        // create koi assets
@@ -49675,6 +49769,7 @@
 	}(_asset2.default);
 	
 	// Uses toolbox functions to create flower meshes
+<<<<<<< HEAD
 	
 	
 	exports.default = Seaweed;
@@ -49895,6 +49990,225 @@
 /***/ },
 /* 28 */
 /***/ function(module, exports) {
+=======
+	
+	
+	exports.default = Seaweed;
+	function createSeaweed(timer, shaderUniforms, material) {
+	    shaderUniforms = {
+	        time: {
+	            type: "float",
+	            value: 0
+	        },
+	        color: {
+	            type: "v4",
+	            value: new THREE.Vector4(1., 0., 0., 1.)
+	        },
+	        u_time: {
+	            type: "float",
+	            value: timer.elapsedTime
+	        }
+	
+	    };
+	
+	    // make seaweed geometry 
+	    var width = 0.17;
+	    var height = 2.3;
+	    var geometry = new THREE.PlaneGeometry(width, height, 1, 20);
+	    var weed = new THREE.Mesh(geometry, material);
+	
+	    // make it wavy 
+	    for (var i = 0; i < weed.geometry.vertices.length / 4; i++) {
+	        var val = 0.1 * Math.sin(weed.geometry.vertices[2 * i].y * 7);
+	        weed.geometry.vertices[2 * i].z = val;
+	        weed.geometry.vertices[2 * i + 1].z = val;
+	    }
+	
+	    // taper the ends of seaweed 
+	    for (var i = 0; i < weed.geometry.vertices.length; i++) {
+	        if (weed.geometry.vertices[i].x > width / 2.0) {
+	            var taper = width - weed.geometry.vertices[i].y / 5.0; // / (height * width);//  easeInQuadratic(weed.geometry.vertices[i].y / (height * width)); 
+	            weed.geometry.vertices[i].x = taper;
+	        }
+	    }
+	    return weed;
+	}
+	
+	// toolbox functions 
+	function cos(a, b, c, x) {
+	    return a * cos(b * x) + c;
+	}
+	
+	function sin(a, b, c, x) {
+	    return a * sin(b * x) + c;
+	}
+	
+	function lerp(a0, a1, t) {
+	    return t + a0 + (1 - t) * a1;
+	}
+	
+	function bias(b, t) {
+	    return Math.pow(t, Math.log(b) / Math.log(0.5));
+	}
+	
+	function easeInQuadratic(t) {
+	    return t * t;
+	}
+	
+	function easeOutQuadratic(t) {
+	    return 1 - easeInQuadratic(1 - t);
+	}
+	
+	// Allows the mesh to assume it is untransformed
+	function resetTransform(mesh) {
+	    mesh.updateMatrix();
+	    mesh.geometry.applyMatrix(mesh.matrix);
+	    mesh.position.set(0, 0, 0);
+	    mesh.rotation.set(0, 0, 0);
+	    mesh.scale.set(1, 1, 1);
+	    mesh.updateMatrix();
+	}
+	
+	function setAbsolutePosition(mesh, x, y, z) {
+	    mesh.position.set(x, y, z);
+	    resetTransform(mesh);
+	}
+	
+	function setAbsoluteRotation(mesh, axis, rotation) {
+	    switch (axis) {
+	        case 'X':
+	            mesh.rotation.x = rotation;
+	            break;
+	
+	        case 'Y':
+	            mesh.rotation.y = rotation;
+	            break;
+	
+	        case 'Z':
+	            mesh.rotation.z = rotation;
+	            break;
+	    }
+	    resetTransform(mesh);
+	}
+	
+	function setAbsoluteScale(mesh, x, y, z) {
+	    mesh.scale.set(x, y, z);
+	    resetTransform(mesh);
+	}
+
+/***/ },
+/* 23 */
+/***/ function(module, exports) {
+
+	module.exports = "varying vec2 vUv;\nvarying vec3 f_position; \nvarying vec3 f_normal; \nuniform float u_time; \n\nvoid main() {\n\tf_position = position;\n\tf_normal = normal; \n    vUv = uv;\n\n    float timeMod; \n    if (f_position.x > 1.0 ) {\n    \ttimeMod = cos(u_time * 2.0); \n    } else {\n    \ttimeMod = sin(u_time * 2.0);\n    }\n    vec3 position = vec3(f_position.x , f_position.y, f_position.z * timeMod);\n\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}"
+
+/***/ },
+/* 24 */
+/***/ function(module, exports) {
+
+	module.exports = "varying vec2 vUv;\nvarying vec3 f_position; \nvarying vec3 f_normal; \nvarying float noise;\nuniform sampler2D image;\nuniform float u_time; \nuniform vec3 light_vec; \n\n// cosine based palette from IQ \nvec3 palette( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )\n{\n    return a + b*cos( 6.28318*(c*t+d) );\n}\n\nvoid main() {\n\n    // compute colors\n    float speed = 0.1; \n    vec3 col = palette(speed * u_time, vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,0.7,0.4),vec3(0.0,0.15,0.20) );\n\n  vec2 uv = vec2(1,1) - vUv;\n  vec3 lGreen = vec3(0.403, 0.552, 0.384);\n  vec3 dGreen = vec3(0.109, 0.360, 0.078); \n\n  // hardcoded light vector \n  // vec3 light_vec = vec3(1.0, 1.0, 2.0); \n  // simple lambertian lighting\n  vec3 d = normalize(light_vec - f_position);\n  float lambert = clamp(dot(d, f_normal), 0.0, 1.0); \n  float globalIllum = 0.2; \n\n  // out color\n  gl_FragColor = vec4( lambert * dGreen, 1.0) + globalIllum * vec4(dGreen, 1.0);\n}"
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _asset = __webpack_require__(10);
+	
+	var _asset2 = _interopRequireDefault(_asset);
+	
+	var _item = __webpack_require__(11);
+	
+	var _item2 = _interopRequireDefault(_item);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var THREE = __webpack_require__(6);
+	
+	// this class will mostly be unchanged from world to world. 
+	// variation in worlds will mostly rely on the various assets.
+	var Koi = function (_Asset) {
+	    _inherits(Koi, _Asset);
+	
+	    function Koi(scene, timer, world, assetGeo) {
+	        _classCallCheck(this, Koi);
+	
+	        // add basic cube mesh item as example asset
+	        var _this = _possibleConstructorReturn(this, (Koi.__proto__ || Object.getPrototypeOf(Koi)).call(this, scene, timer, world));
+	
+	        _this.shaderUniforms = {
+	            time: {
+	                type: "float",
+	                value: 0
+	            },
+	            u_time: {
+	                type: "float",
+	                value: timer.elapsedTime
+	            },
+	            light_vec: {
+	                type: "v3",
+	                value: new THREE.Vector3(_this.world.light.position.x, _this.world.light.position.y, _this.world.light.position.z)
+	            }
+	        };
+	
+	        _this.material = new THREE.ShaderMaterial({
+	            uniforms: _this.shaderUniforms,
+	            vertexShader: __webpack_require__(26),
+	            fragmentShader: __webpack_require__(27)
+	        });
+	
+	        var mesh = new THREE.Mesh(assetGeo, _this.material);
+	
+	        var koiItem = new _item2.default(mesh);
+	
+	        // The asset class must have a normal and a vertex assigned before alignment can occur
+	        // Make sure to call updateRotations from the asset class to update the item rotations
+	        // koiItem.localRotation = new THREE.Vector3(90, 45, 0);
+	
+	        _this.items.push(koiItem);
+	        return _this;
+	    }
+	
+	    return Koi;
+	}(_asset2.default);
+	
+	exports.default = Koi;
+
+/***/ },
+<<<<<<< HEAD
+/* 29 */
+/***/ function(module, exports) {
+
+	module.exports = "varying vec2 vUv;\nvarying vec3 f_normal; \nvarying vec3 f_position;\nuniform sampler2D image;\nuniform vec3 light_vec; \nuniform float u_time; \n\nvoid main() {\n  vec3 turquoise = vec3(27.0 / 255.0, 193.0 / 255.0, 163.0 / 255.0);\n  vec3 darkBlue = vec3(0.2,0.5,1.0);\n\n  // simple lambertian lighting\n  vec3 d = normalize(light_vec - f_position);\n  float lambert = clamp(dot(d, f_normal), 0.0, 1.0); \n  float globalIllum = 0.2; \n\n  // out color\n  gl_FragColor = vec4( lambert * turquoise, 0.2) + globalIllum * vec4(darkBlue, 1.0);\n\n  // set transparency \n  gl_FragColor.a = 0.6;\n}"
+
+/***/ },
+=======
+/* 26 */
+/***/ function(module, exports) {
+
+	module.exports = "varying vec2 vUv;\nvarying vec3 f_position; \nvarying vec3 f_normal; \nuniform float u_time; \n\nfloat noise(float x, float y, float z){\n    float value1 = fract(sin(dot(vec2(x, y) ,vec2(3427.9898, 9847.233))) * 202.5453);\n    float value2 = fract(cos(z) * 20247.5453);\n\n    return fract(dot(value1, value2)); \n}\n\nvoid main() {\n\tf_position = position;\n\tf_normal = normal; \n    vUv = uv;\n\n    // float noise = noise(f_position.x, f_position.y, f_position.z); \n\n    float timeMod = cos(u_time * 0.5); \n\n    vec3 position = vec3(f_position.x, f_position.y, f_position.z + timeMod);\n\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}"
+
+/***/ },
+/* 27 */
+/***/ function(module, exports) {
+
+	module.exports = "varying vec2 vUv;\nvarying vec3 f_position; \nvarying vec3 f_normal; \nvarying float noise;\nuniform float u_time; \nuniform vec3 light_vec; \n\n// cosine based palette from IQ \nvec3 palette( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )\n{\n    return a + b*cos( 6.28318*(c*t+d) );\n}\n\nvoid main() {\n\n    // compute colors\n    float speed = 0.1; \n    vec3 col = palette(speed * u_time, vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,0.7,0.4),vec3(0.0,0.15,0.20) );\n\n  vec2 uv = vec2(1,1) - vUv;\n  vec3 pink = vec3(0.898, 0.682, 0.866);\n  vec3 dGreen = vec3(0.109, 0.360, 0.078); \n\n  // hardcoded light vector \n  // vec3 light_vec = vec3(1.0, 1.0, 2.0); \n  // simple lambertian lighting\n  vec3 d = normalize(light_vec - f_position);\n  float lambert = clamp(dot(d, f_normal), 0.0, 1.0); \n  float globalIllum = 0.2; \n\n  // out color\n  gl_FragColor = vec4( lambert * pink, 1.0) + globalIllum * vec4(pink, 1.0);\n}"
+
+/***/ },
+/* 28 */
+/***/ function(module, exports) {
 
 	module.exports = "varying vec2 vUv;\nvarying vec3 f_normal; \nvarying vec3 f_position;\nuniform float u_time; \n// noise function returns range [-1,1]\nfloat noise1(float x, float y, float z){\n\tfloat value1 = fract(sin(dot(vec2(z, y) ,vec2(1027.9898, 29381.233))) * 333019.5453);\n\tfloat value2 = fract(sin(x) * 43758.5453);\n\treturn dot(value1, value2); \n}\n\nfloat noise_3(float x, float y, float z) {\n\tfloat value1 = fract(sin(dot(vec2(x, y) ,vec2(12.9898, 78.233))) * 43758.5453);\n\tfloat value2 = fract(sin(z) * 202229.5453);\n\n\treturn dot(value1, value2); \n}\n\nfloat noise(float x, float y, float z){\n\tfloat value1 = fract(sin(dot(vec2(x, y) ,vec2(3427.9898, 9847.233))) * 202.5453);\n\tfloat value2 = fract(cos(z) * 20247.5453);\n\n\treturn fract(dot(value1, value2)); \n}\n\n\n// lerp\nfloat lerp(float a, float b, float t) {\n\treturn a * (1.0 - t) + b * t; \n}\n\n// cosine interp \nfloat cos_interp(float a, float b, float t) {\n\tfloat cos_t = (1.0 - cos(t * 3.14159265358979)) * 0.5;\n\treturn lerp(a , b , cos_t);\n}\n\n// Interpolate Noise function\n// Given a position, use surrounding lattice points to interpolate and find influence \n// takes in (x,y,z) position, and the current octave level\nfloat interpolateNoise(float x, float y, float z) {\n\t// define the lattice points surrounding the input position \n\tfloat x0 = floor(x);\n\tfloat x1 = x0 + 1.0; \n\tfloat y0 = floor(y);\n\tfloat y1 = y0 + 1.0;\n\tfloat z0 = floor(z);\n\tfloat z1 = z0 + 1.0; \n\n\t// VALUE BASED NOISE\n\tvec3 p0 = vec3(x0, y0, z0); vec3 p1 = vec3(x0, y0, z1);\n\tvec3 p2 = vec3(x0, y1, z0); vec3 p3 = vec3(x0, y1, z1);\n\tvec3 p4 = vec3(x1, y0, z0); vec3 p5 = vec3(x1, y0, z1);\n\tvec3 p6 = vec3(x1, y1, z0); vec3 p7 = vec3(x1, y1, z1);\n\n\t// use noise function to generate random value\n\t// depending on the current octave, sample noise using a different function \n\tfloat v0, v1, v2, v3, v4, v5, v6, v7;\n\tv0 = noise(p0.x, p0.y, p0.z); v1 = noise(p1.x, p1.y, p1.z);\n\tv2 = noise(p2.x, p2.y, p2.z); v3 = noise(p3.x, p3.y, p3.z);\n    v4 = noise(p4.x, p4.y, p4.z); v5 = noise(p5.x, p5.y, p5.z);\n\tv6 = noise(p6.x, p6.y, p6.z); v7 = noise(p7.x, p7.y, p7.z);\n\n\t// trilinear interpolation of all 8 values\n\t// coordinates in the unit cube: \n\tfloat unitX = x - x0;\n\tfloat unitY = y - y0;\n\tfloat unitZ = z - z0;\n\n\tfloat xCos1 = cos_interp(v0, v4, unitX);\n\tfloat xCos2 = cos_interp(v1, v5, unitX);\n\tfloat xCos3 = cos_interp(v2, v6, unitX);\n\tfloat xCos4 = cos_interp(v3, v7, unitX);\n\n\tfloat yCos1 = cos_interp(xCos1, xCos3, unitY);\n\tfloat yCos2 = cos_interp(xCos2, xCos4, unitY);\n\n\tfloat average = cos_interp(yCos1, yCos2, unitZ);\n\n\treturn average;\n}\n\n// multioctave\nfloat fbm(float x, float y, float z) {\n\tfloat total = 0.0; \n\t// make a little less fractal-y \n\t// total += interpolateNoise(x * 64.0, y * 64.0, z * 64.0) * 1.0;\n\t// total += interpolateNoise(x * 32.0, y * 32.0, z * 32.0) * 2.0; \n\t// total += interpolateNoise(x * 16.0, y * 16.0, z * 16.0) * 4.0; \n\ttotal += interpolateNoise(x * 8.0, y * 8.0, z * 8.0) * 8.0; \n\ttotal += interpolateNoise(x * 4.0, y * 4.0, z * 4.0) * 16.0; \n\ttotal += interpolateNoise(x * 2.0, y * 2.0, z * 2.0) * 32.0; \n\ttotal += interpolateNoise(x * 1.0, y * 1.0, z * 1.0) * 64.0; \n\n\treturn total;\n}\n\n// main \nvoid main() {\n\tfloat time = u_time / 2.0;\n\tfloat waveHeight = 2.0; // smaller values will give bigger waves \n\t// get noise height based on position \n\t// TO ANIMATE: add time to the x parameter of this function \n    float noiseHeight = fbm(float(position.x / waveHeight) + time, float(position.y / waveHeight), float(position.z / waveHeight));\n    vec3 noisePosition = (vec3(\n    \tposition.x + noiseHeight / 300.0 + normal.x * noiseHeight / 20.0 , \n    \tposition.y + noiseHeight / 300.0 + normal.y * noiseHeight/ 20.0 , \n    \tposition.z + noiseHeight / 300.0 + normal.z * noiseHeight/ 20.0)); \n\n\tf_normal = normal; \n\tf_position = position; \n    vUv = uv;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4( noisePosition, 1.0 );\n}"
 
@@ -49905,6 +50219,7 @@
 	module.exports = "varying vec2 vUv;\nvarying vec3 f_normal; \nvarying vec3 f_position;\nuniform sampler2D image;\nuniform vec3 light_vec; \nuniform float u_time; \n\nvoid main() {\n  vec3 turquoise = vec3(27.0 / 255.0, 193.0 / 255.0, 163.0 / 255.0);\n  vec3 darkBlue = vec3(0.2,0.5,1.0);\n\n  // simple lambertian lighting\n  vec3 d = normalize(light_vec - f_position);\n  float lambert = clamp(dot(d, f_normal), 0.0, 1.0); \n  float globalIllum = 0.2; \n\n  // out color\n  gl_FragColor = vec4( lambert * turquoise, 0.2) + globalIllum * vec4(darkBlue, 1.0);\n\n  // set transparency \n  gl_FragColor.a = 0.6;\n}"
 
 /***/ },
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 /* 30 */
 /***/ function(module, exports) {
 
@@ -49913,6 +50228,302 @@
 /***/ },
 /* 31 */
 /***/ function(module, exports, __webpack_require__) {
+<<<<<<< HEAD
+=======
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _asset = __webpack_require__(10);
+	
+	var _asset2 = _interopRequireDefault(_asset);
+	
+	var _world = __webpack_require__(9);
+	
+	var _world2 = _interopRequireDefault(_world);
+	
+	var _crystal = __webpack_require__(32);
+	
+	var _crystal2 = _interopRequireDefault(_crystal);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var THREE = __webpack_require__(6);
+	
+	// this class will mostly be unchanged from world to world. 
+	// variation in worlds will mostly rely on the various assets.
+	var FlowerWorld = function (_World) {
+	    _inherits(FlowerWorld, _World);
+	
+	    function FlowerWorld(scene, camera, timer, light) {
+	        _classCallCheck(this, FlowerWorld);
+	
+	        // initialize example uniform variables and store in list
+	        var shaderUniforms = {
+	            texture: {
+	                type: "t",
+	                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+	            },
+	            u_useTexture: {
+	                type: 'i',
+	                value: true
+	            },
+	            u_albedo: {
+	                type: 'v3',
+	                value: new THREE.Color('#dddddd')
+	            },
+	            u_ambient: {
+	                type: 'v3',
+	                value: new THREE.Color('#111111')
+	            },
+	            u_lightPos: {
+	                type: 'v3',
+	                value: new THREE.Vector3(30, 50, 40)
+	            },
+	            u_lightCol: {
+	                type: 'v3',
+	                value: new THREE.Color('#ffffff')
+	            },
+	            u_lightIntensity: {
+	                type: 'f',
+	                value: 2
+	            },
+	            u_camPos: {
+	                type: 'v3',
+	                value: camera.position
+	            }
+	        };
+	
+	        // initialize example shader and mesh
+	        var material = new THREE.ShaderMaterial({
+	            uniforms: shaderUniforms,
+	            vertexShader: __webpack_require__(35),
+	            fragmentShader: __webpack_require__(36)
+	        });
+	
+	        var geometry = new THREE.IcosahedronGeometry(6, 1);
+	        var baseMesh = new THREE.Mesh(geometry, material);
+	
+	        var _this = _possibleConstructorReturn(this, (FlowerWorld.__proto__ || Object.getPrototypeOf(FlowerWorld)).call(this, scene, timer, baseMesh));
+	
+	        for (var i = 0; i < 30; i++) {
+	            _this.spawnAsset(new _crystal2.default(scene, camera, timer, _this));
+	        }
+	        return _this;
+	    }
+	
+	    return FlowerWorld;
+	}(_world2.default);
+	
+	exports.default = FlowerWorld;
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _asset = __webpack_require__(10);
+	
+	var _asset2 = _interopRequireDefault(_asset);
+	
+	var _item = __webpack_require__(11);
+	
+	var _item2 = _interopRequireDefault(_item);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var THREE = __webpack_require__(6);
+	
+	// this class will mostly be unchanged from world to world. 
+	// variation in worlds will mostly rely on the various assets.
+	var Crystal = function (_Asset) {
+	    _inherits(Crystal, _Asset);
+	
+	    function Crystal(scene, camera, timer, world) {
+	        _classCallCheck(this, Crystal);
+	
+	        var _this = _possibleConstructorReturn(this, (Crystal.__proto__ || Object.getPrototypeOf(Crystal)).call(this, scene, timer, world));
+	
+	        var shaderUniforms = {
+	            texture: {
+	                type: "t",
+	                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+	            },
+	            u_useTexture: {
+	                type: 'i',
+	                value: true
+	            },
+	            u_albedo: {
+	                type: 'v3',
+	                value: new THREE.Color('#dddddd')
+	            },
+	            u_ambient: {
+	                type: 'v3',
+	                value: new THREE.Color('#414347')
+	            },
+	            u_lightPos: {
+	                type: 'v3',
+	                value: new THREE.Vector3(30, 50, 40)
+	            },
+	            u_lightCol: {
+	                type: 'v3',
+	                value: new THREE.Color('#ffffff')
+	            },
+	            u_lightIntensity: {
+	                type: 'f',
+	                value: 2
+	            },
+	            u_camPos: {
+	                type: 'v3',
+	                value: camera.position
+	            }
+	        };
+	
+	        // initialize example shader and mesh
+	        var material = new THREE.ShaderMaterial({
+	            uniforms: shaderUniforms,
+	            vertexShader: __webpack_require__(33),
+	            fragmentShader: __webpack_require__(34)
+	        });
+	
+	        var numCrystals = 3 + Math.random() * 3;
+	        for (var i = 0; i < 1; i++) {
+	            var geo = createCrystalGeo();
+	            var mesh = new THREE.Mesh(geo, material);
+	            setAbsoluteRotation(mesh, 'X', Math.PI / 2);
+	            setAbsolutePosition(mesh, 0, Math.random() * 2 + 1, 0);
+	            _this.items.push(new _item2.default(mesh));
+	        }
+	        return _this;
+	    }
+	
+	    return Crystal;
+	}(_asset2.default);
+	
+	// Allows the mesh to assume it is untransformed
+	
+	
+	exports.default = Crystal;
+	function resetTransform(mesh) {
+	    mesh.updateMatrix();
+	    mesh.geometry.applyMatrix(mesh.matrix);
+	    mesh.position.set(0, 0, 0);
+	    mesh.rotation.set(0, 0, 0);
+	    mesh.scale.set(1, 1, 1);
+	    mesh.updateMatrix();
+	}
+	
+	function setAbsolutePosition(mesh, x, y, z) {
+	    mesh.position.set(x, y, z);
+	    resetTransform(mesh);
+	}
+	
+	function setAbsoluteScale(mesh, x, y, z) {
+	    mesh.scale.set(x, y, z);
+	    resetTransform(mesh);
+	}
+	
+	function setAbsoluteRotation(mesh, axis, rotation) {
+	    switch (axis) {
+	        case 'X':
+	            mesh.rotation.x = rotation;
+	            break;
+	
+	        case 'Y':
+	            mesh.rotation.y = rotation;
+	            break;
+	
+	        case 'Z':
+	            mesh.rotation.z = rotation;
+	            break;
+	    }
+	    resetTransform(mesh);
+	}
+	
+	// Uses toolbox functions to create flower meshes
+	function createCrystalGeo() {
+	    var thickness = Math.random() / 20;
+	    var pts = [],
+	        count = Math.floor(Math.random()) * 3 + 3;
+	
+	    for (var i = 0; i < count; i++) {
+	        var l = thickness;
+	        var a = 2 * i / count * Math.PI;
+	        pts.push(new THREE.Vector2(Math.cos(a) * l, Math.sin(a) * l));
+	    }
+	
+	    var shape = new THREE.Shape(pts);
+	
+	    var extrudeSettings = { amount: Math.random() * 5 + 2, bevelEnabled: true, bevelSegments: Math.floor(Math.random() * 2) + 1, steps: 5, bevelSize: 1, bevelThickness: 1.0 };
+	    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+	    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+	    return geometry;
+	}
+	
+	function lerp(a0, a1, t) {
+	    return t + a0 + (1 - t) * a1;
+	}
+	
+	function bias(b, t) {
+	    return Math.pow(t, Math.log(b) / Math.log(0.5));
+	}
+	
+	function easeInQuadratic(t) {
+	    return t * t;
+	}
+	
+	function easeOutQuadratic(t) {
+	    return 1 - easeInQuadratic(1 - t);
+	}
+
+/***/ },
+/* 33 */
+/***/ function(module, exports) {
+
+	module.exports = "\nvarying vec2 f_uv;\nvarying vec3 f_normal;\nvarying vec3 f_position;\nvarying float noise;\n\nfloat random(float a, float b, float c) {\n    return fract(sin(dot(vec3(a, b, c), vec3(12.9898, 78.233, 78.233)))*43758.5453);\n}\n\nfloat lerp(float a, float b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nvec4 lerp(vec4 a, vec4 b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nfloat cerp(float a, float b, float t) {\n    float cos_t = (1.0 - cos(t*3.14159)) * 0.5;\n    return lerp(a, b, cos_t);\n}\n\nfloat interpolateNoise(float x, float y, float z) {\n    float x0, y0, z0, x1, y1, z1;\n    \n    // Find the grid voxel that this point falls in\n    x0 = floor(x);\n    y0 = floor(y);\n    z0 = floor(z);\n    \n    x1 = x0 + 1.0;\n    y1 = y0 + 1.0;\n    z1 = z0 + 1.0;\n    \n    // Generate noise at each of the 8 points\n    float FUL, FUR, FLL, FLR, BUL, BUR, BLL, BLR;\n    \n    // front upper left\n    FUL = random(x0, y1, z1);\n    \n    // front upper right\n    FUR = random(x1, y1, z1);\n    \n    // front lower left\n    FLL = random(x0, y0, z1);\n    \n    // front lower right\n    FLR = random(x1, y0, z1);\n    \n    // back upper left\n    BUL = random(x0, y1, z0);\n    \n    // back upper right\n    BUR = random(x1, y1, z0);\n    \n    // back lower left\n    BLL = random(x0, y0, z0);\n    \n    // back lower right\n    BLR = random(x1, y0, z0);\n    \n    // Find the interpolate t values\n    float n0, n1, m0, m1, v;\n    float tx = fract(x - x0);\n    float ty = fract(y - y0);\n    float tz = fract(z - z0);\n    tx = (x - x0);\n    ty = (y - y0);\n    tz = (z - z0);\n    \n    // interpolate along x and y for back\n    n0 = cerp(BLL, BLR, tx);\n    n1 = cerp(BUL, BUR, tx);\n    m0 = cerp(n0, n1, ty);\n    \n    // interpolate along x and y for front\n    n0 = cerp(FLL, FLR, tx);\n    n1 = cerp(FUL, FUR, tx);\n    m1 = cerp(n0, n1, ty);\n    \n    // interpolate along z\n    v = cerp(m0, m1, tz);\n    \n    return v;\n}\n\nfloat generateNoise(float x, float y, float z) {\n    float total = 0.0;\n    float persistence = 1.0 / 2.0;\n    int its = 0;\n    for (int i = 0; i < 32; i++) {\n        float freq = pow(2.0, float(i));\n        float ampl = pow(persistence, float(i));\n        total += interpolateNoise(freq*x, freq*y, freq*z)*ampl;\n    }\n    return total;\n}\n\nvoid main() {\n    // Pass noise to the fragment shader\n\tnoise =  generateNoise(position.x, position.y, position.z);\n    f_uv = uv;\n    f_normal = normal;\n    f_position = position;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}"
+
+/***/ },
+/* 34 */
+/***/ function(module, exports) {
+
+	module.exports = "\nuniform sampler2D texture;\nuniform int u_useTexture;\nuniform vec3 u_albedo;\nuniform vec3 u_ambient;\nuniform vec3 u_lightPos;\nuniform vec3 u_lightCol;\nuniform float u_lightIntensity;\nuniform vec3 u_camPos;\n\nvarying vec3 f_position;\nvarying vec3 f_normal;\nvarying vec2 f_uv;\nvarying float noise;\n\n\nvoid main() {\n    vec4 color = vec4(0.0, 0.0, 1.0, 1.0);\n    float d = clamp(dot(f_normal, normalize(u_camPos - f_position)), 0.0, 1.0);\n\n    //Read from texture using relation to the view vector and a little bit of noise\n    if (u_useTexture == 1) {\n        color = texture2D(texture, vec2(noise));\n    }\n\n    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, 0.4);\n    //gl_FragColor = color;\n}"
+
+/***/ },
+/* 35 */
+/***/ function(module, exports) {
+
+	module.exports = "varying vec2 f_uv;\nvarying vec3 f_normal;\nvarying vec3 f_position;\nvarying float noise;\n\nfloat random(float a, float b, float c) {\n    return fract(sin(dot(vec3(a, b, c), vec3(12.9898, 78.233, 78.233)))*43758.5453);\n}\n\nfloat lerp(float a, float b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nvec4 lerp(vec4 a, vec4 b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nfloat cerp(float a, float b, float t) {\n    float cos_t = (1.0 - cos(t*3.14159)) * 0.5;\n    return lerp(a, b, cos_t);\n}\n\nfloat interpolateNoise(float x, float y, float z) {\n    float x0, y0, z0, x1, y1, z1;\n    \n    // Find the grid voxel that this point falls in\n    x0 = floor(x);\n    y0 = floor(y);\n    z0 = floor(z);\n    \n    x1 = x0 + 1.0;\n    y1 = y0 + 1.0;\n    z1 = z0 + 1.0;\n    \n    // Generate noise at each of the 8 points\n    float FUL, FUR, FLL, FLR, BUL, BUR, BLL, BLR;\n    \n    // front upper left\n    FUL = random(x0, y1, z1);\n    \n    // front upper right\n    FUR = random(x1, y1, z1);\n    \n    // front lower left\n    FLL = random(x0, y0, z1);\n    \n    // front lower right\n    FLR = random(x1, y0, z1);\n    \n    // back upper left\n    BUL = random(x0, y1, z0);\n    \n    // back upper right\n    BUR = random(x1, y1, z0);\n    \n    // back lower left\n    BLL = random(x0, y0, z0);\n    \n    // back lower right\n    BLR = random(x1, y0, z0);\n    \n    // Find the interpolate t values\n    float n0, n1, m0, m1, v;\n    float tx = fract(x - x0);\n    float ty = fract(y - y0);\n    float tz = fract(z - z0);\n    tx = (x - x0);\n    ty = (y - y0);\n    tz = (z - z0);\n    \n    // interpolate along x and y for back\n    n0 = cerp(BLL, BLR, tx);\n    n1 = cerp(BUL, BUR, tx);\n    m0 = cerp(n0, n1, ty);\n    \n    // interpolate along x and y for front\n    n0 = cerp(FLL, FLR, tx);\n    n1 = cerp(FUL, FUR, tx);\n    m1 = cerp(n0, n1, ty);\n    \n    // interpolate along z\n    v = cerp(m0, m1, tz);\n    \n    return v;\n}\n\nfloat generateNoise(float x, float y, float z) {\n    float total = 0.0;\n    float persistence = 1.0 / 2.0;\n    int its = 0;\n    for (int i = 0; i < 32; i++) {\n        float freq = pow(2.0, float(i));\n        float ampl = pow(persistence, float(i));\n        total += interpolateNoise(freq*x, freq*y, freq*z)*ampl;\n    }\n    return total;\n}\n\nvoid main() {\n    // Pass noise to the fragment shader\n\tnoise =  generateNoise(position.x, position.y, position.z);\n    f_uv = uv;\n    f_normal = normal;\n    f_position = position;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}"
+
+/***/ },
+/* 36 */
+/***/ function(module, exports) {
+
+	module.exports = "uniform sampler2D texture;\nuniform int u_useTexture;\nuniform vec3 u_albedo;\nuniform vec3 u_ambient;\nuniform vec3 u_lightPos;\nuniform vec3 u_lightCol;\nuniform float u_lightIntensity;\nuniform vec3 u_camPos;\n\nvarying vec3 f_position;\nvarying vec3 f_normal;\nvarying vec2 f_uv;\nvarying float noise;\n\n\nvoid main() {\n    vec4 color = vec4(0.0, 0.0, 1.0, 1.0);\n    float d = clamp(dot(f_normal, normalize(u_camPos - f_position)), 0.0, 1.0);\n\n    //Read from texture using relation to the view vector and a little bit of noise\n    if (u_useTexture == 1) {\n        color = texture2D(texture, f_uv);\n    }\n\n    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, 0.2);\n    //gl_FragColor = color;\n}"
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+>>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 
 	'use strict';
 	

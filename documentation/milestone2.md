@@ -1,6 +1,8 @@
 Emily Vo, Milestone 2
 ---------------------------------------
+I created a new crystal planet by procedurally creating the crystals. I extruded shapes. I gave both the planet and crystals an iridescent shader. I also fixed Andrea's mesh loading issue that has been plaguing us for two weeks. It took me 4 hours, but I realized that new npm installs have a broken obj loader. I cleaned out the junk node modules and replaced it with older ones from previous projects. 
 
+Photos of my crystal generation is in images.
 
 Andrea Lin, Milestone 2
 ---------------------------------------
