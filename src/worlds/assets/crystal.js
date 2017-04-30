@@ -49,7 +49,7 @@ export default class Crystal extends Asset {
             }, 
             alpha: {
                 type: 'float', 
-                value: 0.9
+                value: 0.0
             }
         };
     

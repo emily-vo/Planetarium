@@ -16,9 +16,9 @@ var cameraControl;
 
 var koiGeo;
 
-// worlds 
+// worlds
 var flowerWorld;
-var waterWorld; 
+var waterWorld;
 var crystalWorld;
 
 // scene nodes
@@ -42,6 +42,7 @@ var music = {
 };
 
 var song = music.wildcat;
+var audioControl = { 'mute': false, 'music': 'smooth operator' }
 
 var skyboxMat;
 
@@ -71,7 +72,7 @@ function onLoad(framework) {
 
   // set camera position
   camera.position.set(0, 0, 20);
-  camera.lookAt(new THREE.Vector3(0,0,0)); 
+  camera.lookAt(new THREE.Vector3(0,0,0));
   camera.updateProjectionMatrix();
 
   cameraControl = new CameraControls(scene, clock, camera);
@@ -98,7 +99,8 @@ function onLoad(framework) {
       waterWorld.removeInnerSphere(0); 
     }
   var objLoader = new THREE.OBJLoader();
-  
+
+  // audio
   objLoader.load('house.obj', function(obj) {
     koiGeo = obj.children[0].geometry;
     var path;
@@ -116,6 +118,7 @@ function onLoad(framework) {
     Audio.init(path); 
   });
 
+<<<<<<< HEAD
   var geo = new THREE.SphereGeometry(40, 32, 32);
   var texloader = new THREE.TextureLoader();
   // initialize example uniform variables and store in list
@@ -181,6 +184,10 @@ function onLoad(framework) {
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
+=======
+  gui.add(audioControl, 'music', ['the-deli-flowers', 'smooth-operator', 'cello-suite']).onChange(function(newVal) {
+    Audio.setMusic(newVal, resetAnalysers);
+>>>>>>> ecce05e543807fac94193d412a73fc03fdd3d615
   });
 
 }
@@ -204,7 +211,7 @@ function basicChoreography() {
 function tryInitWorlds() {
     if (Audio.getAnalyser() !== undefined) {
       if (crystalWorld === undefined) {
-        crystalWorld = new CrystalWorld(scene, camera, clock, 
+        crystalWorld = new CrystalWorld(scene, camera, clock,
           directionalLight, Audio.getAnalyser());
       }
       if (flowerWorld === undefined) {
@@ -216,8 +223,13 @@ function tryInitWorlds() {
           Audio.playSound();
           clock.start();
           audioPlaying = true;
+<<<<<<< HEAD
         } 
       }      
+=======
+        }
+      }
+>>>>>>> ecce05e543807fac94193d412a73fc03fdd3d615
   }
 }
 
@@ -235,10 +247,6 @@ function flowerWorldChoreo(start, end) {
     flowerWorld.spin(start, start + 10, Math.PI / 1000);
     flowerWorld.spinAccelerate(start + 10, start + 15, Math.PI / 4000);
     flowerWorld.tick();
-  }
-
-  if (timeTarget(end)) {
-    flowerWorld.toggleDisplay(false);
   }
 }
 
@@ -258,7 +266,6 @@ function waterWorldChoreo(start, end) {
 }
 
 function crystalWorldChoreo(start, end) {
-
   if (timeTarget(start)) {
     crystalWorld.toggleDisplay(true);
   }
@@ -268,6 +275,9 @@ function crystalWorldChoreo(start, end) {
     crystalWorld.fadeIn(25, 28);
     crystalWorld.tick();
   }
+  // temporarily turn of camera movements
+  // cameraControl.zoomInZ(4.5, 6.5);
+  // cameraControl.zoomOutZ(7.5,10);
 
   if (timeTarget(end)) {
     crystalWorld.toggleDisplay(false);
@@ -278,35 +288,37 @@ function defined() {
   return flowerWorld && waterWorld && crystalWorld;
 }
 
-// basic choreography set up 
-function basicChoreography() { 
-  // move first world 
+// basic choreography set up
+function basicChoreography() {
+  // move first world
   if (defined()) {
     //flowerWorldChoreo(2, 15);
     //waterWorldChoreo(15, 25);
     crystalWorldChoreo(2, 100);
   }
-    
+
   if (cameraControl) {
-    cameraControl.zoomInZ(4.5, 6.5); 
+    cameraControl.zoomInZ(4.5, 6.5);
     cameraControl.zoomOutZ(7.5,10);
   }
 }
 
+function resetAnalysers() {
+  crystalWorld.analyser = Audio.getAnalyser();
+}
 // called on frame updates
 function onUpdate(framework) {
-  if (clock) clock.getDelta();
-  if (skyboxMat && Audio.getAnalyser()) {
-    //var analyser = Audio.getAnalyser();
-    //var bufferLength = analyser.frequencyBinCount;
-    //var musicData = new Uint8Array(bufferLength);
-    //analyser.getByteFrequencyData(musicData);
-    //
-    //skyboxMat.uniforms.time.value = musicData[0] / 50;
+  if (Audio.isPlaying()) {
+    var size = Audio.getSizeFromSound();
+    var bg = scene.background ? scene.background : new THREE.Color(0,0,0);
+    var color = Audio.getColorFromSound(bg);
+    // Change the background color (testing\)
+    scene.background = color;
   }
+  if (clock) clock.getDelta();
 
   tryInitWorlds();
-  basicChoreography(); 
+  basicChoreography();
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate

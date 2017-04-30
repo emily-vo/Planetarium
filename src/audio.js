@@ -1,13 +1,16 @@
 const THREE = require('three');
+import pitchHelper from './pitchHelper'
+var playing = false;
 var context;
 var sourceNode, sourceJs;
+var gainNode;
 var analyser;
 var buffer;
 
 var jsNode;
 var splitter;
 var array = new Array();
-
+var reset = true;
 function init(path) {
   if (! window.AudioContext) { // check if the default naming is enabled, if not use the chrome one.
       if (! window.webkitAudioContext) alert('no audiocontext found');
@@ -28,43 +31,88 @@ function loadSound(url) {
           // Error decoding file data
           return;
       }
-
       sourceJs = context.createScriptProcessor(2048, 1, 1);
       sourceJs.buffer = buffer;
       sourceJs.connect(context.destination);
       analyser = context.createAnalyser();
       analyser.smoothingTimeConstant = 0.6;
       analyser.fftSize = 512;
-
+      
       sourceNode = context.createBufferSource();
       sourceNode.buffer = buffer;
-
+      
       sourceNode.connect(analyser);
       analyser.connect(sourceJs);
       sourceNode.connect(context.destination);
+      
+      gainNode = context.createGain();
+      sourceNode.connect(gainNode);
+      gainNode.connect(context.destination);
+      reset = true;
     }, (e) => {console.log(e)});
-
   }
   request.send();
 }
 
-function playSound() {
-    sourceNode.start(0);
+function playOnLoad(url, updateAnalysers) {
+  var request = new XMLHttpRequest();
+  request.open('GET', url, true);
+  request.responseType = 'arraybuffer';
+  request.onload = function() {
+    context.decodeAudioData(request.response, function(buffer) {
+      if(!buffer) {
+          // Error decoding file data
+          return;
+      }
+      sourceJs = context.createScriptProcessor(2048, 1, 1);
+      sourceJs.buffer = buffer;
+      sourceJs.connect(context.destination);
+      analyser = context.createAnalyser();
+      analyser.smoothingTimeConstant = 0.6;
+      analyser.fftSize = 512;
+      
+      sourceNode = context.createBufferSource();
+      sourceNode.buffer = buffer;
+      
+      sourceNode.connect(analyser);
+      analyser.connect(sourceJs);
+      sourceNode.connect(context.destination);
+      
+      gainNode = context.createGain();
+      sourceNode.connect(gainNode);
+      gainNode.connect(context.destination);
+      playSound();
+      updateAnalysers();
+    }, (e) => {console.log(e)});
+  }
+  request.send();
 }
 
-function setupAudioNodes() {
-  sourceNode = context.createBufferSource();
-  sourceNode.connect(context.destination);
+function stopSound() {
+  sourceNode.stop();
+  playing = false;
+}
 
-  // jsNode = context.createScriptProcessor(2048, 1, 1); //ScriptProcessorNode
+function mute() {
+  gainNode.gain.value = 0;
+}
 
-  analyser = context.createAnalyser();
-  analyser.smoothingTimeConstant = 0.3;
-  analyser.fftSize = 1024;
+function unmute(){
+  gainNode.gain.value = 1;
+}
 
-  splitter = context.createChannelSplitter(); // splits into left and right stream
+function isPlaying() {
+  return playing;
+}
 
-  sourceNode.connect(analyser);
+function setMusic(name, updateAnalysers) {
+  stopSound();
+  playOnLoad('./audio/' + name + '.mp3', updateAnalysers);
+}
+
+function playSound() {
+  sourceNode.start(0);
+  playing = true; 
 }
 
 function getAverageVolume(array) {
@@ -75,16 +123,41 @@ function getAverageVolume(array) {
    return values / array.length;
 }
 
-// Volume / amplitude
+// Calculated based on the volume / amplitude
 function getSizeFromSound() {
   var arr =  new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteFrequencyData(arr);
   return getAverageVolume(arr);
 }
 
-function getColorFromSound() {
-  //TODO: implement according to pitch
-  var color = new THREE.Color(0,0,0);
+
+function detectPitch() {
+	var buffer = new Uint8Array(analyser.fftSize);
+	analyser.getByteTimeDomainData(buffer);
+
+	var fundamentalFreq = pitchHelper.findFundamentalFreq(buffer,context.sampleRate);
+
+	if (fundamentalFreq !== -1) {
+    return fundamentalFreq
+  }
+}
+
+// Returns a new color based on the given color
+// Calculated based on the pitch of the audio
+function getColorFromSound(oldColor) {
+  var color = oldColor;
+    var pitch = detectPitch();
+    if (pitch) {
+      var hex = Math.floor(pitch).toString(16);
+      hex = ("000" + hex).substr(-3);
+      color = new THREE.Color("#" + hex);
+
+      var r = 0.8 * oldColor.r + 0.2 * color.r;
+      var g = 0.8 * oldColor.g + 0.2 * color.g;
+      var b = 0.8 * oldColor.b + 0.2 * color.b;
+      color = new THREE.Color(r,g,b);
+      console.log(color);
+    }
   return color;
 }
 
@@ -109,6 +182,10 @@ export default {
   getSourceJS: getSourceJS,
   getArray: getArray,
   init: init,
+  mute: mute,
+  unmute: unmute,
+  setMusic: setMusic,
+  isPlaying: isPlaying,
   getSizeFromSound: getSizeFromSound,
   getColorFromSound: getColorFromSound,
   getRateFromSound: getRateFromSound
