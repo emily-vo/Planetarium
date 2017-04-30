@@ -28,29 +28,6 @@ function findFundamentalFreq(buffer, sampleRate) {
 }
 
 
-
-var findClosestNote = function (freq, notes) {
-		// Use binary search to find the closest note
-		var low = -1;
-		var high = notes.length;
-		while (high - low > 1) {
-			var pivot = Math.round((low + high) / 2);
-			if (notes[pivot].frequency <= freq) {
-				low = pivot;
-			} else {
-				high = pivot;
-			}
-		}
-
-		if (Math.abs(notes[high].frequency - freq) <= Math.abs(notes[low].frequency - freq)) {
-			// notes[high] is closer to the frequency we found
-			return notes[high];
-		}
-
-		return notes[low];
-	};
-
 export default {
-  findFundamentalFreq: findFundamentalFreq,
-  findClosestNote: findClosestNote
+  findFundamentalFreq: findFundamentalFreq
 }

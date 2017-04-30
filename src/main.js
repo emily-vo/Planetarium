@@ -86,8 +86,7 @@ function onLoad(framework) {
   crystalWorld = new CrystalWorld(scene, camera, clock, directionalLight);
 
   // audio
-  Audio.init(); //COMMENT TO TURN AUDIO ON
-
+  Audio.init();
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
@@ -167,10 +166,11 @@ function onUpdate(framework) {
   basicChoreography();
 
   if (Audio.isPlaying()) {
-    var size = Audio.getSizeFromSound()
-    var bg = scene.background ? scene.background : new THREE.Color(0,0,0)
-    var color = Audio.getColorFromSound(bg)
-    scene.background = color
+    var size = Audio.getSizeFromSound();
+    var bg = scene.background ? scene.background : new THREE.Color(0,0,0);
+    var color = Audio.getColorFromSound(bg);
+    // Change the background color (testing\)
+    scene.background = color;
 
   }
 }

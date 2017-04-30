@@ -86,7 +86,7 @@ function getAverageVolume(array) {
    return values / array.length;
 }
 
-// Volume / amplitude
+// Calculated based on the volume / amplitude
 function getSizeFromSound() {
   var arr =  new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteFrequencyData(arr);
@@ -106,6 +106,7 @@ function detectPitch() {
 }
 
 // Returns a new color based on the given color
+// Calculated based on the pitch of the audio
 function getColorFromSound(oldColor) {
   var color = oldColor;
     var pitch = detectPitch()
