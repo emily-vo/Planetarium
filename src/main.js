@@ -118,7 +118,6 @@ function onLoad(framework) {
     Audio.init(path); 
   });
 
-<<<<<<< HEAD
   var geo = new THREE.SphereGeometry(40, 32, 32);
   var texloader = new THREE.TextureLoader();
   // initialize example uniform variables and store in list
@@ -184,10 +183,8 @@ function onLoad(framework) {
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
-=======
   gui.add(audioControl, 'music', ['the-deli-flowers', 'smooth-operator', 'cello-suite']).onChange(function(newVal) {
     Audio.setMusic(newVal, resetAnalysers);
->>>>>>> ecce05e543807fac94193d412a73fc03fdd3d615
   });
 
 }
@@ -223,13 +220,8 @@ function tryInitWorlds() {
           Audio.playSound();
           clock.start();
           audioPlaying = true;
-<<<<<<< HEAD
-        } 
-      }      
-=======
         }
       }
->>>>>>> ecce05e543807fac94193d412a73fc03fdd3d615
   }
 }
 
