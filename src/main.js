@@ -15,9 +15,9 @@ var clock =new THREE.Clock(false);
 
 var koiGeo;
 
-// worlds 
+// worlds
 var flowerWorld;
-var waterWorld; 
+var waterWorld;
 var crystalWorld;
 
 // scene nodes
@@ -41,6 +41,7 @@ var music = {
 };
 
 var song = music.wildcat;
+var audioControl = { 'mute': false, 'music': 'smooth operator' }
 
 var skyboxMat;
 
@@ -70,7 +71,7 @@ function onLoad(framework) {
 
   // set camera position
   camera.position.set(0, 0, 20);
-  camera.lookAt(new THREE.Vector3(0,0,0)); 
+  camera.lookAt(new THREE.Vector3(0,0,0));
   camera.updateProjectionMatrix();
 
   cameraControl = new CameraControls(scene, clock, camera);
@@ -79,9 +80,35 @@ function onLoad(framework) {
   var axisHelper = new THREE.AxisHelper( 10 );
   scene.add( axisHelper );
 
+
+  // ALL WORLD CREATION IS COMMENTED OUT
+  /*
+  // new camera control
+  // world 1
+  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
+
+  // world 2
+  // Mesh loading
   var objLoader = new THREE.OBJLoader();
-  
+
   objLoader.load('house.obj', function(obj) {
+      koiGeo = obj.children[0].geometry;
+      waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
+      // remove waterWorld from scene
+      waterWorld.deleteEntireWorld(0);
+      waterWorld.removeInnerSphere(0);
+  });
+
+
+  // test world for suzanne
+  world3 = new BasicWorld(scene, clock, directionalLight);
+  world3.deleteEntireWorld(0);
+  */
+
+  // crystal world
+  crystalWorld = new CrystalWorld(scene, camera, clock, directionalLight);
+
+  // audio
     koiGeo = obj.children[0].geometry;
     var path;
     switch(song) {
@@ -95,15 +122,15 @@ function onLoad(framework) {
         path = flowers;
       break;
     }
-    Audio.init(path); 
-  });
+    Audio.init(path);
+
 
   var geo = new THREE.SphereGeometry(40, 32, 32);
   var texloader = new THREE.TextureLoader();
   // initialize example uniform variables and store in list
   var shaderUniforms = {
       texture: {
-          type: "t", 
+          type: "t",
           value: texloader.load('./textures/sky.jpg')
       },
       u_useTexture: {
@@ -133,18 +160,18 @@ function onLoad(framework) {
       u_camPos: {
           type: 'v3',
           value: camera.position
-      }, 
+      },
       time: {
           type: 'float',
           value: clock.elapsedTime
       }
   };
-  
+
   // initialize example shader and mesh
   skyboxMat = new THREE.ShaderMaterial({
         uniforms: shaderUniforms,
         vertexShader: require('./shaders/iridescent-vert.glsl'),
-        fragmentShader: require('./shaders/iridescent-frag.glsl'), 
+        fragmentShader: require('./shaders/iridescent-frag.glsl'),
         //lights: true
   });
 
@@ -156,19 +183,32 @@ function onLoad(framework) {
   //scene.add(skySphere);
   //camera.children.push(skySphere);
  // skySphere.parent = camera;
-  
- 
+
+
 
   // add gui controls
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
   });
+
+  gui.add(audioControl, 'mute').onChange(function(newVal) {
+    if (newVal) {
+      Audio.mute()
+    } else {
+      Audio.unmute()
+    }
+  });
+
+  gui.add(audioControl, 'music', ['the-deli-flowers', 'smooth-operator', 'cello-suite']).onChange(function(newVal) {
+    Audio.setMusic(newVal);
+  })
+
 }
 
 function tryInitWorlds() {
   if (Audio.getAnalyser() !== undefined) {
       if (crystalWorld === undefined) {
-        crystalWorld = new CrystalWorld(scene, camera, clock, 
+        crystalWorld = new CrystalWorld(scene, camera, clock,
           directionalLight, Audio.getAnalyser());
       }
       if (flowerWorld === undefined) {
@@ -180,9 +220,9 @@ function tryInitWorlds() {
           Audio.playSound();
           clock.start();
           audioPlaying = true;
-        } 
+        }
       }
-       
+
   }
 }
 
@@ -201,11 +241,30 @@ function flowerWorldChoreo(start, end) {
     flowerWorld.spinAccelerate(start + 10, start + 15, Math.PI / 4000);
     flowerWorld.tick();
   }
-
-  if (timeTarget(end)) {
-    flowerWorld.toggleDisplay(false);
-  }
 }
+
+  // // move second world
+  // if (waterWorld) {
+  //    // enable animation of water
+  //    waterWorld.updateWaterTime();
+  //
+  //    // render the world
+  //    waterWorld.recreateEntireWorld(8);
+  //    waterWorld.addInnerSphere(8);
+  //
+  //   waterWorld.spinAccelerate(7,8.2,Math.PI / 6000);
+  //   waterWorld.spinDeccelerate(8.2,9.3,Math.PI / 6000);
+  //   waterWorld.spin(9, 15,Math.PI / 1000);
+  //   waterWorld.spinAccelerate(15,16, Math.PI / 3000);
+  //
+  //   // delete world from view at 16 seconds
+  //   waterWorld.deleteEntireWorld(16);
+  //   waterWorld.removeInnerSphere(16);
+  //   waterWorld.tick();
+  //   if (timeTarget(end)) {
+  //     flowerWorld.toggleDisplay(false);
+  //   }
+  // }
 
 function waterWorldChoreo(start, end) {
   if (timeTarget(start)) {
@@ -224,6 +283,18 @@ function waterWorldChoreo(start, end) {
 
 function crystalWorldChoreo(start, end) {
 
+  // move third world
+  if (world3) {
+     // enable animation of water
+     world3.recreateEntireWorld(16);
+     world3.spinAccelerate(15, 17, Math.PI / 5000);
+     world3.spinDeccelerate(17,19, Math.PI / 5000);
+     world3.spin(19,25, Math.PI / 5000);
+
+    // delete world from view at 25 seconds
+    world3.deleteEntireWorld(25);
+    world3.tick();
+  }
   if (timeTarget(start)) {
     crystalWorld.toggleDisplay(true);
   }
@@ -233,6 +304,9 @@ function crystalWorldChoreo(start, end) {
     crystalWorld.fadeIn(25, 28);
     crystalWorld.tick();
   }
+  // temporarily turn of camera movements
+  // cameraControl.zoomInZ(4.5, 6.5);
+  // cameraControl.zoomOutZ(7.5,10);
 
   if (timeTarget(end)) {
     crystalWorld.toggleDisplay(false);
@@ -243,23 +317,31 @@ function defined() {
   return flowerWorld && waterWorld && crystalWorld;
 }
 
-// basic choreography set up 
-function basicChoreography() { 
-  // move first world 
+// basic choreography set up
+function basicChoreography() {
+  // move first world
   if (defined()) {
     //flowerWorldChoreo(2, 15);
     //waterWorldChoreo(15, 25);
     crystalWorldChoreo(2, 100);
   }
-    
+
   if (cameraControl) {
-    cameraControl.zoomInZ(4.5, 6.5); 
+    cameraControl.zoomInZ(4.5, 6.5);
     cameraControl.zoomOutZ(7.5,10);
   }
 }
 
 // called on frame updates
 function onUpdate(framework) {
+
+  if (Audio.isPlaying()) {
+    var size = Audio.getSizeFromSound();
+    var bg = scene.background ? scene.background : new THREE.Color(0,0,0);
+    var color = Audio.getColorFromSound(bg);
+    // Change the background color (testing\)
+    scene.background = color;
+  }
   if (clock) clock.getDelta();
   if (skyboxMat && Audio.getAnalyser()) {
     //var analyser = Audio.getAnalyser();
@@ -271,7 +353,7 @@ function onUpdate(framework) {
   }
 
   tryInitWorlds();
-  basicChoreography(); 
+  basicChoreography();
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate

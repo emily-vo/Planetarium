@@ -1,6 +1,6 @@
 Emily Vo, Milestone 2
 ---------------------------------------
-I created a new crystal planet by procedurally creating the crystals. I extruded shapes. I gave both the planet and crystals an iridescent shader. I also fixed Andrea's mesh loading issue that has been plaguing us for two weeks. It took me 4 hours, but I realized that new npm installs have a broken obj loader. I cleaned out the junk node modules and replaced it with older ones from previous projects. 
+I created a new crystal planet by procedurally creating the crystals. I extruded shapes. I gave both the planet and crystals an iridescent shader. I also fixed Andrea's mesh loading issue that has been plaguing us for two weeks. It took me 4 hours, but I realized that new npm installs have a broken obj loader. I cleaned out the junk node modules and replaced it with older ones from previous projects.
 
 Photos of my crystal generation is in images.
 
@@ -14,3 +14,6 @@ Animation: I worked on the order and transitions for the final animation. I adde
 
 Suzanne Knop, Milestone 2
 ---------------------------------------
+I spent the bulk of my time understanding and implementing a pitch detection algorithm to get the fundamental frequency of the music as it plays in real-time. Most of the algorithm is done in `findFundamentalFreq()` in `src/pitchHelper.js`, and called by `detectPitch()` in `src/audio.js`. I use this function to get a color in `getColorFromSound()` by converting the frequency into 3-digit hex, creating a color from the hex code, and linearly blending the new color with the old color passed in. I added this blending so that the transitions between colors would be smoother, and not give the viewer a seizure.
+
+I also added gui elements for muting and choosing a song!
