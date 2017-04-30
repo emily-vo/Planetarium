@@ -1,6 +1,9 @@
 const THREE = require('three');
+import pitchHelper from './pitchHelper'
+var playing = false;
 var context;
 var sourceNode, sourceJs;
+var gainNode;
 var analyser;
 var buffer;
 
@@ -14,6 +17,8 @@ function init(path) {
       window.AudioContext = window.webkitAudioContext;
   }
   context = new AudioContext();
+  setupAudioNodes();
+  // loadSound("./audio/smooth-operator.mp3");
   loadSound(path);
 }
 
@@ -48,23 +53,56 @@ function loadSound(url) {
   request.send();
 }
 
+function playSound(buffer) {
+  sourceNode.buffer = buffer;
+  sourceNode.start(0);
+  playing = true;
+}
+
+function stopSound() {
+  sourceNode.stop();
+  playing = false;
+}
+
+function mute() {
+  gainNode.gain.value = 0;
+}
+
+function unmute(){
+  gainNode.gain.value = 1;
+}
+
+function isPlaying() {
+  return playing;
+}
+
+function setMusic(name) {
+  stopSound();
+  setupAudioNodes();
+  loadSound('./audio/' + name + '.mp3');
+}
+
 function playSound() {
     sourceNode.start(0);
 }
 
 function setupAudioNodes() {
   sourceNode = context.createBufferSource();
-  sourceNode.connect(context.destination);
+  // sourceNode.connect(context.destination);
 
   // jsNode = context.createScriptProcessor(2048, 1, 1); //ScriptProcessorNode
 
   analyser = context.createAnalyser();
   analyser.smoothingTimeConstant = 0.3;
-  analyser.fftSize = 1024;
+  analyser.fftSize = 2048;
 
-  splitter = context.createChannelSplitter(); // splits into left and right stream
+  // splitter = context.createChannelSplitter(); // splits into left and right stream
 
   sourceNode.connect(analyser);
+
+  gainNode = context.createGain();
+  sourceNode.connect(gainNode);
+  gainNode.connect(context.destination);
 }
 
 function getAverageVolume(array) {
@@ -75,16 +113,40 @@ function getAverageVolume(array) {
    return values / array.length;
 }
 
-// Volume / amplitude
+// Calculated based on the volume / amplitude
 function getSizeFromSound() {
   var arr =  new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteFrequencyData(arr);
   return getAverageVolume(arr);
 }
 
-function getColorFromSound() {
-  //TODO: implement according to pitch
-  var color = new THREE.Color(0,0,0);
+
+function detectPitch() {
+	var buffer = new Uint8Array(analyser.fftSize);
+	analyser.getByteTimeDomainData(buffer);
+
+	var fundamentalFreq = pitchHelper.findFundamentalFreq(buffer,context.sampleRate);
+
+	if (fundamentalFreq !== -1) {
+    return fundamentalFreq
+  }
+}
+
+// Returns a new color based on the given color
+// Calculated based on the pitch of the audio
+function getColorFromSound(oldColor) {
+  var color = oldColor;
+    var pitch = detectPitch()
+    if (pitch) {
+      var hex = Math.floor(pitch).toString(16)
+      hex = ("000" + hex).substr(-3)
+      color = new THREE.Color("#" + hex)
+
+      var r = 0.8 * oldColor.r + 0.2 * color.r
+      var g = 0.8 * oldColor.g + 0.2 * color.g
+      var b = 0.8 * oldColor.b + 0.2 * color.b
+      color = new THREE.Color(r,g,b)
+    }
   return color;
 }
 
@@ -109,6 +171,10 @@ export default {
   getSourceJS: getSourceJS,
   getArray: getArray,
   init: init,
+  mute: mute,
+  unmute: unmute,
+  setMusic: setMusic,
+  isPlaying: isPlaying,
   getSizeFromSound: getSizeFromSound,
   getColorFromSound: getColorFromSound,
   getRateFromSound: getRateFromSound
