@@ -2,12 +2,8 @@ const THREE = require('three');
 import pitchHelper from './pitchHelper'
 var playing = false;
 var context;
-<<<<<<< HEAD
-var sourceNode;
-var gainNode;
-=======
 var sourceNode, sourceJs;
->>>>>>> master
+var gainNode;
 var analyser;
 var buffer;
 

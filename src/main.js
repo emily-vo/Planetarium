@@ -109,7 +109,6 @@ function onLoad(framework) {
   crystalWorld = new CrystalWorld(scene, camera, clock, directionalLight);
 
   // audio
-  Audio.init();
     koiGeo = obj.children[0].geometry;
     var path;
     switch(song) {
@@ -124,7 +123,7 @@ function onLoad(framework) {
       break;
     }
     Audio.init(path);
-  });
+
 
   var geo = new THREE.SphereGeometry(40, 32, 32);
   var texloader = new THREE.TextureLoader();
@@ -242,29 +241,30 @@ function flowerWorldChoreo(start, end) {
     flowerWorld.spinAccelerate(start + 10, start + 15, Math.PI / 4000);
     flowerWorld.tick();
   }
+}
 
-  // move second world
-  if (waterWorld) {
-     // enable animation of water
-     waterWorld.updateWaterTime();
-
-     // render the world
-     waterWorld.recreateEntireWorld(8);
-     waterWorld.addInnerSphere(8);
-
-    waterWorld.spinAccelerate(7,8.2,Math.PI / 6000);
-    waterWorld.spinDeccelerate(8.2,9.3,Math.PI / 6000);
-    waterWorld.spin(9, 15,Math.PI / 1000);
-    waterWorld.spinAccelerate(15,16, Math.PI / 3000);
-
-    // delete world from view at 16 seconds
-    waterWorld.deleteEntireWorld(16);
-    waterWorld.removeInnerSphere(16);
-    waterWorld.tick();
-    if (timeTarget(end)) {
-      flowerWorld.toggleDisplay(false);
-    }
-  }
+  // // move second world
+  // if (waterWorld) {
+  //    // enable animation of water
+  //    waterWorld.updateWaterTime();
+  //
+  //    // render the world
+  //    waterWorld.recreateEntireWorld(8);
+  //    waterWorld.addInnerSphere(8);
+  //
+  //   waterWorld.spinAccelerate(7,8.2,Math.PI / 6000);
+  //   waterWorld.spinDeccelerate(8.2,9.3,Math.PI / 6000);
+  //   waterWorld.spin(9, 15,Math.PI / 1000);
+  //   waterWorld.spinAccelerate(15,16, Math.PI / 3000);
+  //
+  //   // delete world from view at 16 seconds
+  //   waterWorld.deleteEntireWorld(16);
+  //   waterWorld.removeInnerSphere(16);
+  //   waterWorld.tick();
+  //   if (timeTarget(end)) {
+  //     flowerWorld.toggleDisplay(false);
+  //   }
+  // }
 
 function waterWorldChoreo(start, end) {
   if (timeTarget(start)) {
@@ -294,6 +294,7 @@ function crystalWorldChoreo(start, end) {
     // delete world from view at 25 seconds
     world3.deleteEntireWorld(25);
     world3.tick();
+  }
   if (timeTarget(start)) {
     crystalWorld.toggleDisplay(true);
   }
