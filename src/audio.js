@@ -11,17 +11,17 @@ var jsNode;
 var splitter;
 var array = new Array();
 var reset = true;
-function init(path) {
+function init(path, initWorlds) {
   if (! window.AudioContext) { // check if the default naming is enabled, if not use the chrome one.
       if (! window.webkitAudioContext) alert('no audiocontext found');
       window.AudioContext = window.webkitAudioContext;
   }
   context = new AudioContext();
-  loadSound(path);
+  loadSound(path, initWorlds);
 }
 
 // load the specified sound
-function loadSound(url) {
+function loadSound(url, initWorlds) {
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
   request.responseType = 'arraybuffer';
@@ -49,6 +49,7 @@ function loadSound(url) {
       sourceNode.connect(gainNode);
       gainNode.connect(context.destination);
       reset = true;
+      initWorlds();
     }, (e) => {console.log(e)});
   }
   request.send();

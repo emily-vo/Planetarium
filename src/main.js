@@ -28,8 +28,6 @@ var directionalLight;
 // animation control
 var cameraControl;
 
-var audioPlaying = false;
-
 var humble = "./audio/humble.mp3";
 var wildcat = "./audio/wildcat.mp3";
 var flowers = "./audio/the-deli-flowers.mp3";
@@ -97,32 +95,22 @@ function onLoad(framework) {
         path = flowers;
       break;
     }
-    Audio.init(path); 
+    Audio.init(path, initWorlds); 
   });
 
-  gui.add(audioControl, 'music', ['the-deli-flowers', 'smooth-operator', 'cello-suite']).onChange(function(newVal) {
+  gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 
+    'smooth-operator', 'cello-suite']).onChange(function(newVal) {
     Audio.setMusic(newVal, resetAnalysers);
   });
 }
 
-function tryInitWorlds() {
-  if (Audio.getAnalyser() !== undefined) {
-      if (crystalWorld === undefined) {
-        crystalWorld = new CrystalWorld(scene, camera, clock,
-          directionalLight, Audio.getAnalyser());
-      }
-      if (flowerWorld === undefined) {
-        flowerWorld = new FlowerWorld(scene, clock, directionalLight);
-      }
-      if (waterWorld == undefined) {
-        waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
-        if (!audioPlaying) {
-          Audio.playSound();
-          clock.start();
-          audioPlaying = true;
-        }
-      }
-  }
+function initWorlds() {
+  crystalWorld = new CrystalWorld(scene, camera, clock,
+  directionalLight, Audio.getAnalyser());
+  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
+  waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
+  Audio.playSound();
+  clock.start();
 }
 
 function timeTarget(time) {
@@ -208,8 +196,6 @@ function onUpdate(framework) {
     scene.background = color;
   }
   if (clock) clock.getDelta();
-
-  tryInitWorlds();
   basicChoreography();
 }
 

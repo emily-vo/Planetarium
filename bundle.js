@@ -84,26 +84,51 @@
 	
 	
 	// initialize global clock
-	var clock = new THREE.Clock();
-	var cameraControl;
+	var clock = new THREE.Clock(false);
+	
+	var koiGeo;
+	
+	// worlds
 	var flowerWorld;
 	var waterWorld;
-	var world3;
 	var crystalWorld;
+	
+	// scene nodes
+	var scene;
+	var camera;
+	var directionalLight;
+	
+	// animation control
+	var cameraControl;
+	
+	var humble = "./audio/humble.mp3";
+	var wildcat = "./audio/wildcat.mp3";
+	var flowers = "./audio/the-deli-flowers.mp3";
+	
+	var music = {
+	  humble: 1,
+	  wildcat: 2,
+	  flowers: 3
+	};
+	
+	var song = music.wildcat;
+	var audioControl = { 'mute': false, 'music': 'smooth operator' };
+	
+	var skyboxMat;
 	
 	// called after the scene loads
 	function onLoad(framework) {
 	  // initialize framework
-	  var scene = framework.scene;
-	  var camera = framework.camera;
+	  scene = framework.scene;
+	  camera = framework.camera;
 	  var renderer = framework.renderer;
 	  var gui = framework.gui;
 	  var stats = framework.stats;
 	
 	  // initialize a simple box and material
-	  var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+	  directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 	  directionalLight.color.setHSL(0.1, 1, 0.95);
-	  directionalLight.position.set(1, 1, 2);
+	  directionalLight.position.set(1, 5, 2);
 	  directionalLight.position.multiplyScalar(10);
 	
 	  scene.add(directionalLight);
@@ -117,104 +142,131 @@
 	
 	  // set camera position
 	  camera.position.set(0, 0, 20);
-	  camera.lookAt(new THREE.Vector3(0, 0, 0)); // reset x = 0 to look at flower plan
+	  camera.lookAt(new THREE.Vector3(0, 0, 0));
 	  camera.updateProjectionMatrix();
+	
+	  cameraControl = new _cameraControls2.default(scene, clock, camera);
 	
 	  // putting in a simple axis helper to help visualize
 	  var axisHelper = new THREE.AxisHelper(10);
 	  scene.add(axisHelper);
 	
-	  // ALL WORLD CREATION IS COMMENTED OUT
-	  /*
-	  // new camera control
-	  // world 1 
-	  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
-	  
-	  // world 2 
-	  // Mesh loading
 	  var objLoader = new THREE.OBJLoader();
-	  var koiGeo;
-	  var mesh;
-	  objLoader.load('house.obj', function(obj) {
-	      koiGeo = obj.children[0].geometry;
-	      waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
-	      // remove waterWorld from scene  
-	      waterWorld.deleteEntireWorld(0); 
-	      waterWorld.removeInnerSphere(0); 
-	  });
-	   // test world for suzanne
-	  world3 = new BasicWorld(scene, clock, directionalLight);  
-	  world3.deleteEntireWorld(0);
-	  */
-	
-	  // crystal world 
-	  crystalWorld = new _crystalWorld2.default(scene, camera, clock, directionalLight);
 	
 	  // audio
-	  _audio2.default.init(); //UNCOMMENT TO TURN AUDIO ON
+	  objLoader.load('house.obj', function (obj) {
+	    koiGeo = obj.children[0].geometry;
+	    var path;
+	    switch (song) {
+	      case music.humble:
+	        path = humble;
+	        break;
+	      case music.wildcat:
+	        path = wildcat;
+	        break;
+	      case music.flowers:
+	        path = flowers;
+	        break;
+	    }
+	    _audio2.default.init(path, initWorlds);
+	  });
 	
-	
-	  // add gui controls
-	  gui.add(camera, 'fov', 0, 180).onChange(function (newVal) {
-	    camera.updateProjectionMatrix();
+	  gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 'smooth-operator', 'cello-suite']).onChange(function (newVal) {
+	    _audio2.default.setMusic(newVal, resetAnalysers);
 	  });
 	}
 	
-	// basic choreography set up 
-	function basicChoreography() {
-	  // move first world 
-	  if (flowerWorld) {
-	    flowerWorld.spin(0, 2, Math.PI / 3000);
-	    flowerWorld.spinAccelerate(2, 4, Math.PI / 4000);
-	    flowerWorld.spinDeccelerate(4, 6, Math.PI / 4000);
-	    flowerWorld.spinAccelerate(6, 8, Math.PI / 4000);
+	function initWorlds() {
+	  crystalWorld = new _crystalWorld2.default(scene, camera, clock, directionalLight, _audio2.default.getAnalyser());
+	  flowerWorld = new _flowerWorld2.default(scene, clock, directionalLight);
+	  waterWorld = new _waterWorld2.default(scene, clock, directionalLight, koiGeo);
+	  _audio2.default.playSound();
+	  clock.start();
+	}
 	
-	    // deletes the world from view at 8 seconds
-	    flowerWorld.deleteEntireWorld(8);
+	function timeTarget(time) {
+	  var epsilon = 0.1;
+	  return Math.abs(clock.elapsedTime - time) < epsilon;
+	}
 	
-	    flowerWorld.tick();
+	function flowerWorldChoreo(start, end) {
+	  if (timeTarget(start)) {
+	    flowerWorld.toggleDisplay(true);
 	  }
 	
-	  // move second world 
-	  if (waterWorld) {
-	    // enable animation of water 
-	    waterWorld.updateWaterTime();
+	  if (flowerWorld.displayed) {
+	    flowerWorld.spin(start, start + 10, Math.PI / 1000);
+	    flowerWorld.spinAccelerate(start + 10, start + 15, Math.PI / 4000);
+	    flowerWorld.tick();
+	  }
+	}
 	
-	    // render the world 
-	    waterWorld.recreateEntireWorld(8);
-	    waterWorld.addInnerSphere(8);
+	function waterWorldChoreo(start, end) {
+	  if (timeTarget(start)) {
+	    waterWorld.toggleDisplay(true);
+	  }
 	
-	    waterWorld.spinAccelerate(7, 8.2, Math.PI / 6000);
-	    waterWorld.spinDeccelerate(8.2, 9.3, Math.PI / 6000);
-	    waterWorld.spin(9, 15, Math.PI / 1000);
-	    waterWorld.spinAccelerate(15, 16, Math.PI / 3000);
-	
-	    // delete world from view at 16 seconds 
-	    waterWorld.deleteEntireWorld(16);
-	    waterWorld.removeInnerSphere(16);
+	  if (waterWorld.displayed) {
+	    waterWorld.spin(start, start + 6, Math.PI / 3000);
 	    waterWorld.tick();
 	  }
 	
-	  // move third world 
-	  if (world3) {
-	    // enable animation of water 
-	    world3.recreateEntireWorld(16);
-	    world3.spinAccelerate(15, 17, Math.PI / 5000);
-	    world3.spinDeccelerate(17, 19, Math.PI / 5000);
-	    world3.spin(19, 25, Math.PI / 5000);
-	
-	    // delete world from view at 25 seconds 
-	    world3.deleteEntireWorld(25);
-	    world3.tick();
+	  if (timeTarget(end)) {
+	    waterWorld.toggleDisplay(false);
 	  }
-	
-	  // temporarily turn of camera movements 
-	  // cameraControl.zoomInZ(4.5, 6.5); 
-	  // cameraControl.zoomOutZ(7.5,10);
 	}
 	
+	function crystalWorldChoreo(start, end) {
+	  if (timeTarget(start)) {
+	    crystalWorld.toggleDisplay(true);
+	  }
+	  if (crystalWorld.displayed) {
+	    crystalWorld.fadeIn(3, 10);
+	    crystalWorld.fadeOut(15, 20);
+	    crystalWorld.fadeIn(25, 28);
+	    crystalWorld.tick();
+	  }
+	  // temporarily turn of camera movements
+	  // cameraControl.zoomInZ(4.5, 6.5);
+	  // cameraControl.zoomOutZ(7.5,10);
+	
+	  if (timeTarget(end)) {
+	    crystalWorld.toggleDisplay(false);
+	  }
+	}
+	
+	function defined() {
+	  return flowerWorld && waterWorld && crystalWorld;
+	}
+	
+	// basic choreography set up
+	function basicChoreography() {
+	  // move first world
+	  if (defined()) {
+	    //flowerWorldChoreo(2, 15);
+	    //waterWorldChoreo(15, 25);
+	    crystalWorldChoreo(2, 100);
+	  }
+	
+	  if (cameraControl) {
+	    cameraControl.zoomInZ(4.5, 6.5);
+	    cameraControl.zoomOutZ(7.5, 10);
+	  }
+	}
+	
+	function resetAnalysers() {
+	  crystalWorld.analyser = _audio2.default.getAnalyser();
+	}
 	// called on frame updates
 	function onUpdate(framework) {
+	  if (_audio2.default.isPlaying()) {
+	    var size = _audio2.default.getSizeFromSound();
+	    var bg = scene.background ? scene.background : new THREE.Color(0, 0, 0);
+	    var color = _audio2.default.getColorFromSound(bg);
+	    // Change the background color (testing\)
+	    scene.background = color;
+	  }
+	  if (clock) clock.getDelta();
 	  basicChoreography();
 	}
 	
@@ -48436,77 +48488,24 @@
 	        this.timer = timer;
 	        this.assets = [];
 	        this.baseMesh = baseMesh;
-	        this.createScene();
-	        // this.isRendered = true;  // is the world rendered 
+	        this.displayed = false;
 	    }
 	
-	    // removes all types of assets from the scene
-	
-	
 	    _createClass(World, [{
-	        key: 'deleteAssets',
-	        value: function deleteAssets() {
-	            this.scene.remove(this.baseMesh);
-	            var timeMod = this.timer.elapsedTime % 1.0;
-	            for (var i = 0; i < this.assets.length; i++) {
-	                this.assets[i].deleteFromScene();
-	            }
-	            this.isRendered = false;
-	        }
-	
-	        // removes only the base mesh from the scene 
-	
-	    }, {
-	        key: 'deleteBaseMesh',
-	        value: function deleteBaseMesh() {
-	            this.scene.remove(this.baseMesh);
-	        }
-	
-	        // removes both base mesh and assets from the scene   
-	
-	    }, {
-	        key: 'deleteEntireWorld',
-	        value: function deleteEntireWorld(time) {
-	            if (this.timer.elapsedTime >= time) {
-	                if (this.isRendered) {
-	                    this.deleteAssets();
-	                    this.deleteBaseMesh();
-	                    this.isRendered = false;
+	        key: 'toggleDisplay',
+	        value: function toggleDisplay(displayed) {
+	            if (!this.displayed && displayed) {
+	                this.scene.add(this.baseMesh);
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    this.assets[i].show();
+	                }
+	            } else if (this.displayed && !displayed) {
+	                this.scene.remove(this.baseMesh);
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    this.assets[i].hide();
 	                }
 	            }
-	        }
-	
-	        // recreate assets 
-	
-	    }, {
-	        key: 'recreateAssets',
-	        value: function recreateAssets() {
-	            for (var i = 0; i < this.assets.length; i++) {
-	                this.assets[i].addToScene();
-	            }
-	        }
-	
-	        // for now, just adds the base mesh
-	
-	    }, {
-	        key: 'createScene',
-	        value: function createScene() {
-	            this.scene.add(this.baseMesh);
-	            this.isRendered = true;
-	        }
-	
-	        // recreates both base mesh and assets to the scene   
-	
-	    }, {
-	        key: 'recreateEntireWorld',
-	        value: function recreateEntireWorld(time) {
-	            if (this.timer.elapsedTime >= time) {
-	                if (!this.isRendered) {
-	                    this.createScene();
-	                    this.recreateAssets();
-	                    this.isRendered = true;
-	                }
-	            }
+	            this.displayed = displayed;
 	        }
 	
 	        // easy getter for vertex list
@@ -48524,7 +48523,21 @@
 	        value: function worldFaces() {
 	            return this.baseMesh.geometry.faces;
 	        }
+	    }, {
+	        key: 'spinIndefinitely',
+	        value: function spinIndefinitely(speed) {
+	            this.baseMesh.rotation.y = speed;
+	            this.baseMesh.updateMatrix();
+	            this.baseMesh.geometry.applyMatrix(this.baseMesh.matrix);
 	
+	            for (var i = 0; i < this.assets.length; i++) {
+	                var asset = this.assets[i];
+	                asset.setPosition(asset.vertex);
+	                this.baseMesh.geometry.computeFaceNormals();
+	                this.baseMesh.geometry.computeVertexNormals();
+	                asset.alignItemsWithNormal();
+	            }
+	        }
 	        // world animation options 
 	
 	    }, {
@@ -48624,7 +48637,6 @@
 	        value: function addAsset(asset, position) {
 	            this.assets.push(asset);
 	            asset.setPosition(position);
-	            asset.addToScene();
 	        }
 	
 	        // update shader times
@@ -48632,7 +48644,10 @@
 	    }, {
 	        key: 'updateShaderUniforms',
 	        value: function updateShaderUniforms() {
-	            //this.baseMesh.material.uniforms;
+	            this.baseMesh.material.uniforms;
+	            if (this.baseMesh.material.uniforms !== undefined) {
+	                this.baseMesh.material.uniforms.time.value = this.timer.elapsedTime;
+	            }
 	            for (var i = 0; i < this.assets.length; i++) {
 	                this.assets[i].updateShaderUniforms();
 	            }
@@ -48659,11 +48674,12 @@
 	    }, {
 	        key: 'tick',
 	        value: function tick() {
-	            this.updateShaderUniforms();
-	            // this.spin();
-	            // assets tick
-	            for (var i = 0; i < this.assets.length; i++) {
-	                this.assets[i].tick();
+	            if (this.displayed) {
+	                this.updateShaderUniforms();
+	                // assets tick
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    this.assets[i].tick();
+	                }
 	            }
 	        }
 	    }]);
@@ -48724,8 +48740,8 @@
 	
 	
 	  _createClass(Asset, [{
-	    key: 'addToScene',
-	    value: function addToScene() {
+	    key: 'show',
+	    value: function show() {
 	      for (var i = 0; i < this.items.length; i++) {
 	        this.scene.add(this.items[i].mesh);
 	      }
@@ -48734,8 +48750,8 @@
 	    // remove all meshes (in an optional timed interval)
 	
 	  }, {
-	    key: 'deleteFromScene',
-	    value: function deleteFromScene() {
+	    key: 'hide',
+	    value: function hide() {
 	      for (var i = 0; i < this.items.length; i++) {
 	        this.scene.remove(this.items[i].mesh);
 	      }
@@ -48816,12 +48832,12 @@
 	  }, {
 	    key: 'updateShaderUniforms',
 	    value: function updateShaderUniforms() {
-	      var delta = this.timer.getDelta();
 	      for (var i = 0; i < this.items.length; i++) {
 	        var shader = this.items[i].mesh.material;
+	
 	        if (shader.uniforms !== undefined) {
 	          if (shader.uniforms.time !== undefined) {
-	            shader.uniforms.time.value += delta;
+	            shader.uniforms.time.value = this.timer.elapsedTime;
 	          }
 	        }
 	      }
@@ -48832,6 +48848,7 @@
 	  }, {
 	    key: 'tick',
 	    value: function tick() {
+	      this.updatePositions();
 	      this.updateShaderUniforms();
 	    }
 	  }]);
@@ -49224,7 +49241,7 @@
 	            },
 	            image: { // Check the Three.JS documentation for the different allowed types and values
 	                type: "t",
-	                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+	                value: THREE.ImageUtils.loadTexture('./textures/grass.jpg')
 	            },
 	            light_vec: {
 	                type: "v3",
@@ -49239,7 +49256,7 @@
 	            fragmentShader: __webpack_require__(17)
 	        });
 	
-	        var geometry = new THREE.IcosahedronGeometry(6, 1);
+	        var geometry = new THREE.IcosahedronGeometry(4, 1);
 	        var baseMesh = new THREE.Mesh(geometry, material);
 	
 	        var _this = _possibleConstructorReturn(this, (FlowerWorld.__proto__ || Object.getPrototypeOf(FlowerWorld)).call(this, scene, timer, baseMesh));
@@ -49363,6 +49380,7 @@
 	
 	// Uses toolbox functions to create flower meshes
 	function createPetal() {
+	    var texloader = new THREE.TextureLoader();
 	    var shaderUniforms = {
 	        time: {
 	            type: "float",
@@ -49374,7 +49392,7 @@
 	        },
 	        image: { // Check the Three.JS documentation for the different allowed types and values
 	            type: "t",
-	            value: THREE.ImageUtils.loadTexture('./textures/petal.jpg')
+	            value: texloader.load('./textures/petal.jpg')
 	        }
 	    };
 	
@@ -49538,7 +49556,7 @@
 	        _this.light = light;
 	
 	        // the inside sphere 
-	        scene.add(_this.innerSphere);
+	        //scene.add(this.innerSphere);
 	        _this.setMeshPosition(_this.innerSphere, wPos.x, wPos.y, wPos.z);
 	
 	        // create seaweed assets!
@@ -49556,25 +49574,23 @@
 	        return _this;
 	    }
 	
-	    // remove the random base sphere from scene lol sad
-	
-	
 	    _createClass(WaterWorld, [{
-	        key: 'removeInnerSphere',
-	        value: function removeInnerSphere(time) {
-	            if (this.timer.elapsedTime >= time) {
+	        key: 'toggleDisplay',
+	        value: function toggleDisplay(displayed) {
+	            if (!this.displayed && displayed) {
+	                this.scene.add(this.baseMesh);
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    this.assets[i].show();
+	                }
+	                this.scene.add(this.innerSphere);
+	            } else if (this.displayed && !displayed) {
+	                this.scene.remove(this.baseMesh);
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    this.assets[i].hide();
+	                }
 	                this.scene.remove(this.innerSphere);
 	            }
-	        }
-	
-	        // add inner sphere to scene
-	
-	    }, {
-	        key: 'addInnerSphere',
-	        value: function addInnerSphere(time) {
-	            if (this.timer.elapsedTime >= time) {
-	                this.scene.add(this.innerSphere);
-	            }
+	            this.displayed = displayed;
 	        }
 	
 	        // to update the uniform in the frag shader, enables animation
@@ -49588,6 +49604,13 @@
 	            }
 	            for (var i = 0; i < kois.length; i++) {
 	                kois[i].material.uniforms.u_time.value = this.timer.elapsedTime;
+	            }
+	        }
+	    }, {
+	        key: 'tick',
+	        value: function tick() {
+	            if (this.displayed) {
+	                this.updateWaterTime();
 	            }
 	        }
 	    }]);
@@ -49908,6 +49931,8 @@
 	    value: true
 	});
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	var _asset = __webpack_require__(10);
 	
 	var _asset2 = _interopRequireDefault(_asset);
@@ -49932,17 +49957,18 @@
 	
 	// this class will mostly be unchanged from world to world. 
 	// variation in worlds will mostly rely on the various assets.
-	var FlowerWorld = function (_World) {
-	    _inherits(FlowerWorld, _World);
+	var CrystalWorld = function (_World) {
+	    _inherits(CrystalWorld, _World);
 	
-	    function FlowerWorld(scene, camera, timer, light) {
-	        _classCallCheck(this, FlowerWorld);
+	    function CrystalWorld(scene, camera, timer, light, musicAnalyser) {
+	        _classCallCheck(this, CrystalWorld);
 	
 	        // initialize example uniform variables and store in list
+	        var texloader = new THREE.TextureLoader();
 	        var shaderUniforms = {
 	            texture: {
 	                type: "t",
-	                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+	                value: texloader.load('./textures/iridescent.bmp')
 	            },
 	            u_useTexture: {
 	                type: 'i',
@@ -49971,6 +49997,14 @@
 	            u_camPos: {
 	                type: 'v3',
 	                value: camera.position
+	            },
+	            time: {
+	                type: 'float',
+	                value: timer.elapsedTime
+	            },
+	            alpha: {
+	                type: 'float',
+	                value: 0.0
 	            }
 	        };
 	
@@ -49980,22 +50014,157 @@
 	            vertexShader: __webpack_require__(35),
 	            fragmentShader: __webpack_require__(36)
 	        });
+	        material.shading = THREE.FlatShading;
+	        material.transparent = true;
 	
 	        var geometry = new THREE.IcosahedronGeometry(6, 1);
 	        var baseMesh = new THREE.Mesh(geometry, material);
 	
-	        var _this = _possibleConstructorReturn(this, (FlowerWorld.__proto__ || Object.getPrototypeOf(FlowerWorld)).call(this, scene, timer, baseMesh));
+	        var _this = _possibleConstructorReturn(this, (CrystalWorld.__proto__ || Object.getPrototypeOf(CrystalWorld)).call(this, scene, timer, baseMesh));
 	
-	        for (var i = 0; i < 30; i++) {
-	            _this.spawnAsset(new _crystal2.default(scene, camera, timer, _this));
-	        }
+	        _this.camera = camera;
+	        _this.analyser = musicAnalyser;
+	        _this.alpha = 0.9;
+	        _this.spawnAtEveryVertex();
 	        return _this;
 	    }
 	
-	    return FlowerWorld;
+	    _createClass(CrystalWorld, [{
+	        key: 'fadeIn',
+	        value: function fadeIn(start, end) {
+	            if (this.timer.elapsedTime >= start && this.timer.elapsedTime < end) {
+	                var t = (this.timer.elapsedTime - start) / (end - start);
+	                var delta = 1 / (end - start);
+	                this.baseMesh.material.uniforms.alpha.value += delta * t * t;
+	
+	                if (this.baseMesh.material.uniforms.alpha.value > 0.9) {
+	                    this.baseMesh.material.uniforms.alpha.value = 0.9;
+	                }
+	
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    this.assets[i].material.uniforms.alpha.value = this.baseMesh.material.uniforms.alpha.value;
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'fadeOut',
+	        value: function fadeOut(start, end) {
+	            if (this.timer.elapsedTime >= start && this.timer.elapsedTime < end) {
+	                var t = (this.timer.elapsedTime - start) / (end - start);
+	                var delta = -1 / (end - start);
+	                this.baseMesh.material.uniforms.alpha.value += delta * t * t;
+	                if (this.baseMesh.material.uniforms.alpha.value < 0) {
+	                    this.baseMesh.material.uniforms.alpha.value = 0;
+	                }
+	                for (var i = 0; i < this.assets.length; i++) {
+	                    this.assets[i].material.uniforms.alpha.value = this.baseMesh.material.uniforms.alpha.value;
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'spawnAtEveryVertex',
+	        value: function spawnAtEveryVertex() {
+	            var faces = this.worldFaces();
+	            var vertices = this.worldVertices();
+	            for (var i = 0; i < faces.length; i++) {
+	                var face = faces[i];
+	                var v0 = vertices[face.a];
+	                var v1 = vertices[face.b];
+	                var v2 = vertices[face.c];
+	
+	                var x = (v0.x + v1.x + v2.x) / 3;
+	                var y = (v0.y + v1.y + v2.y) / 3;
+	                var z = (v0.z + v1.z + v2.z) / 3;
+	
+	                var v = new THREE.Vector3(x, y, z);
+	
+	                var asset = new _crystal2.default(this.scene, this.camera, this.timer, this);
+	
+	                asset.normal = faces[i].vertexNormals[0];
+	                asset.normal = face.normal;
+	                asset.vertex = v;
+	                asset.face = face;
+	                this.addAsset(asset, v);
+	
+	                asset.alignItemsWithNormal();
+	                //asset.up = asset.normal; 
+	            }
+	        }
+	    }, {
+	        key: 'spawnRing',
+	        value: function spawnRing() {}
+	    }, {
+	        key: 'animateAsset',
+	        value: function animateAsset(asset, spinningSpeed) {
+	            var vertices = this.worldVertices();
+	            var v0 = vertices[asset.face.a];
+	            var v1 = vertices[asset.face.b];
+	            var v2 = vertices[asset.face.c];
+	
+	            var x = (v0.x + v1.x + v2.x) / 3;
+	            var y = (v0.y + v1.y + v2.y) / 3;
+	            var z = (v0.z + v1.z + v2.z) / 3;
+	
+	            var v = new THREE.Vector3(x, y, z);
+	            asset.vertex = v;
+	
+	            var pos = v;
+	            var up = asset.normal.clone();
+	
+	            var oldPos = new THREE.Vector3();
+	            oldPos.addVectors(pos, up.multiplyScalar(this.height / 120));
+	
+	            var newPos = new THREE.Vector3();
+	            newPos.addVectors(pos, up.multiplyScalar(this.musicData[this.k] / 120));
+	
+	            this.height = this.musicData[this.k];
+	
+	            var lerped = new THREE.Vector3();
+	            lerped.lerpVectors(oldPos, newPos, this.timer.getDelta());
+	
+	            if (this.k < this.musicData.length) {
+	                this.k++;
+	            }
+	
+	            asset.position = lerped;
+	        }
+	    }, {
+	        key: 'spinIndefinitely',
+	        value: function spinIndefinitely(speed) {
+	            this.baseMesh.rotation.y = speed;
+	            this.baseMesh.updateMatrix();
+	            this.baseMesh.geometry.applyMatrix(this.baseMesh.matrix);
+	            var bufferLength = this.analyser.frequencyBinCount;
+	            this.musicData = new Uint8Array(bufferLength);
+	            this.analyser.getByteFrequencyData(this.musicData);
+	
+	            for (var i = 0; i < this.assets.length; i++) {
+	                var asset = this.assets[i];
+	                this.animateAsset(asset, speed);
+	                this.baseMesh.geometry.computeFaceNormals();
+	                this.baseMesh.geometry.computeVertexNormals();
+	                asset.alignItemsWithNormal();
+	            }
+	
+	            this.k = 0;
+	        }
+	    }, {
+	        key: 'tick',
+	        value: function tick() {
+	            this.spinIndefinitely(Math.PI / 200);
+	            this.updateShaderUniforms();
+	
+	            // assets tick
+	            for (var i = 0; i < this.assets.length; i++) {
+	                this.assets[i].tick();
+	            }
+	        }
+	    }]);
+	
+	    return CrystalWorld;
 	}(_world2.default);
 	
-	exports.default = FlowerWorld;
+	exports.default = CrystalWorld;
 
 /***/ },
 /* 32 */
@@ -50035,10 +50204,12 @@
 	
 	        var _this = _possibleConstructorReturn(this, (Crystal.__proto__ || Object.getPrototypeOf(Crystal)).call(this, scene, timer, world));
 	
+	        _this.face;
+	        var texloader = new THREE.TextureLoader();
 	        var shaderUniforms = {
 	            texture: {
 	                type: "t",
-	                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+	                value: texloader.load('./textures/iridescent.bmp')
 	            },
 	            u_useTexture: {
 	                type: 'i',
@@ -50050,7 +50221,7 @@
 	            },
 	            u_ambient: {
 	                type: 'v3',
-	                value: new THREE.Color('#414347')
+	                value: new THREE.Color('#111111')
 	            },
 	            u_lightPos: {
 	                type: 'v3',
@@ -50067,6 +50238,14 @@
 	            u_camPos: {
 	                type: 'v3',
 	                value: camera.position
+	            },
+	            time: {
+	                type: 'float',
+	                value: timer.elapsedTime
+	            },
+	            alpha: {
+	                type: 'float',
+	                value: 0.0
 	            }
 	        };
 	
@@ -50077,14 +50256,11 @@
 	            fragmentShader: __webpack_require__(34)
 	        });
 	
-	        var numCrystals = 3 + Math.random() * 3;
-	        for (var i = 0; i < 1; i++) {
-	            var geo = createCrystalGeo();
-	            var mesh = new THREE.Mesh(geo, material);
-	            setAbsoluteRotation(mesh, 'X', Math.PI / 2);
-	            setAbsolutePosition(mesh, 0, Math.random() * 2 + 1, 0);
-	            _this.items.push(new _item2.default(mesh));
-	        }
+	        material.transparent = true;
+	        material.shading = THREE.FlatShading;
+	        _this.material = material;
+	        var mesh = createMainCrystalMesh(material);
+	        _this.items.push(new _item2.default(mesh));
 	        return _this;
 	    }
 	
@@ -50131,11 +50307,10 @@
 	    resetTransform(mesh);
 	}
 	
-	// Uses toolbox functions to create flower meshes
-	function createCrystalGeo() {
-	    var thickness = Math.random() / 20;
+	function createMainCrystalMesh(material) {
+	    var thickness = 0.65;
 	    var pts = [],
-	        count = Math.floor(Math.random()) * 3 + 3;
+	        count = Math.floor(Math.random() * 5) + 3;
 	
 	    for (var i = 0; i < count; i++) {
 	        var l = thickness;
@@ -50145,10 +50320,20 @@
 	
 	    var shape = new THREE.Shape(pts);
 	
-	    var extrudeSettings = { amount: Math.random() * 5 + 2, bevelEnabled: true, bevelSegments: Math.floor(Math.random() * 2) + 1, steps: 5, bevelSize: 1, bevelThickness: 1.0 };
+	    var length = thickness * Math.random() * 6;
+	    var extrudeSettings = { amount: length,
+	        bevelEnabled: true, bevelSegments: Math.floor(Math.random() * 2) + 1,
+	        steps: 5, bevelSize: thickness, bevelThickness: thickness * 4 };
 	    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-	    var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-	    return geometry;
+	    material.needsUpdate = true;
+	    var mesh = new THREE.Mesh(geometry, material);
+	    mesh.geometry.dynamic = true;
+	
+	    setAbsoluteRotation(mesh, 'X', Math.PI / 2);
+	    setAbsoluteRotation(mesh, 'Y', Math.PI / 2 * Math.random() / 10);
+	    setAbsolutePosition(mesh, 0, -length / 2, 0);
+	
+	    return mesh;
 	}
 	
 	function lerp(a0, a1, t) {
@@ -50171,25 +50356,25 @@
 /* 33 */
 /***/ function(module, exports) {
 
-	module.exports = "\nvarying vec2 f_uv;\nvarying vec3 f_normal;\nvarying vec3 f_position;\nvarying float noise;\n\nfloat random(float a, float b, float c) {\n    return fract(sin(dot(vec3(a, b, c), vec3(12.9898, 78.233, 78.233)))*43758.5453);\n}\n\nfloat lerp(float a, float b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nvec4 lerp(vec4 a, vec4 b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nfloat cerp(float a, float b, float t) {\n    float cos_t = (1.0 - cos(t*3.14159)) * 0.5;\n    return lerp(a, b, cos_t);\n}\n\nfloat interpolateNoise(float x, float y, float z) {\n    float x0, y0, z0, x1, y1, z1;\n    \n    // Find the grid voxel that this point falls in\n    x0 = floor(x);\n    y0 = floor(y);\n    z0 = floor(z);\n    \n    x1 = x0 + 1.0;\n    y1 = y0 + 1.0;\n    z1 = z0 + 1.0;\n    \n    // Generate noise at each of the 8 points\n    float FUL, FUR, FLL, FLR, BUL, BUR, BLL, BLR;\n    \n    // front upper left\n    FUL = random(x0, y1, z1);\n    \n    // front upper right\n    FUR = random(x1, y1, z1);\n    \n    // front lower left\n    FLL = random(x0, y0, z1);\n    \n    // front lower right\n    FLR = random(x1, y0, z1);\n    \n    // back upper left\n    BUL = random(x0, y1, z0);\n    \n    // back upper right\n    BUR = random(x1, y1, z0);\n    \n    // back lower left\n    BLL = random(x0, y0, z0);\n    \n    // back lower right\n    BLR = random(x1, y0, z0);\n    \n    // Find the interpolate t values\n    float n0, n1, m0, m1, v;\n    float tx = fract(x - x0);\n    float ty = fract(y - y0);\n    float tz = fract(z - z0);\n    tx = (x - x0);\n    ty = (y - y0);\n    tz = (z - z0);\n    \n    // interpolate along x and y for back\n    n0 = cerp(BLL, BLR, tx);\n    n1 = cerp(BUL, BUR, tx);\n    m0 = cerp(n0, n1, ty);\n    \n    // interpolate along x and y for front\n    n0 = cerp(FLL, FLR, tx);\n    n1 = cerp(FUL, FUR, tx);\n    m1 = cerp(n0, n1, ty);\n    \n    // interpolate along z\n    v = cerp(m0, m1, tz);\n    \n    return v;\n}\n\nfloat generateNoise(float x, float y, float z) {\n    float total = 0.0;\n    float persistence = 1.0 / 2.0;\n    int its = 0;\n    for (int i = 0; i < 32; i++) {\n        float freq = pow(2.0, float(i));\n        float ampl = pow(persistence, float(i));\n        total += interpolateNoise(freq*x, freq*y, freq*z)*ampl;\n    }\n    return total;\n}\n\nvoid main() {\n    // Pass noise to the fragment shader\n\tnoise =  generateNoise(position.x, position.y, position.z);\n    f_uv = uv;\n    f_normal = normal;\n    f_position = position;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}"
+	module.exports = "varying vec2 f_uv;\nvarying vec3 f_normal;\nvarying vec3 f_position;\nvarying float noise;\nuniform float time;\n\nfloat random(float a, float b, float c) {\n    return fract(sin(dot(vec3(a, b, c), vec3(12.9898, 78.233, 578.233)))*43758.5453);\n}\n\nfloat lerp(float a, float b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nvec4 lerp(vec4 a, vec4 b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nfloat cerp(float a, float b, float t) {\n    float cos_t = (1.0 - cos(t*3.14159)) * 0.5;\n    return lerp(a, b, cos_t);\n}\n\nfloat interpolateNoise(float x, float y, float z) {\n    float x0, y0, z0, x1, y1, z1;\n    \n    // Find the grid voxel that this point falls in\n    x0 = floor(x);\n    y0 = floor(y);\n    z0 = floor(z);\n    \n    x1 = x0 + 1.0;\n    y1 = y0 + 1.0;\n    z1 = z0 + 1.0;\n    \n    // Generate noise at each of the 8 points\n    float FUL, FUR, FLL, FLR, BUL, BUR, BLL, BLR;\n    \n    // front upper left\n    FUL = random(x0, y1, z1);\n    \n    // front upper right\n    FUR = random(x1, y1, z1);\n    \n    // front lower left\n    FLL = random(x0, y0, z1);\n    \n    // front lower right\n    FLR = random(x1, y0, z1);\n    \n    // back upper left\n    BUL = random(x0, y1, z0);\n    \n    // back upper right\n    BUR = random(x1, y1, z0);\n    \n    // back lower left\n    BLL = random(x0, y0, z0);\n    \n    // back lower right\n    BLR = random(x1, y0, z0);\n    \n    // Find the interpolate t values\n    float n0, n1, m0, m1, v;\n    float tx = fract(x - x0);\n    float ty = fract(y - y0);\n    float tz = fract(z - z0);\n    tx = (x - x0);\n    ty = (y - y0);\n    tz = (z - z0);\n    \n    // interpolate along x and y for back\n    n0 = cerp(BLL, BLR, tx);\n    n1 = cerp(BUL, BUR, tx);\n    m0 = cerp(n0, n1, ty);\n    \n    // interpolate along x and y for front\n    n0 = cerp(FLL, FLR, tx);\n    n1 = cerp(FUL, FUR, tx);\n    m1 = cerp(n0, n1, ty);\n    \n    // interpolate along z\n    v = cerp(m0, m1, tz);\n    \n    return v;\n}\n\nfloat generateNoise(float x, float y, float z) {\n    float total = 0.0;\n    float persistence = 1.0 / 2.0;\n    int its = 0;\n    for (int i = 0; i < 32; i++) {\n        float freq = pow(2.0, float(i));\n        float ampl = pow(persistence, float(i));\n        total += interpolateNoise(freq*x, freq*y, freq*z)*ampl;\n    }\n    return total;\n}\n\nvoid main() {\n    // Pass noise to the fragment shader\n    noise =  generateNoise(position.x + time, position.y + time, position.z + time);\n    f_uv = uv;\n    f_normal = normal;\n    vec3 a_position = position + vec3(noise);\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}"
 
 /***/ },
 /* 34 */
 /***/ function(module, exports) {
 
-	module.exports = "\nuniform sampler2D texture;\nuniform int u_useTexture;\nuniform vec3 u_albedo;\nuniform vec3 u_ambient;\nuniform vec3 u_lightPos;\nuniform vec3 u_lightCol;\nuniform float u_lightIntensity;\nuniform vec3 u_camPos;\n\nvarying vec3 f_position;\nvarying vec3 f_normal;\nvarying vec2 f_uv;\nvarying float noise;\n\n\nvoid main() {\n    vec4 color = vec4(0.0, 0.0, 1.0, 1.0);\n    float d = clamp(dot(f_normal, normalize(u_camPos - f_position)), 0.0, 1.0);\n\n    //Read from texture using relation to the view vector and a little bit of noise\n    if (u_useTexture == 1) {\n        color = texture2D(texture, vec2(noise));\n    }\n\n    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, 0.4);\n    //gl_FragColor = color;\n}"
+	module.exports = "uniform sampler2D texture;\nuniform int u_useTexture;\nuniform vec3 u_albedo;\nuniform vec3 u_ambient;\nuniform vec3 u_lightPos;\nuniform vec3 u_lightCol;\nuniform float u_lightIntensity;\n\nuniform vec3 u_camPos;\nuniform float time;\n\nvarying vec3 f_position;\nvarying vec3 f_normal;\nvarying vec2 f_uv;\nvarying float noise;\n\nuniform float alpha;\n\n\nvoid main() {\n    vec4 color = vec4(0.0, 0.0, 1.0, 1.0);\n    float d = clamp(dot(f_normal, normalize(u_camPos - f_position)), 0.0, 1.0);\n\n    //Read from texture using relation to the view vector and a little bit of noise\n    if (u_useTexture == 1) {\n        color = texture2D(texture, vec2(noise) / f_uv);\n    }\n\n    vec4 ambient = color / 3.0;\n\n    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + ambient.rgb, alpha);\n    if (alpha > 0.9) {\n        gl_FragColor.a = 0.9;\n    }\n    //gl_FragColor.a = 0.2;\n}"
 
 /***/ },
 /* 35 */
 /***/ function(module, exports) {
 
-	module.exports = "varying vec2 f_uv;\nvarying vec3 f_normal;\nvarying vec3 f_position;\nvarying float noise;\n\nfloat random(float a, float b, float c) {\n    return fract(sin(dot(vec3(a, b, c), vec3(12.9898, 78.233, 78.233)))*43758.5453);\n}\n\nfloat lerp(float a, float b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nvec4 lerp(vec4 a, vec4 b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nfloat cerp(float a, float b, float t) {\n    float cos_t = (1.0 - cos(t*3.14159)) * 0.5;\n    return lerp(a, b, cos_t);\n}\n\nfloat interpolateNoise(float x, float y, float z) {\n    float x0, y0, z0, x1, y1, z1;\n    \n    // Find the grid voxel that this point falls in\n    x0 = floor(x);\n    y0 = floor(y);\n    z0 = floor(z);\n    \n    x1 = x0 + 1.0;\n    y1 = y0 + 1.0;\n    z1 = z0 + 1.0;\n    \n    // Generate noise at each of the 8 points\n    float FUL, FUR, FLL, FLR, BUL, BUR, BLL, BLR;\n    \n    // front upper left\n    FUL = random(x0, y1, z1);\n    \n    // front upper right\n    FUR = random(x1, y1, z1);\n    \n    // front lower left\n    FLL = random(x0, y0, z1);\n    \n    // front lower right\n    FLR = random(x1, y0, z1);\n    \n    // back upper left\n    BUL = random(x0, y1, z0);\n    \n    // back upper right\n    BUR = random(x1, y1, z0);\n    \n    // back lower left\n    BLL = random(x0, y0, z0);\n    \n    // back lower right\n    BLR = random(x1, y0, z0);\n    \n    // Find the interpolate t values\n    float n0, n1, m0, m1, v;\n    float tx = fract(x - x0);\n    float ty = fract(y - y0);\n    float tz = fract(z - z0);\n    tx = (x - x0);\n    ty = (y - y0);\n    tz = (z - z0);\n    \n    // interpolate along x and y for back\n    n0 = cerp(BLL, BLR, tx);\n    n1 = cerp(BUL, BUR, tx);\n    m0 = cerp(n0, n1, ty);\n    \n    // interpolate along x and y for front\n    n0 = cerp(FLL, FLR, tx);\n    n1 = cerp(FUL, FUR, tx);\n    m1 = cerp(n0, n1, ty);\n    \n    // interpolate along z\n    v = cerp(m0, m1, tz);\n    \n    return v;\n}\n\nfloat generateNoise(float x, float y, float z) {\n    float total = 0.0;\n    float persistence = 1.0 / 2.0;\n    int its = 0;\n    for (int i = 0; i < 32; i++) {\n        float freq = pow(2.0, float(i));\n        float ampl = pow(persistence, float(i));\n        total += interpolateNoise(freq*x, freq*y, freq*z)*ampl;\n    }\n    return total;\n}\n\nvoid main() {\n    // Pass noise to the fragment shader\n\tnoise =  generateNoise(position.x, position.y, position.z);\n    f_uv = uv;\n    f_normal = normal;\n    f_position = position;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}"
+	module.exports = "varying vec2 f_uv;\nvarying vec3 f_normal;\nvarying vec3 f_position;\nvarying float noise;\nuniform float time;\n\nfloat random(float a, float b, float c) {\n    return fract(sin(dot(vec3(a, b, c), vec3(12.9898, 78.233, 578.233)))*43758.5453);\n}\n\nfloat lerp(float a, float b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nvec4 lerp(vec4 a, vec4 b, float t) {\n    return a * (1.0 - t) + b * t;\n}\n\nfloat cerp(float a, float b, float t) {\n    float cos_t = (1.0 - cos(t*3.14159)) * 0.5;\n    return lerp(a, b, cos_t);\n}\n\nfloat interpolateNoise(float x, float y, float z) {\n    float x0, y0, z0, x1, y1, z1;\n    \n    // Find the grid voxel that this point falls in\n    x0 = floor(x);\n    y0 = floor(y);\n    z0 = floor(z);\n    \n    x1 = x0 + 1.0;\n    y1 = y0 + 1.0;\n    z1 = z0 + 1.0;\n    \n    // Generate noise at each of the 8 points\n    float FUL, FUR, FLL, FLR, BUL, BUR, BLL, BLR;\n    \n    // front upper left\n    FUL = random(x0, y1, z1);\n    \n    // front upper right\n    FUR = random(x1, y1, z1);\n    \n    // front lower left\n    FLL = random(x0, y0, z1);\n    \n    // front lower right\n    FLR = random(x1, y0, z1);\n    \n    // back upper left\n    BUL = random(x0, y1, z0);\n    \n    // back upper right\n    BUR = random(x1, y1, z0);\n    \n    // back lower left\n    BLL = random(x0, y0, z0);\n    \n    // back lower right\n    BLR = random(x1, y0, z0);\n    \n    // Find the interpolate t values\n    float n0, n1, m0, m1, v;\n    float tx = fract(x - x0);\n    float ty = fract(y - y0);\n    float tz = fract(z - z0);\n    tx = (x - x0);\n    ty = (y - y0);\n    tz = (z - z0);\n    \n    // interpolate along x and y for back\n    n0 = cerp(BLL, BLR, tx);\n    n1 = cerp(BUL, BUR, tx);\n    m0 = cerp(n0, n1, ty);\n    \n    // interpolate along x and y for front\n    n0 = cerp(FLL, FLR, tx);\n    n1 = cerp(FUL, FUR, tx);\n    m1 = cerp(n0, n1, ty);\n    \n    // interpolate along z\n    v = cerp(m0, m1, tz);\n    \n    return v;\n}\n\nfloat generateNoise(float x, float y, float z) {\n    float total = 0.0;\n    float persistence = 1.0 / 2.0;\n    int its = 0;\n    for (int i = 0; i < 32; i++) {\n        float freq = pow(2.0, float(i));\n        float ampl = pow(persistence, float(i));\n        total += interpolateNoise(freq*x, freq*y, freq*z)*ampl;\n    }\n    return total;\n}\n\nvoid main() {\n    // Pass noise to the fragment shader\n\tnoise =  generateNoise(position.x + time, position.y + time, position.z + time);\n    f_uv = uv;\n    f_normal = normal;\n    vec3 a_position = position + vec3(noise);\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}"
 
 /***/ },
 /* 36 */
 /***/ function(module, exports) {
 
-	module.exports = "uniform sampler2D texture;\nuniform int u_useTexture;\nuniform vec3 u_albedo;\nuniform vec3 u_ambient;\nuniform vec3 u_lightPos;\nuniform vec3 u_lightCol;\nuniform float u_lightIntensity;\nuniform vec3 u_camPos;\n\nvarying vec3 f_position;\nvarying vec3 f_normal;\nvarying vec2 f_uv;\nvarying float noise;\n\n\nvoid main() {\n    vec4 color = vec4(0.0, 0.0, 1.0, 1.0);\n    float d = clamp(dot(f_normal, normalize(u_camPos - f_position)), 0.0, 1.0);\n\n    //Read from texture using relation to the view vector and a little bit of noise\n    if (u_useTexture == 1) {\n        color = texture2D(texture, f_uv);\n    }\n\n    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, 0.2);\n    //gl_FragColor = color;\n}"
+	module.exports = "uniform sampler2D texture;\nuniform int u_useTexture;\nuniform vec3 u_albedo;\nuniform vec3 u_ambient;\nuniform vec3 u_lightPos;\nuniform vec3 u_lightCol;\nuniform float u_lightIntensity;\nuniform vec3 u_camPos;\nuniform float time;\n\nvarying vec3 f_position;\nvarying vec3 f_normal;\nvarying vec2 f_uv;\nvarying float noise;\n\nuniform float alpha;\n\n\nvoid main() {\n    vec4 color = vec4(0.0, 0.0, 1.0, 1.0);\n    float d = clamp(dot(f_normal, normalize(u_camPos - f_position)), 0.0, 1.0);\n\n    //Read from texture using relation to the view vector and a little bit of noise\n    if (u_useTexture == 1) {\n        color = texture2D(texture, f_uv*vec2(noise));\n    }\n\n    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, alpha);\n\n    if (alpha > 0.9) {\n    \tgl_FragColor.a = 0.9;\n    }\n    //gl_FragColor.a = 0.2;\n}"
 
 /***/ },
 /* 37 */
@@ -50200,32 +50385,66 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	var THREE = __webpack_require__(6);
-	var context;
-	var sourceNode;
-	var jsNode;
-	var analyser;
-	var splitter;
 	
-	function init() {
+	var _pitchHelper = __webpack_require__(38);
+	
+	var _pitchHelper2 = _interopRequireDefault(_pitchHelper);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var THREE = __webpack_require__(6);
+	
+	var playing = false;
+	var context;
+	var sourceNode, sourceJs;
+	var gainNode;
+	var analyser;
+	var buffer;
+	
+	var jsNode;
+	var splitter;
+	var array = new Array();
+	var reset = true;
+	function init(path, initWorlds) {
 	  if (!window.AudioContext) {
 	    // check if the default naming is enabled, if not use the chrome one.
 	    if (!window.webkitAudioContext) alert('no audiocontext found');
 	    window.AudioContext = window.webkitAudioContext;
 	  }
 	  context = new AudioContext();
-	  setupAudioNodes();
-	  loadSound("./audio/the-deli-flowers.mp3");
+	  loadSound(path, initWorlds);
 	}
 	
 	// load the specified sound
-	function loadSound(url) {
+	function loadSound(url, initWorlds) {
 	  var request = new XMLHttpRequest();
 	  request.open('GET', url, true);
 	  request.responseType = 'arraybuffer';
 	  request.onload = function () {
 	    context.decodeAudioData(request.response, function (buffer) {
-	      playSound(buffer);
+	      if (!buffer) {
+	        // Error decoding file data
+	        return;
+	      }
+	      sourceJs = context.createScriptProcessor(2048, 1, 1);
+	      sourceJs.buffer = buffer;
+	      sourceJs.connect(context.destination);
+	      analyser = context.createAnalyser();
+	      analyser.smoothingTimeConstant = 0.6;
+	      analyser.fftSize = 512;
+	
+	      sourceNode = context.createBufferSource();
+	      sourceNode.buffer = buffer;
+	
+	      sourceNode.connect(analyser);
+	      analyser.connect(sourceJs);
+	      sourceNode.connect(context.destination);
+	
+	      gainNode = context.createGain();
+	      sourceNode.connect(gainNode);
+	      gainNode.connect(context.destination);
+	      reset = true;
+	      initWorlds();
 	    }, function (e) {
 	      console.log(e);
 	    });
@@ -50233,24 +50452,67 @@
 	  request.send();
 	}
 	
-	function playSound(buffer) {
-	  sourceNode.buffer = buffer;
-	  sourceNode.start(0);
+	function playOnLoad(url, updateAnalysers) {
+	  var request = new XMLHttpRequest();
+	  request.open('GET', url, true);
+	  request.responseType = 'arraybuffer';
+	  request.onload = function () {
+	    context.decodeAudioData(request.response, function (buffer) {
+	      if (!buffer) {
+	        // Error decoding file data
+	        return;
+	      }
+	      sourceJs = context.createScriptProcessor(2048, 1, 1);
+	      sourceJs.buffer = buffer;
+	      sourceJs.connect(context.destination);
+	      analyser = context.createAnalyser();
+	      analyser.smoothingTimeConstant = 0.6;
+	      analyser.fftSize = 512;
+	
+	      sourceNode = context.createBufferSource();
+	      sourceNode.buffer = buffer;
+	
+	      sourceNode.connect(analyser);
+	      analyser.connect(sourceJs);
+	      sourceNode.connect(context.destination);
+	
+	      gainNode = context.createGain();
+	      sourceNode.connect(gainNode);
+	      gainNode.connect(context.destination);
+	      playSound();
+	      updateAnalysers();
+	    }, function (e) {
+	      console.log(e);
+	    });
+	  };
+	  request.send();
 	}
 	
-	function setupAudioNodes() {
-	  sourceNode = context.createBufferSource();
-	  sourceNode.connect(context.destination);
+	function stopSound() {
+	  sourceNode.stop();
+	  playing = false;
+	}
 	
-	  // jsNode = context.createScriptProcessor(2048, 1, 1); //ScriptProcessorNode
+	function mute() {
+	  gainNode.gain.value = 0;
+	}
 	
-	  analyser = context.createAnalyser();
-	  analyser.smoothingTimeConstant = 0.3;
-	  analyser.fftSize = 1024;
+	function unmute() {
+	  gainNode.gain.value = 1;
+	}
 	
-	  splitter = context.createChannelSplitter(); // splits into left and right stream
+	function isPlaying() {
+	  return playing;
+	}
 	
-	  sourceNode.connect(analyser);
+	function setMusic(name, updateAnalysers) {
+	  stopSound();
+	  playOnLoad('./audio/' + name + '.mp3', updateAnalysers);
+	}
+	
+	function playSound() {
+	  sourceNode.start(0);
+	  playing = true;
 	}
 	
 	function getAverageVolume(array) {
@@ -50261,16 +50523,40 @@
 	  return values / array.length;
 	}
 	
-	// Volume / amplitude
+	// Calculated based on the volume / amplitude
 	function getSizeFromSound() {
 	  var arr = new Uint8Array(analyser.frequencyBinCount);
 	  analyser.getByteFrequencyData(arr);
 	  return getAverageVolume(arr);
 	}
 	
-	function getColorFromSound() {
-	  //TODO: implement according to pitch
-	  var color = new THREE.Color(0, 0, 0);
+	function detectPitch() {
+	  var buffer = new Uint8Array(analyser.fftSize);
+	  analyser.getByteTimeDomainData(buffer);
+	
+	  var fundamentalFreq = _pitchHelper2.default.findFundamentalFreq(buffer, context.sampleRate);
+	
+	  if (fundamentalFreq !== -1) {
+	    return fundamentalFreq;
+	  }
+	}
+	
+	// Returns a new color based on the given color
+	// Calculated based on the pitch of the audio
+	function getColorFromSound(oldColor) {
+	  var color = oldColor;
+	  var pitch = detectPitch();
+	  if (pitch) {
+	    var hex = Math.floor(pitch).toString(16);
+	    hex = ("000" + hex).substr(-3);
+	    color = new THREE.Color("#" + hex);
+	
+	    var r = 0.8 * oldColor.r + 0.2 * color.r;
+	    var g = 0.8 * oldColor.g + 0.2 * color.g;
+	    var b = 0.8 * oldColor.b + 0.2 * color.b;
+	    color = new THREE.Color(r, g, b);
+	    console.log(color);
+	  }
 	  return color;
 	}
 	
@@ -50279,11 +50565,75 @@
 	  return 0;
 	}
 	
+	function getArray() {
+	  return array;
+	}
+	function getSourceJS() {
+	  return sourceJs;
+	}
+	function getAnalyser() {
+	  return analyser;
+	}
+	
 	exports.default = {
+	  playSound: playSound,
+	  getAnalyser: getAnalyser,
+	  getSourceJS: getSourceJS,
+	  getArray: getArray,
 	  init: init,
+	  mute: mute,
+	  unmute: unmute,
+	  setMusic: setMusic,
+	  isPlaying: isPlaying,
 	  getSizeFromSound: getSizeFromSound,
 	  getColorFromSound: getColorFromSound,
 	  getRateFromSound: getRateFromSound
+	};
+
+/***/ },
+/* 38 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	// Autocorrelation
+	// https://developer.microsoft.com/en-us/microsoft-edge/testdrive/demos/webaudiotuner/
+	function findFundamentalFreq(buffer, sampleRate) {
+		var n = 1024,
+		    // number of samples for each k
+		bestR = 0,
+		    // correlation
+		bestK = -1; // period we are trying to find
+	
+		// Time delay k
+		for (var k = 8; k <= 1000; k++) {
+			var sum = 0;
+			for (var t = 0; t < n; t++) {
+				//Check values at times t and t + k
+				sum += (buffer[t] - 128) / 128 * ((buffer[t + k] - 128) / 128);
+			}
+			var r = sum / (n + k);
+			if (r > bestR) {
+				// if the correlation is better, set bestR and bestK
+				bestR = r;
+				bestK = k;
+			}
+			if (r > 0.9) break;
+		}
+	
+		if (bestR > 0.0025) {
+			// if high enough correlation
+			return sampleRate / bestK; // get the fundamental freq from the period
+		} else {
+			return -1;
+		}
+	}
+	
+	exports.default = {
+		findFundamentalFreq: findFundamentalFreq
 	};
 
 /***/ }
