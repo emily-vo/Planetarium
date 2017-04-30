@@ -73,16 +73,10 @@ export default class CrystalWorld extends World {
     }
 
     fadeIn(start, end) {
-        if (this.alpha === undefined) {
-            this.alpha = 1.0;
-        }
-
-        if (Math.abs(this.timer.elapsedTime - start) < 0.1) {
-        }
-        else if (this.timer.elapsedTime >= start && this.timer.elapsedTime < end) { 
+        if (this.timer.elapsedTime >= start && this.timer.elapsedTime < end) { 
             var t = (this.timer.elapsedTime - start) / (end - start);
             var delta =  1 / (end - start);
-            this.baseMesh.material.uniforms.alpha.value += delta * t;
+            this.baseMesh.material.uniforms.alpha.value += delta * t * t;
 
             if (this.baseMesh.material.uniforms.alpha.value > 0.9) {
                 this.baseMesh.material.uniforms.alpha.value = 0.9;
@@ -95,16 +89,10 @@ export default class CrystalWorld extends World {
     }
 
     fadeOut(start, end) {
-        if (this.alpha === undefined) {
-            this.alpha = 0.0;
-        }
-        
-        if (Math.abs(this.timer.elapsedTime - start) < 0.1) {
-        }
-        else if (this.timer.elapsedTime >= start && this.timer.elapsedTime < end) { 
+        if (this.timer.elapsedTime >= start && this.timer.elapsedTime < end) { 
             var t = (this.timer.elapsedTime - start) / (end - start);
             var delta =  -1 / (end - start);
-            this.baseMesh.material.uniforms.alpha.value += delta * t;
+            this.baseMesh.material.uniforms.alpha.value += delta * t * t;
             if (this.baseMesh.material.uniforms.alpha.value < 0) {
                 this.baseMesh.material.uniforms.alpha.value = 0;
             }

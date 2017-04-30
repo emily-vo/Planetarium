@@ -26,5 +26,9 @@ void main() {
     }
 
     gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, alpha);
+
+    if (alpha > 0.9) {
+    	gl_FragColor.a = 0.9;
+    }
     //gl_FragColor.a = 0.2;
 }
