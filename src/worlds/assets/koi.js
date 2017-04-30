@@ -37,7 +37,7 @@ export default class Koi extends Asset {
 
         // The asset class must have a normal and a vertex assigned before alignment can occur
         // Make sure to call updateRotations from the asset class to update the item rotations
-        // koiItem.localRotation = new THREE.Vector3(90, 45, 0);
+        // koiItem.localPosition = new THREE.Vector3(0, 0, 0);
 
         this.items.push(koiItem);
     }

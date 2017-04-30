@@ -85,6 +85,7 @@
 	
 	// initialize global clock
 	var clock = new THREE.Clock(false);
+	var cameraControl;
 	
 	var koiGeo;
 	
@@ -172,8 +173,25 @@
 	  });
 	
 	  gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 'smooth-operator', 'cello-suite']).onChange(function (newVal) {
+	
 	    _audio2.default.setMusic(newVal, resetAnalysers);
 	  });
+	}
+	
+	// basic choreography set up 
+	function basicChoreography() {
+	  // move first world 
+	  if (flowerWorld) {
+	    flowerWorld.spin(0, 2, Math.PI / 3000);
+	    flowerWorld.spinAccelerate(2, 4, Math.PI / 4000);
+	    flowerWorld.spinDeccelerate(4, 6, Math.PI / 4000);
+	    flowerWorld.spinAccelerate(6, 8, Math.PI / 4000);
+	
+	    // deletes the world from view at 8 seconds
+	    flowerWorld.deleteEntireWorld(8);
+	
+	    flowerWorld.tick();
+	  }
 	}
 	
 	function initWorlds() {
@@ -49574,7 +49592,17 @@
 	        return _this;
 	    }
 	
+	    // remove the random base sphere from scene lol sad
+	
+	
 	    _createClass(WaterWorld, [{
+	        key: 'removeInnerSphere',
+	        value: function removeInnerSphere(time) {
+	            if (this.timer.elapsedTime >= time) {
+	                this.scene.remove(this.innerSphere);
+	            }
+	        }
+	    }, {
 	        key: 'toggleDisplay',
 	        value: function toggleDisplay(displayed) {
 	            if (!this.displayed && displayed) {
@@ -49880,7 +49908,7 @@
 	
 	        // The asset class must have a normal and a vertex assigned before alignment can occur
 	        // Make sure to call updateRotations from the asset class to update the item rotations
-	        // koiItem.localRotation = new THREE.Vector3(90, 45, 0);
+	        // koiItem.localPosition = new THREE.Vector3(0, 0, 0);
 	
 	        _this.items.push(koiItem);
 	        return _this;

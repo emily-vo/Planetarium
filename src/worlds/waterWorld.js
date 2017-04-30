@@ -86,6 +86,13 @@ export default class WaterWorld extends World {
         } 
     }
 
+    // remove the random base sphere from scene lol sad
+    removeInnerSphere(time) {
+        if (this.timer.elapsedTime >= time) {
+            this.scene.remove(this.innerSphere);
+        }
+    }
+
     toggleDisplay(displayed) {
         if (!this.displayed && displayed) {
             this.scene.add(this.baseMesh);

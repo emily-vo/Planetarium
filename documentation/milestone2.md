@@ -6,7 +6,7 @@ Photos of my crystal generation is in images.
 
 Andrea Lin, Milestone 2
 ---------------------------------------
-WaterWorld Assets: Continued working on assets for the WaterWorld. Created seaweed asset using toolbox function, and made a vertex shader which displaces the vertices based on a cosine function, giving it the appearance of waving in the water's currents. Also began on a koi asset, which will swim around through the water world. It is currently a box mesh that has simple movement functionality. (video is at andrea-demos/m2-seaweed.mov)
+WaterWorld Assets: Continued working on assets for the WaterWorld. Created seaweed asset using toolbox function, and made a vertex shader which displaces the vertices based on a cosine function, giving it the appearance of waving in the water's currents. Also began on a koi asset, which will swim around through the water world. It is currently a box mesh that has simple movement functionality. (video is at andrea-demos/m2-seaweed.movx)
 
 WaterWorld Planet: I continued to fine tune the visualization of the water above the base of the water planet. It now animated by the frag shader. I also added a color change for the base planet based on time interpolation of a color palatte using a funciton from IQ http://www.iquilezles.org/www/articles/palettes/palettes.html) (video is at andrea-demos/m2-colors.mov)
 

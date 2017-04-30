@@ -12,6 +12,7 @@ import Audio from './audio'
 
 // initialize global clock
 var clock =new THREE.Clock(false);
+var cameraControl;
 
 var koiGeo;
 
@@ -39,7 +40,7 @@ var music = {
 };
 
 var song = music.wildcat;
-var audioControl = { 'mute': false, 'music': 'smooth operator' }
+var audioControl = { 'mute': false, 'music': 'smooth operator' };
 
 var skyboxMat;
 
@@ -100,8 +101,26 @@ function onLoad(framework) {
 
   gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 
     'smooth-operator', 'cello-suite']).onChange(function(newVal) {
+
     Audio.setMusic(newVal, resetAnalysers);
   });
+
+}
+
+// basic choreography set up 
+function basicChoreography() {
+  // move first world 
+  if (flowerWorld) {
+    flowerWorld.spin(0, 2, Math.PI / 3000);
+    flowerWorld.spinAccelerate(2,4,Math.PI / 4000);
+    flowerWorld.spinDeccelerate(4,6,Math.PI / 4000); 
+    flowerWorld.spinAccelerate(6,8,Math.PI / 4000);
+
+    // deletes the world from view at 8 seconds
+    flowerWorld.deleteEntireWorld(8);
+
+    flowerWorld.tick();
+  }
 }
 
 function initWorlds() {
