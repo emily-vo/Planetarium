@@ -96,6 +96,7 @@ function onLoad(framework) {
       // remove waterWorld from scene  
       waterWorld.deleteEntireWorld(0); 
       waterWorld.removeInnerSphere(0); 
+    }
   var objLoader = new THREE.OBJLoader();
   
   objLoader.load('house.obj', function(obj) {
@@ -181,6 +182,7 @@ function onLoad(framework) {
   gui.add(camera, 'fov', 0, 180).onChange(function(newVal) {
     camera.updateProjectionMatrix();
   });
+
 }
 
 // basic choreography set up 
@@ -196,9 +198,11 @@ function basicChoreography() {
     flowerWorld.deleteEntireWorld(8);
 
     flowerWorld.tick();
+  }
+}
 
 function tryInitWorlds() {
-  if (Audio.getAnalyser() !== undefined) {
+    if (Audio.getAnalyser() !== undefined) {
       if (crystalWorld === undefined) {
         crystalWorld = new CrystalWorld(scene, camera, clock, 
           directionalLight, Audio.getAnalyser());
@@ -213,8 +217,7 @@ function tryInitWorlds() {
           clock.start();
           audioPlaying = true;
         } 
-      }
-       
+      }      
   }
 }
 

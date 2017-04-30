@@ -72,15 +72,11 @@
 	
 	var _waterWorld2 = _interopRequireDefault(_waterWorld);
 	
-<<<<<<< HEAD
-	var _audio = __webpack_require__(31);
-=======
 	var _crystalWorld = __webpack_require__(31);
 	
 	var _crystalWorld2 = _interopRequireDefault(_crystalWorld);
 	
 	var _audio = __webpack_require__(37);
->>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	
 	var _audio2 = _interopRequireDefault(_audio);
 	
@@ -108,10 +104,7 @@
 	var flowerWorld;
 	var waterWorld;
 	var world3;
-<<<<<<< HEAD
-=======
 	var crystalWorld;
->>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	
 	// called after the scene loads
 	function onLoad(framework) {
@@ -149,7 +142,6 @@
 	  // ALL WORLD CREATION IS COMMENTED OUT
 	  /*
 	  // new camera control
-<<<<<<< HEAD
 	  cameraControl = new _cameraControls2.default(scene, clock, camera);
 	
 	  // world 1 
@@ -164,7 +156,6 @@
 	  // TODO: make a world 3 
 	  world3 = new _basicWorld2.default(scene, clock, directionalLight);
 	  world3.deleteEntireWorld(0);
-=======
 	  // world 1 
 	  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
 	  
@@ -187,7 +178,6 @@
 	
 	  // crystal world 
 	  crystalWorld = new _crystalWorld2.default(scene, camera, clock, directionalLight);
->>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	
 	  // audio
 	  _audio2.default.init(); //UNCOMMENT TO TURN AUDIO ON
@@ -202,7 +192,6 @@
 	// basic choreography set up 
 	function basicChoreography() {
 	  // move first world 
-<<<<<<< HEAD
 	  if (basicWorld) {
 	    basicWorld.spin(0, 2, Math.PI / 3000);
 	    basicWorld.spinAccelerate(2, 4, Math.PI / 4000);
@@ -213,7 +202,6 @@
 	    basicWorld.deleteEntireWorld(8);
 	
 	    basicWorld.tick();
-=======
 	  if (flowerWorld) {
 	    flowerWorld.spin(0, 2, Math.PI / 3000);
 	    flowerWorld.spinAccelerate(2, 4, Math.PI / 4000);
@@ -224,14 +212,12 @@
 	    flowerWorld.deleteEntireWorld(8);
 	
 	    flowerWorld.tick();
->>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	  }
 	
 	  // move second world 
 	  if (waterWorld) {
 	    // enable animation of water 
 	    waterWorld.updateWaterTime();
-<<<<<<< HEAD
 	
 	    // render the world 
 	    waterWorld.recreateEntireWorld(8);
@@ -260,9 +246,7 @@
 	    world3.deleteEntireWorld(25);
 	    world3.tick();
 	  }
-	
-=======
-	
+		
 	    // render the world 
 	    waterWorld.recreateEntireWorld(8);
 	    waterWorld.addInnerSphere(8);
@@ -291,7 +275,6 @@
 	    world3.tick();
 	  }
 	
->>>>>>> e21d5bbd72eed5b8c76603839ed8413d5e49bf67
 	  // temporarily turn of camera movements 
 	  // cameraControl.zoomInZ(4.5, 6.5); 
 	  // cameraControl.zoomOutZ(7.5,10);
