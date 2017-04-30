@@ -10,15 +10,13 @@ var buffer;
 var jsNode;
 var splitter;
 var array = new Array();
-
+var reset = true;
 function init(path) {
   if (! window.AudioContext) { // check if the default naming is enabled, if not use the chrome one.
       if (! window.webkitAudioContext) alert('no audiocontext found');
       window.AudioContext = window.webkitAudioContext;
   }
   context = new AudioContext();
-  setupAudioNodes();
-  // loadSound("./audio/smooth-operator.mp3");
   loadSound(path);
 }
 
@@ -33,30 +31,61 @@ function loadSound(url) {
           // Error decoding file data
           return;
       }
-
       sourceJs = context.createScriptProcessor(2048, 1, 1);
       sourceJs.buffer = buffer;
       sourceJs.connect(context.destination);
       analyser = context.createAnalyser();
       analyser.smoothingTimeConstant = 0.6;
       analyser.fftSize = 512;
-
+      
       sourceNode = context.createBufferSource();
       sourceNode.buffer = buffer;
-
+      
       sourceNode.connect(analyser);
       analyser.connect(sourceJs);
       sourceNode.connect(context.destination);
+      
+      gainNode = context.createGain();
+      sourceNode.connect(gainNode);
+      gainNode.connect(context.destination);
+      reset = true;
     }, (e) => {console.log(e)});
-
   }
   request.send();
 }
 
-function playSound(buffer) {
-  sourceNode.buffer = buffer;
-  sourceNode.start(0);
-  playing = true;
+function playOnLoad(url, updateAnalysers) {
+  var request = new XMLHttpRequest();
+  request.open('GET', url, true);
+  request.responseType = 'arraybuffer';
+  request.onload = function() {
+    context.decodeAudioData(request.response, function(buffer) {
+      if(!buffer) {
+          // Error decoding file data
+          return;
+      }
+      sourceJs = context.createScriptProcessor(2048, 1, 1);
+      sourceJs.buffer = buffer;
+      sourceJs.connect(context.destination);
+      analyser = context.createAnalyser();
+      analyser.smoothingTimeConstant = 0.6;
+      analyser.fftSize = 512;
+      
+      sourceNode = context.createBufferSource();
+      sourceNode.buffer = buffer;
+      
+      sourceNode.connect(analyser);
+      analyser.connect(sourceJs);
+      sourceNode.connect(context.destination);
+      
+      gainNode = context.createGain();
+      sourceNode.connect(gainNode);
+      gainNode.connect(context.destination);
+      playSound();
+      updateAnalysers();
+    }, (e) => {console.log(e)});
+  }
+  request.send();
 }
 
 function stopSound() {
@@ -76,33 +105,14 @@ function isPlaying() {
   return playing;
 }
 
-function setMusic(name) {
+function setMusic(name, updateAnalysers) {
   stopSound();
-  setupAudioNodes();
-  loadSound('./audio/' + name + '.mp3');
+  playOnLoad('./audio/' + name + '.mp3', updateAnalysers);
 }
 
 function playSound() {
-    sourceNode.start(0);
-}
-
-function setupAudioNodes() {
-  sourceNode = context.createBufferSource();
-  // sourceNode.connect(context.destination);
-
-  // jsNode = context.createScriptProcessor(2048, 1, 1); //ScriptProcessorNode
-
-  analyser = context.createAnalyser();
-  analyser.smoothingTimeConstant = 0.3;
-  analyser.fftSize = 2048;
-
-  // splitter = context.createChannelSplitter(); // splits into left and right stream
-
-  sourceNode.connect(analyser);
-
-  gainNode = context.createGain();
-  sourceNode.connect(gainNode);
-  gainNode.connect(context.destination);
+  sourceNode.start(0);
+  playing = true; 
 }
 
 function getAverageVolume(array) {
@@ -136,16 +146,17 @@ function detectPitch() {
 // Calculated based on the pitch of the audio
 function getColorFromSound(oldColor) {
   var color = oldColor;
-    var pitch = detectPitch()
+    var pitch = detectPitch();
     if (pitch) {
-      var hex = Math.floor(pitch).toString(16)
-      hex = ("000" + hex).substr(-3)
-      color = new THREE.Color("#" + hex)
+      var hex = Math.floor(pitch).toString(16);
+      hex = ("000" + hex).substr(-3);
+      color = new THREE.Color("#" + hex);
 
-      var r = 0.8 * oldColor.r + 0.2 * color.r
-      var g = 0.8 * oldColor.g + 0.2 * color.g
-      var b = 0.8 * oldColor.b + 0.2 * color.b
-      color = new THREE.Color(r,g,b)
+      var r = 0.8 * oldColor.r + 0.2 * color.r;
+      var g = 0.8 * oldColor.g + 0.2 * color.g;
+      var b = 0.8 * oldColor.b + 0.2 * color.b;
+      color = new THREE.Color(r,g,b);
+      console.log(color);
     }
   return color;
 }
