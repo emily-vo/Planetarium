@@ -67,7 +67,7 @@ export default class WaterWorld extends World {
         this.light = light; 
 
         // the inside sphere 
-        scene.add(this.innerSphere);
+        //scene.add(this.innerSphere);
         this.setMeshPosition(this.innerSphere, wPos.x, wPos.y, wPos.z);
         
         // create seaweed assets!
@@ -86,18 +86,22 @@ export default class WaterWorld extends World {
         } 
     }
 
-    // remove the random base sphere from scene lol sad
-    removeInnerSphere(time) {
-        if (this.timer.elapsedTime >= time) {
-            this.scene.remove(this.innerSphere);
-        }
-    }
-
-    // add inner sphere to scene
-    addInnerSphere(time) {
-        if (this.timer.elapsedTime >= time) {
+    toggleDisplay(displayed) {
+        if (!this.displayed && displayed) {
+            this.scene.add(this.baseMesh);
+            for (var i = 0; i < this.assets.length; i++) {
+              this.assets[i].show();
+            }
             this.scene.add(this.innerSphere);
         }
+        else if (this.displayed && !displayed){
+            this.scene.remove(this.baseMesh);
+            for (var i = 0; i < this.assets.length; i++) {
+              this.assets[i].hide();
+            }
+            this.scene.remove(this.innerSphere);
+        }
+        this.displayed = displayed;
     }
 
     // to update the uniform in the frag shader, enables animation
@@ -109,6 +113,11 @@ export default class WaterWorld extends World {
         for (var i = 0; i < kois.length; i++) {
             kois[i].material.uniforms.u_time.value = this.timer.elapsedTime; 
         }
+    }
 
+    tick() {
+        if (this.displayed) {
+            this.updateWaterTime();
+        }  
     }
 }

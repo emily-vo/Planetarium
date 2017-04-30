@@ -13,6 +13,8 @@ varying vec3 f_normal;
 varying vec2 f_uv;
 varying float noise;
 
+uniform float alpha;
+
 
 void main() {
     vec4 color = vec4(0.0, 0.0, 1.0, 1.0);
@@ -23,6 +25,6 @@ void main() {
         color = texture2D(texture, f_uv*vec2(noise));
     }
 
-    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, 0.2);
+    gl_FragColor = vec4(d * color.rgb * u_lightCol * u_lightIntensity + u_ambient, alpha);
     //gl_FragColor.a = 0.2;
 }

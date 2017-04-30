@@ -74,6 +74,7 @@ function setAbsoluteRotation(mesh, axis, rotation) {
 
 // Uses toolbox functions to create flower meshes
 function createPetal() {
+    var texloader = new THREE.TextureLoader();
     var shaderUniforms = {
         time: { 
             type: "float", 
@@ -85,7 +86,7 @@ function createPetal() {
         }, 
         image: { // Check the Three.JS documentation for the different allowed types and values
             type: "t", 
-            value: THREE.ImageUtils.loadTexture('./textures/petal.jpg')
+            value: texloader.load('./textures/petal.jpg')
         }
     };
 

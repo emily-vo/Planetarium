@@ -7,11 +7,13 @@ import Item from './item'
 export default class Crystal extends Asset {
     constructor(scene, camera, timer, world) {
         super(scene, timer, world);
-
+        
+        this.face;
+        var texloader = new THREE.TextureLoader();
         var shaderUniforms = {
             texture: {
                 type: "t", 
-                value: THREE.ImageUtils.loadTexture('./textures/iridescent.bmp')
+                value: texloader.load('./textures/iridescent.bmp')
             },
             u_useTexture: {
                 type: 'i',
@@ -44,6 +46,10 @@ export default class Crystal extends Asset {
             time: {
                 type: 'float',
                 value: timer.elapsedTime
+            }, 
+            alpha: {
+                type: 'float', 
+                value: 0.9
             }
         };
     
@@ -52,22 +58,13 @@ export default class Crystal extends Asset {
               uniforms: shaderUniforms,
               vertexShader: require('./assetShaders/iridescent-vert.glsl'),
               fragmentShader: require('./assetShaders/iridescent-frag.glsl'), 
-              //lights: true
         });
 
         material.transparent = true;
         material.shading = THREE.FlatShading;
-
+        this.material = material;
         var mesh = createMainCrystalMesh(material);   
         this.items.push(new Item(mesh));
-
-
-        var numCrystals = 1 + Math.random() * 3;
-        //numCrystals = 0;
-        for (var i = 0; i < numCrystals; i++) {
-          //var mesh = createSmallerCrystalMesh(material);   
-          //this.items.push(new Item(mesh));
-        }
     }
 }
 
@@ -109,8 +106,8 @@ function setAbsoluteRotation(mesh, axis, rotation) {
 }
 
 function createMainCrystalMesh(material) {
-  var thickness = 0.5;
-  var pts = [], count = Math.floor(Math.random() * 3) + 3;
+  var thickness = 0.65;
+  var pts = [], count = Math.floor(Math.random() * 5) + 3;
 
   for ( var i = 0; i < count; i ++ ) {
     var l = thickness;
@@ -121,7 +118,7 @@ function createMainCrystalMesh(material) {
 
   var shape = new THREE.Shape( pts );
 
-  var length = thickness * Math.random() * 4;
+  var length = thickness * Math.random() * 6;
   var extrudeSettings = { amount: length, 
     bevelEnabled: true, bevelSegments: Math.floor(Math.random() * 2) + 1, 
     steps: 5, bevelSize: thickness, bevelThickness: thickness * 4};
@@ -132,36 +129,7 @@ function createMainCrystalMesh(material) {
 
   setAbsoluteRotation(mesh, 'X', Math.PI / 2);
   setAbsoluteRotation(mesh, 'Y', Math.PI / 2 * Math.random() / 10);
-  // setAbsoluteRotation(mesh, 'Z', Math.random() / 2);
-  setAbsolutePosition(mesh, 0, length - 1, 0);
-
-  return mesh;
-}
-// Uses toolbox functions to create flower meshes
-function createSmallerCrystalMesh(material) {
-  var thickness = 0.25;
-  var pts = [], count = Math.floor(Math.random() * 3) + 3;
-
-  for ( var i = 0; i < count; i ++ ) {
-    var l = thickness;
-    var a = 2 * i / count * Math.PI;
-    pts.push( new THREE.Vector2 ( Math.cos( a ) * l, Math.sin( a ) * l ) );
-
-  }
-
-  var shape = new THREE.Shape( pts );
-
-  var length = thickness * Math.random() * 5;
-  var extrudeSettings = { amount: length, 
-    bevelEnabled: true, bevelSegments: Math.floor(Math.random() * 2) + 1, 
-    steps: 5, bevelSize: thickness, bevelThickness: thickness * 2};
-  var geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
-  
-  var mesh = new THREE.Mesh(geometry, material);
-
-  setAbsoluteRotation(mesh, 'X', Math.PI / 2);
-  // setAbsoluteRotation(mesh, 'Z', Math.random() / 2);
-  setAbsolutePosition(mesh, 0, length - 1, 0);
+  setAbsolutePosition(mesh, 0, -length / 2, 0);
 
   return mesh;
 }
