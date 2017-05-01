@@ -33,6 +33,7 @@ export default class FlowerWorld extends World {
               fragmentShader: require('./worldShaders/basic-frag.glsl'), 
               //lights: true
         });
+        material.side = THREE.DoubleSide;
     
         var geometry = new THREE.IcosahedronGeometry(4, 1);
         var baseMesh = new THREE.Mesh(geometry, material);

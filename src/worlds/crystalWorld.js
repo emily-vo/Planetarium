@@ -58,7 +58,7 @@ export default class CrystalWorld extends World {
               fragmentShader: require('./worldShaders/iridescent-frag.glsl'), 
               //lights: true
         });
-        material.shading = THREE.FlatShading;
+        material.side = THREE.DoubleSide;
         material.transparent = true;
 
         var geometry = new THREE.IcosahedronGeometry(6, 1);

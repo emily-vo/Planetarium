@@ -45,7 +45,7 @@ export default class WaterWorld extends World {
         });
         // enable transparency of the material 
         material.transparent = true;
-
+        material.side = THREE.DoubleSide;
         // make a "base sphere"
         // add this somewhere to the class? not sure 
         var baseSphereGeom = new THREE.IcosahedronGeometry(6,4);  // new THREE.BoxGeometry(6,6,6); consider making a box
