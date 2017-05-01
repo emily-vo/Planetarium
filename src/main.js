@@ -40,7 +40,7 @@ var music = {
   flowers: 3,
 };
 
-var song = music.humble;
+var song = music.flowers;
 
 var audioControl = { 'mute': false, 'music': 'smooth operator' };
 var planetControl = {'planet': 'flower'};
@@ -126,14 +126,17 @@ function initWorlds() {
   crystalWorld = new CrystalWorld(scene, camera, clock,
   directionalLight, new THREE.Vector3(0, 0, 0));
   crystalWorld.analyser = Audio.getAnalyser();
-  currentWorld = crystalWorld;
-  crystalWorld.toggleDisplay(true);
+  
+  
 
   flowerWorld = new FlowerWorld(scene, clock, directionalLight, new THREE.Vector3(0, 0, 0));
   flowerWorld.analyser = Audio.getAnalyser();
 
   waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo, new THREE.Vector3(0, 0, 0));
   waterWorld.analyser = Audio.getAnalyser();
+  
+  currentWorld = flowerWorld;
+  currentWorld.toggleDisplay(true);
 
   Audio.playSound();
   clock.start();
@@ -150,7 +153,13 @@ function timeTarget(time) {
   return Math.abs(clock.elapsedTime - time) < epsilon;
 }
 
-var CRYSTAL_ZOOMOUT = 5.5;
+var FLOWER_ZOOMOUT = 0;
+var FLOWER_ZOOMOUT_END = FLOWER_ZOOMOUT + 5;
+
+var FLOWER_ZOOMIN = FLOWER_ZOOMOUT_END + 20;
+var FLOWER_ZOOMIN_END = FLOWER_ZOOMIN + 2;
+
+var CRYSTAL_ZOOMOUT = FLOWER_ZOOMIN_END;
 var CRYSTAL_ZOOMOUT_END = CRYSTAL_ZOOMOUT + 2.5;
 
 var CRYSTAL_EXPLODE = CRYSTAL_ZOOMOUT_END + 10;
@@ -159,17 +168,23 @@ var CRYSTAL_EXPLODE_END = CRYSTAL_EXPLODE + 1;
 var CRYSTAL_ZOOM = CRYSTAL_EXPLODE_END;
 var CRYSTAL_ZOOM_END = CRYSTAL_ZOOM + 4;
 
-var FLOWER_ZOOMOUT = CRYSTAL_ZOOM_END;
-var FLOWER_ZOOMOUT_END = FLOWER_ZOOMOUT + 4;
-
-var FLOWER_ZOOMIN = FLOWER_ZOOMOUT_END + 10;
-var FLOWER_ZOOMIN_END = FLOWER_ZOOMIN + 2;
-
-var WATER_ZOOMOUT = FLOWER_ZOOMIN_END;
+var WATER_ZOOMOUT = CRYSTAL_ZOOM_END;
 var WATER_ZOOMOUT_END = WATER_ZOOMOUT + 4;
 
-function humbleChoreo() {
+function choreo() {
   if (cameraControls) {
+    cameraControls.zoom(FLOWER_ZOOMOUT, FLOWER_ZOOMOUT_END, -10, 20);
+    cameraControls.zoom(FLOWER_ZOOMIN, FLOWER_ZOOMIN_END, 20, -10);
+
+    if (timeTarget(CRYSTAL_ZOOMOUT)) {
+      currentWorld.toggleDisplay(false);
+      currentWorld.normalOffset = -1;
+      currentWorld = crystalWorld;
+      var oldSpeed = currentWorld.rotateSpeed;
+      currentWorld.toggleDisplay(true);
+      currentWorld.rotateSpeed = oldSpeed;
+    }
+
     var zooming = cameraControls.zoom(CRYSTAL_ZOOMOUT, CRYSTAL_ZOOMOUT_END, -10, 20);
     
     if (clock.elapsedTime > CRYSTAL_EXPLODE && clock.elapsedTime < CRYSTAL_EXPLODE_END) {
@@ -181,26 +196,13 @@ function humbleChoreo() {
       currentWorld.rotateSpeed += Math.PI / 800;
     } 
 
-    if (timeTarget(FLOWER_ZOOMOUT)) {
-      currentWorld.toggleDisplay(false);
-      currentWorld.normalOffset = -1;
-      currentWorld = flowerWorld;
-      var oldSpeed = currentWorld.rotateSpeed;
-      currentWorld.toggleDisplay(true);
-      currentWorld.rotateSpeed = oldSpeed;
-    }
-
-    cameraControls.zoom(FLOWER_ZOOMOUT, FLOWER_ZOOMOUT_END, -10, 20);
-
-    cameraControls.zoom(FLOWER_ZOOMIN, FLOWER_ZOOMIN_END, 20, -10);
 
     if (timeTarget(WATER_ZOOMOUT)) {
       currentWorld.toggleDisplay(false);
       currentWorld.normalOffset = -1;
+      currentWorld.rotateSpeed = Math.PI / 200;
       currentWorld = waterWorld;
-      var oldSpeed = currentWorld.rotateSpeed;
       currentWorld.toggleDisplay(true);
-      currentWorld.rotateSpeed = oldSpeed;
     }
 
     cameraControls.zoom(WATER_ZOOMOUT, WATER_ZOOMOUT_END, -10, 20);
@@ -214,7 +216,7 @@ function humbleChoreo() {
 // called on frame updates
 function onUpdate(framework) {
   if (clock) clock.getDelta();
-  if (crystalWorld && flowerWorld && waterWorld) humbleChoreo();
+  if (crystalWorld && flowerWorld && waterWorld) choreo();
 
   if (Audio.isPlaying()) {
     var size = Audio.getSizeFromSound();
