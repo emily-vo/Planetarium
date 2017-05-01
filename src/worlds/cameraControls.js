@@ -25,24 +25,40 @@ export default class CameraControls {
 	}
 
 	// zoom into the x direction 
-	zoomInZ(timeStart, timeEnd) {
+	zoomInZ(timeStart, timeEnd, target) {
 		var totalTime = timeEnd - timeStart; 
 		if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
-			if (this.camera.position.z > 10 ) {
+			if (this.camera.position.z > target ) {
 				this.camera.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z - 0.3);
-				this.camera.lookAt(new THREE.Vector3(this.camera.position.x,0,0));
+				this.camera.lookAt(new THREE.Vector3(this.camera.position.x, this.camera.position.y, this.camera.position.z - 20));
 				this.camera.updateProjectionMatrix();
 			}
 		}
 	}
 
-
-	zoomOutZ(timeStart, timeEnd) {
+	zoom(timeStart, timeEnd, originalPos, target) {
 		// zoom out 
 		if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
-			if (this.camera.position.z <= 20 ) {
-				this.camera.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z + .3);
-				// this.camera.lookAt(new THREE.Vector3(this.camera.position.x + .01,0,0));
+			this.timer.getDelta();
+			var t = (this.timer.elapsedTime - timeStart) / (timeEnd - timeStart);
+			var delta = t * target + (1 - t) * originalPos;
+			this.camera.position.set(this.camera.position.x, this.camera.position.y, delta);
+			this.camera.lookAt(new THREE.Vector3(this.camera.position.x, this.camera.position.y, this.camera.position.z - 20));
+			this.camera.updateProjectionMatrix();
+			return true;
+		}
+		return false;
+	}
+
+	zoomOutZ(timeStart, timeEnd, originalPos, target) {
+		// zoom out 
+		if (this.timer.elapsedTime > timeStart && this.timer.elapsedTime < timeEnd) {
+			if (this.camera.position.z <= target ) {
+				this.timer.getDelta();
+				var t = (this.timer.elapsedTime - timeStart) / (timeEnd - timeStart);
+				var delta = t * target + (1 - t) * originalPos;
+				this.camera.position.set(this.camera.position.x, this.camera.position.y, delta);
+				this.camera.lookAt(new THREE.Vector3(this.camera.position.x, this.camera.position.y, this.camera.position.z - 20));
 				this.camera.updateProjectionMatrix();
 			}
 		}

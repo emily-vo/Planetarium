@@ -29,6 +29,11 @@ export default class Asset {
     show() {
       for (var i = 0; i < this.items.length; i++) {
         this.scene.add(this.items[i].mesh);
+        if (this.items[i].mesh.material.uniforms) {
+          if (this.items[i].mesh.material.uniforms.alpha) {
+            this.items[i].mesh.material.uniforms.alpha.value = 0.9;
+          }
+        }
       }
     }
 
@@ -36,6 +41,11 @@ export default class Asset {
     hide() {
       for (var i = 0; i < this.items.length; i++) {
         this.scene.remove(this.items[i].mesh);
+        if (this.items[i].mesh.material.uniforms) {
+          if (this.items[i].mesh.material.uniforms.alpha) {
+            this.items[i].mesh.material.uniforms.alpha.value = 0.0;
+          }
+        }
       }
     }
 
@@ -54,7 +64,7 @@ export default class Asset {
 
     // sets the overall asset position and moves the items accordingly
     setScale(scale) {
-      this.scale = scale;
+      this.scale = new THREE.Vector3(scale, scale, scale);
       this.updateScales();
     }
 

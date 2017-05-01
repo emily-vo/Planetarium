@@ -5,7 +5,7 @@ import Crystal from './assets/crystal'
 // this class will mostly be unchanged from world to world. 
 // variation in worlds will mostly rely on the various assets.
 export default class CrystalWorld extends World {
-    constructor(scene, camera, timer, light, musicAnalyser) {
+    constructor(scene, camera, timer, light, position) {
     	// initialize example uniform variables and store in list
         var texloader = new THREE.TextureLoader();
         var shaderUniforms = {
@@ -47,7 +47,7 @@ export default class CrystalWorld extends World {
             }, 
             alpha: {
                 type: 'float', 
-                value: 0.0
+                value: 1.0
             }
         };
     
@@ -58,17 +58,18 @@ export default class CrystalWorld extends World {
               fragmentShader: require('./worldShaders/iridescent-frag.glsl'), 
               //lights: true
         });
-        material.shading = THREE.FlatShading;
+        material.side = THREE.DoubleSide;
         material.transparent = true;
 
         var geometry = new THREE.IcosahedronGeometry(6, 1);
         var baseMesh = new THREE.Mesh(geometry, material);
         
 
-        super(scene, timer, baseMesh);
+        super(scene, timer, baseMesh, position);
+        
         this.camera = camera;
-        this.analyser = musicAnalyser;
         this.alpha = 0.9;
+        this.normalOffset = -1;
         this.spawnAtEveryVertex();
     }
 
@@ -101,6 +102,26 @@ export default class CrystalWorld extends World {
             }
         }
     }
+
+    toggleDisplay(displayed) {
+        if (!this.displayed && displayed) {
+            this.scene.add(this.baseMesh);
+            this.baseMesh.material.uniforms.alpha.value = 1.0;
+            for (var i = 0; i < this.assets.length; i++) {
+              this.assets[i].show();
+            }
+        }
+        else if (this.displayed && !displayed){
+            this.baseMesh.material.uniforms.alpha.value = 0.0;
+            this.scene.remove(this.baseMesh);
+            for (var i = 0; i < this.assets.length; i++) {
+              this.assets[i].hide();
+            }
+        }
+        
+        this.displayed = displayed;
+    }
+
 
     spawnAtEveryVertex() {
         var faces = this.worldFaces();
@@ -149,25 +170,17 @@ export default class CrystalWorld extends World {
         asset.vertex = v;
 
         
-        var pos = v;
-        var up = asset.normal.clone();
+        var pos = new THREE.Vector3();
+        pos.addVectors(v, asset.normal.clone().multiplyScalar(this.normalOffset));
 
-        var oldPos = new THREE.Vector3();
-        oldPos.addVectors ( pos, up.multiplyScalar(this.height / 120) );
-    
+        var up = asset.normal.clone();
         var newPos = new THREE.Vector3();
-        newPos.addVectors ( pos, up.multiplyScalar(this.musicData[this.k] / 120) );
-        
-        this.height = this.musicData[this.k];
-    
-        var lerped = new THREE.Vector3();
-        lerped.lerpVectors(oldPos, newPos, this.timer.getDelta());
+        newPos.addVectors ( pos, up.multiplyScalar(this.musicData[this.k] / 70) );
     
         if (this.k < this.musicData.length) {
            this.k++; 
         }
-    
-        asset.position = lerped;
+        asset.position = newPos;
     }
 
     spinIndefinitely(speed) {
@@ -190,12 +203,14 @@ export default class CrystalWorld extends World {
     }
 
     tick() {
-      this.spinIndefinitely(Math.PI/200);
-      this.updateShaderUniforms();     
-
-      // assets tick
-      for (var i = 0; i < this.assets.length; i++) {
-        this.assets[i].tick();
+      if (this.displayed) {
+        this.spinIndefinitely(this.rotateSpeed);
+        this.updateShaderUniforms();     
+    
+        // assets tick
+        for (var i = 0; i < this.assets.length; i++) {
+          this.assets[i].tick();
+        }
       }
     }
 }
