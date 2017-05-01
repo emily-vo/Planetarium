@@ -12,7 +12,7 @@ import Audio from './audio'
 
 // initialize global clock
 var clock =new THREE.Clock(false);
-var cameraControl;
+var cameraControls;
 
 var koiGeo;
 
@@ -20,18 +20,19 @@ var koiGeo;
 var flowerWorld;
 var waterWorld;
 var crystalWorld;
+var currentWorld;
 
 // scene nodes
 var scene;
 var camera;
 var directionalLight;
 
-// animation control
-var cameraControl;
-
 var humble = "./audio/humble.mp3";
 var wildcat = "./audio/wildcat.mp3";
 var flowers = "./audio/the-deli-flowers.mp3";
+
+var zoomIn;
+var zoomOut;
 
 var music = {
   humble: 1,
@@ -39,13 +40,15 @@ var music = {
   flowers: 3,
 };
 
-var song = music.wildcat;
+var song = music.humble;
+
 var audioControl = { 'mute': false, 'music': 'smooth operator' };
+var planetControl = {'planet': 'flower'};
 
-var skyboxMat;
-
+var cameraOffset = 20;
 // called after the scene loads
 function onLoad(framework) {
+
   // initialize framework
   scene = framework.scene;
   camera = framework.camera;
@@ -69,11 +72,11 @@ function onLoad(framework) {
   scene.add(backLight);
 
   // set camera position
-  camera.position.set(0, 0, 20);
-  camera.lookAt(new THREE.Vector3(0,0,0));
+  camera.position.set(0, 0, -10);
+  camera.lookAt(new THREE.Vector3(0, 0, camera.position.z - 20));
   camera.updateProjectionMatrix();
 
-  cameraControl = new CameraControls(scene, clock, camera);
+  cameraControls = new CameraControls(scene, clock, camera);
 
   // putting in a simple axis helper to help visualize
   var axisHelper = new THREE.AxisHelper( 10 );
@@ -82,7 +85,7 @@ function onLoad(framework) {
   var objLoader = new THREE.OBJLoader();
 
   // audio
-  objLoader.load('house.obj', function(obj) {
+  objLoader.load('textures/koi.obj', function(obj) {
     koiGeo = obj.children[0].geometry;
     var path;
     switch(song) {
@@ -101,35 +104,45 @@ function onLoad(framework) {
 
   gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 
     'smooth-operator', 'cello-suite']).onChange(function(newVal) {
-
     Audio.setMusic(newVal, resetAnalysers);
   });
 
-}
-
-// basic choreography set up 
-function basicChoreography() {
-  // move first world 
-  if (flowerWorld) {
-    flowerWorld.spin(0, 2, Math.PI / 3000);
-    flowerWorld.spinAccelerate(2,4,Math.PI / 4000);
-    flowerWorld.spinDeccelerate(4,6,Math.PI / 4000); 
-    flowerWorld.spinAccelerate(6,8,Math.PI / 4000);
-
-    // deletes the world from view at 8 seconds
-    flowerWorld.deleteEntireWorld(8);
-
-    flowerWorld.tick();
-  }
+  gui.add(planetControl, 'planet', ['flower', 'water', 'crystal']).onChange(function(newVal) {
+    currentWorld.toggleDisplay(false);
+    if (newVal == 'flower') {
+      currentWorld = flowerWorld;
+    }
+    else if (newVal == 'water') {
+      currentWorld = waterWorld;
+    }
+    else if (newVal == 'crystal') {
+      currentWorld = crystalWorld;
+    }
+    currentWorld.toggleDisplay(true);
+  });
 }
 
 function initWorlds() {
   crystalWorld = new CrystalWorld(scene, camera, clock,
-  directionalLight, Audio.getAnalyser());
-  flowerWorld = new FlowerWorld(scene, clock, directionalLight);
-  waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo);
+  directionalLight, new THREE.Vector3(0, 0, 0));
+  crystalWorld.analyser = Audio.getAnalyser();
+  currentWorld = crystalWorld;
+  crystalWorld.toggleDisplay(true);
+
+  flowerWorld = new FlowerWorld(scene, clock, directionalLight, new THREE.Vector3(0, 0, 0));
+  flowerWorld.analyser = Audio.getAnalyser();
+
+  waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo, new THREE.Vector3(0, 0, 0));
+  waterWorld.analyser = Audio.getAnalyser();
+
   Audio.playSound();
   clock.start();
+}
+
+function resetAnalysers() {
+  crystalWorld.analyser = Audio.getAnalyser();
+  flowerWorld.analyser = Audio.getAnalyser();
+  waterWorld.analyser = Audio.getAnalyser();
 }
 
 function timeTarget(time) {
@@ -137,76 +150,72 @@ function timeTarget(time) {
   return Math.abs(clock.elapsedTime - time) < epsilon;
 }
 
-function flowerWorldChoreo(start, end) {
-  if (timeTarget(start)) {
-    flowerWorld.toggleDisplay(true);
-  }
+var CRYSTAL_ZOOMOUT = 5.5;
+var CRYSTAL_ZOOMOUT_END = CRYSTAL_ZOOMOUT + 2.5;
 
-  if (flowerWorld.displayed) {
-    flowerWorld.spin(start, start + 10, Math.PI / 1000);
-    flowerWorld.spinAccelerate(start + 10, start + 15, Math.PI / 4000);
-    flowerWorld.tick();
-  }
-}
+var CRYSTAL_EXPLODE = CRYSTAL_ZOOMOUT_END + 10;
+var CRYSTAL_EXPLODE_END = CRYSTAL_EXPLODE + 1;
 
-function waterWorldChoreo(start, end) {
-  if (timeTarget(start)) {
-    waterWorld.toggleDisplay(true);
-  }
+var CRYSTAL_ZOOM = CRYSTAL_EXPLODE_END;
+var CRYSTAL_ZOOM_END = CRYSTAL_ZOOM + 4;
 
-  if (waterWorld.displayed) {
-    waterWorld.spin(start, start + 6, Math.PI / 3000);
-    waterWorld.tick();
-  }
+var FLOWER_ZOOMOUT = CRYSTAL_ZOOM_END;
+var FLOWER_ZOOMOUT_END = FLOWER_ZOOMOUT + 4;
 
-  if (timeTarget(end)) {
-    waterWorld.toggleDisplay(false);
-  }
-}
+var FLOWER_ZOOMIN = FLOWER_ZOOMOUT_END + 10;
+var FLOWER_ZOOMIN_END = FLOWER_ZOOMIN + 2;
 
-function crystalWorldChoreo(start, end) {
-  if (timeTarget(start)) {
-    crystalWorld.toggleDisplay(true);
-  }
-  if (crystalWorld.displayed) {
-    crystalWorld.fadeIn(3, 10);
-    crystalWorld.fadeOut(15, 20);
-    crystalWorld.fadeIn(25, 28);
-    crystalWorld.tick();
-  }
-  // temporarily turn of camera movements
-  // cameraControl.zoomInZ(4.5, 6.5);
-  // cameraControl.zoomOutZ(7.5,10);
+var WATER_ZOOMOUT = FLOWER_ZOOMIN_END;
+var WATER_ZOOMOUT_END = WATER_ZOOMOUT + 4;
 
-  if (timeTarget(end)) {
-    crystalWorld.toggleDisplay(false);
-  }
-}
+function humbleChoreo() {
+  if (cameraControls) {
+    var zooming = cameraControls.zoom(CRYSTAL_ZOOMOUT, CRYSTAL_ZOOMOUT_END, -10, 20);
+    
+    if (clock.elapsedTime > CRYSTAL_EXPLODE && clock.elapsedTime < CRYSTAL_EXPLODE_END) {
+      currentWorld.normalOffset += 2;
+    }
 
-function defined() {
-  return flowerWorld && waterWorld && crystalWorld;
-}
+    if (clock.elapsedTime > CRYSTAL_ZOOM && clock.elapsedTime < CRYSTAL_ZOOM_END ) {
+      cameraControls.zoom(CRYSTAL_ZOOM, CRYSTAL_ZOOM_END, 20, -10);
+      currentWorld.rotateSpeed += Math.PI / 800;
+    } 
 
-// basic choreography set up
-function basicChoreography() {
-  // move first world
-  if (defined()) {
-    //flowerWorldChoreo(2, 15);
-    //waterWorldChoreo(15, 25);
-    crystalWorldChoreo(2, 100);
-  }
+    if (timeTarget(FLOWER_ZOOMOUT)) {
+      currentWorld.toggleDisplay(false);
+      currentWorld.normalOffset = -1;
+      currentWorld = flowerWorld;
+      var oldSpeed = currentWorld.rotateSpeed;
+      currentWorld.toggleDisplay(true);
+      currentWorld.rotateSpeed = oldSpeed;
+    }
 
-  if (cameraControl) {
-    cameraControl.zoomInZ(4.5, 6.5);
-    cameraControl.zoomOutZ(7.5,10);
+    cameraControls.zoom(FLOWER_ZOOMOUT, FLOWER_ZOOMOUT_END, -10, 20);
+
+    cameraControls.zoom(FLOWER_ZOOMIN, FLOWER_ZOOMIN_END, 20, -10);
+
+    if (timeTarget(WATER_ZOOMOUT)) {
+      currentWorld.toggleDisplay(false);
+      currentWorld.normalOffset = -1;
+      currentWorld = waterWorld;
+      var oldSpeed = currentWorld.rotateSpeed;
+      currentWorld.toggleDisplay(true);
+      currentWorld.rotateSpeed = oldSpeed;
+    }
+
+    cameraControls.zoom(WATER_ZOOMOUT, WATER_ZOOMOUT_END, -10, 20);
+
+    if (!zooming && currentWorld) {
+      currentWorld.tick();
+    }
   }
 }
 
-function resetAnalysers() {
-  crystalWorld.analyser = Audio.getAnalyser();
-}
 // called on frame updates
 function onUpdate(framework) {
+  if (clock) clock.getDelta();
+  if (crystalWorld && flowerWorld && waterWorld) humbleChoreo();
+
   if (Audio.isPlaying()) {
     var size = Audio.getSizeFromSound();
     var bg = scene.background ? scene.background : new THREE.Color(0,0,0);
@@ -214,8 +223,6 @@ function onUpdate(framework) {
     // Change the background color (testing\)
     scene.background = color;
   }
-  if (clock) clock.getDelta();
-  basicChoreography();
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate

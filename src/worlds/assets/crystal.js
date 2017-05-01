@@ -9,6 +9,7 @@ export default class Crystal extends Asset {
         super(scene, timer, world);
         
         this.face;
+
         var texloader = new THREE.TextureLoader();
         var shaderUniforms = {
             texture: {

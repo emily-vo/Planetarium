@@ -5,12 +5,20 @@ import Asset from './assets/asset'
 // variation in worlds will mostly rely on the various assets.
 
 export default class World {
-    constructor(scene, timer, baseMesh) {
+    constructor(scene, timer, baseMesh, position) {
+        this.position = position;
         this.scene = scene;
         this.timer = timer;
         this.assets = [];
         this.baseMesh = baseMesh;
         this.displayed = false;
+        this.rotateSpeed = Math.PI/ 200;
+        // this.pivot = new THREE.Group();
+        // scene.add( this.pivot );
+// 
+        // this.pivot.add( this.baseMesh );
+        // this.baseMesh.position.set( -this.position.x, -this.position.y, -this.position.z); // the negative of the group's center
+        //this.setMeshPosition(this.baseMesh, this.position.x, this.position.y, this.position.z);
     }
 
     toggleDisplay(displayed) {
@@ -50,7 +58,7 @@ export default class World {
           this.baseMesh.geometry.computeFaceNormals();
           this.baseMesh.geometry.computeVertexNormals();
           asset.alignItemsWithNormal(); 
-      }  
+      } 
     }
     // world animation options 
     spin(tStart, tEnd, speed) {
@@ -157,10 +165,10 @@ export default class World {
     resetTransform(mesh) {
         mesh.updateMatrix();
         mesh.geometry.applyMatrix( mesh.matrix );
-        mesh.position.set( 0, 0, 0 );
-        mesh.rotation.set( 0, 0, 0 );
-        mesh.scale.set( 1, 1, 1 );
-        mesh.updateMatrix();
+        // mesh.position.set( this.position.x, this.position.y, this.position.z );
+        // mesh.rotation.set( 0, 0, 0 );
+        // mesh.scale.set( 1, 1, 1 );
+        // mesh.updateMatrix();
     }
 
     setMeshPosition(mesh, x, y, z) {
@@ -171,6 +179,7 @@ export default class World {
     // update assets
     tick() {
         if (this.displayed) {
+            this.spinIndefinitely(this.rotateSpeed);
             this.updateShaderUniforms();     
             // assets tick
             for (var i = 0; i < this.assets.length; i++) {
