@@ -6,7 +6,6 @@ var sourceNode, sourceJs;
 var gainNode;
 var analyser;
 var buffer;
-
 var jsNode;
 var splitter;
 var array = new Array();
@@ -31,25 +30,27 @@ function loadSound(url, initWorlds) {
           // Error decoding file data
           return;
       }
-      sourceJs = context.createScriptProcessor(2048, 1, 1);
-      sourceJs.buffer = buffer;
-      sourceJs.connect(context.destination);
-      analyser = context.createAnalyser();
-      analyser.smoothingTimeConstant = 0.6;
-      analyser.fftSize = 512;
-      
       sourceNode = context.createBufferSource();
       sourceNode.buffer = buffer;
-      
+
+      sourceJs = context.createScriptProcessor(2048, 1, 1);
+      sourceJs.buffer = buffer;
+
+      analyser = context.createAnalyser();
+      analyser.smoothingTimeConstant = 0.3;
+      analyser.fftSize = 2048;
+
       sourceNode.connect(analyser);
       analyser.connect(sourceJs);
-      sourceNode.connect(context.destination);
-      
+
       gainNode = context.createGain();
       sourceNode.connect(gainNode);
+      sourceJs.connect(gainNode);
       gainNode.connect(context.destination);
       reset = true;
       initWorlds();
+
+      playing = true;
     }, (e) => {console.log(e)});
   }
   request.send();
@@ -65,22 +66,22 @@ function playOnLoad(url, updateAnalysers) {
           // Error decoding file data
           return;
       }
+      sourceNode = context.createBufferSource();
+      sourceNode.buffer = buffer;
+
       sourceJs = context.createScriptProcessor(2048, 1, 1);
       sourceJs.buffer = buffer;
-      sourceJs.connect(context.destination);
+
       analyser = context.createAnalyser();
       analyser.smoothingTimeConstant = 0.6;
       analyser.fftSize = 512;
-      
-      sourceNode = context.createBufferSource();
-      sourceNode.buffer = buffer;
-      
+
       sourceNode.connect(analyser);
       analyser.connect(sourceJs);
-      sourceNode.connect(context.destination);
-      
+
       gainNode = context.createGain();
       sourceNode.connect(gainNode);
+      sourceJs.connect(gainNode);
       gainNode.connect(context.destination);
       playSound();
       updateAnalysers();
@@ -113,7 +114,7 @@ function setMusic(name, updateAnalysers) {
 
 function playSound() {
   sourceNode.start(0);
-  playing = true; 
+  playing = true;
 }
 
 function getAverageVolume(array) {
@@ -157,7 +158,7 @@ function getColorFromSound(oldColor) {
       var g = 0.8 * oldColor.g + 0.2 * color.g;
       var b = 0.8 * oldColor.b + 0.2 * color.b;
       color = new THREE.Color(r,g,b);
-      console.log(color);
+      // console.log(color);
     }
   return color;
 }
