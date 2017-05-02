@@ -158,7 +158,6 @@ function getColorFromSound(oldColor) {
       var g = 0.8 * oldColor.g + 0.2 * color.g;
       var b = 0.8 * oldColor.b + 0.2 * color.b;
       color = new THREE.Color(r,g,b);
-      // console.log(color);
     }
   return color;
 }

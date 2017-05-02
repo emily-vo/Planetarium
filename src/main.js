@@ -231,7 +231,7 @@ function onUpdate(framework) {
     var size = Audio.getSizeFromSound();
     var bg = scene.background ? scene.background : new THREE.Color(0,0,0);
     var color = Audio.getColorFromSound(bg);
-    // Change the background color (testing)
+    // Change the background color
     scene.background = color;
   }
 }

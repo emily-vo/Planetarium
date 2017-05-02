@@ -1,7 +1,7 @@
 // Autocorrelation
 // https://developer.microsoft.com/en-us/microsoft-edge/testdrive/demos/webaudiotuner/
 function findFundamentalFreq(buffer, sampleRate) {
-  var n = 1024, // number of samples for each k
+    var n = 1024, // number of samples for each k
     bestR = 0, // correlation
     bestK = -1; // period we are trying to find
 
@@ -10,7 +10,9 @@ function findFundamentalFreq(buffer, sampleRate) {
 			var sum = 0;
 			for (var t = 0; t < n; t++) {
         //Check values at times t and t + k
-				sum += ((buffer[t] - 128) / 128) * ((buffer[t + k] - 128) / 128);
+        if (buffer[t] && buffer[t+k]) {
+		      sum += ((buffer[t] - 128) / 128) * ((buffer[t + k] - 128) / 128);
+        }
 			}
 			var r = sum / (n + k);
 			if (r > bestR) { // if the correlation is better, set bestR and bestK
