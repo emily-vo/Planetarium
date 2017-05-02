@@ -99,13 +99,21 @@ function onLoad(framework) {
         path = flowers;
       break;
     }
-    Audio.init(path, initWorlds); 
+    Audio.init(path, initWorlds);
   });
 
-  gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 
+  gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers',
     'smooth-operator', 'cello-suite']).onChange(function(newVal) {
     Audio.setMusic(newVal, resetAnalysers);
   });
+
+  gui.add(audioControl, 'mute').onChange(function(newVal) {
+    if (newVal) {
+      Audio.mute()
+    } else {
+      Audio.unmute()
+    }
+  })
 
   gui.add(planetControl, 'planet', ['flower', 'water', 'crystal']).onChange(function(newVal) {
     currentWorld.toggleDisplay(false);
@@ -120,21 +128,22 @@ function onLoad(framework) {
     }
     currentWorld.toggleDisplay(true);
   });
+
 }
 
 function initWorlds() {
   crystalWorld = new CrystalWorld(scene, camera, clock,
   directionalLight, new THREE.Vector3(0, 0, 0));
   crystalWorld.analyser = Audio.getAnalyser();
-  
-  
+
+
 
   flowerWorld = new FlowerWorld(scene, clock, directionalLight, new THREE.Vector3(0, 0, 0));
   flowerWorld.analyser = Audio.getAnalyser();
 
   waterWorld = new WaterWorld(scene, clock, directionalLight, koiGeo, new THREE.Vector3(0, 0, 0));
   waterWorld.analyser = Audio.getAnalyser();
-  
+
   currentWorld = flowerWorld;
   currentWorld.toggleDisplay(true);
 
@@ -186,7 +195,7 @@ function choreo() {
     }
 
     var zooming = cameraControls.zoom(CRYSTAL_ZOOMOUT, CRYSTAL_ZOOMOUT_END, -10, 20);
-    
+
     if (clock.elapsedTime > CRYSTAL_EXPLODE && clock.elapsedTime < CRYSTAL_EXPLODE_END) {
       currentWorld.normalOffset += 2;
     }
@@ -194,7 +203,7 @@ function choreo() {
     if (clock.elapsedTime > CRYSTAL_ZOOM && clock.elapsedTime < CRYSTAL_ZOOM_END ) {
       cameraControls.zoom(CRYSTAL_ZOOM, CRYSTAL_ZOOM_END, 20, -10);
       currentWorld.rotateSpeed += Math.PI / 800;
-    } 
+    }
 
 
     if (timeTarget(WATER_ZOOMOUT)) {
@@ -222,7 +231,7 @@ function onUpdate(framework) {
     var size = Audio.getSizeFromSound();
     var bg = scene.background ? scene.background : new THREE.Color(0,0,0);
     var color = Audio.getColorFromSound(bg);
-    // Change the background color (testing\)
+    // Change the background color (testing)
     scene.background = color;
   }
 }
