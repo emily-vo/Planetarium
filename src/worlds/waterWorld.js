@@ -71,6 +71,7 @@ export default class WaterWorld extends World {
         // create koi assets
         for (var i = 0; i < 10; i++) {
             var koi = new Koi(scene, timer, this, koiGeo);
+            // koi.setAbsolutePosition(0,-.5,0); 
             kois.push(koi); 
             this.spawnAsset(koi);
         } 
@@ -111,6 +112,8 @@ export default class WaterWorld extends World {
             kois[i].material.uniforms.u_time.value = this.timer.elapsedTime; 
         }
     }
+
+    // CALL TO ANIMATE ASSETS HERERERERERERER /////////
     animateAsset(asset, spinningSpeed) {
         var vertices = this.worldVertices();
         
@@ -128,6 +131,23 @@ export default class WaterWorld extends World {
         asset.updatePositions();
     }
 
+    animateAssetNoMusic(asset, spinningSpeed) {
+        var vertices = this.worldVertices();
+        
+        var pos = asset.vertex;
+        //pos.addVectors(asset.vertex, asset.normal.clone().multiplyScalar(this.normalOffset));
+
+        var up = asset.normal.clone();
+        var newPos = new THREE.Vector3();
+        //newPos.addVectors ( pos, up.multiplyScalar(this.musicData[this.k] / 70) );
+        // asset.setScale(this.musicData[this.k] / 100);
+        // if (this.k < this.musicData.length) {
+           // this.k++; 
+        // }
+        asset.position = pos;
+        asset.updatePositions();
+    }
+
     spinIndefinitely(speed) {
       this.baseMesh.rotation.y = speed;
       this.baseMesh.updateMatrix();
@@ -136,9 +156,13 @@ export default class WaterWorld extends World {
       this.musicData = new Uint8Array(bufferLength);
       this.analyser.getByteFrequencyData(this.musicData);
 
-      for (var i = 0; i < this.assets.length; i++) {
+      for (var i = 0; i < 35; i++) {
           var asset = this.assets[i];
-          this.animateAsset(asset, speed); 
+          if (i < 25) {
+            this.animateAsset(asset, speed); 
+          } else {
+            this.animateAssetNoMusic(asset, speed); 
+          }
           this.baseMesh.geometry.computeFaceNormals();
           this.baseMesh.geometry.computeVertexNormals();
           asset.alignItemsWithNormal();

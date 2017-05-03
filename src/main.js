@@ -8,6 +8,7 @@ import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
 import CrystalWorld from './worlds/crystalWorld'
+import GalaxyBackground from './worlds/galaxybackground'
 
 import VerticalRoll from './postprocessing/verticalRoll'
 
@@ -24,6 +25,7 @@ var flowerWorld;
 var waterWorld;
 var crystalWorld;
 var currentWorld;
+var galaxy;
 
 // scene nodes
 var scene;
@@ -86,13 +88,13 @@ function onLoad(framework) {
   cameraControls = new CameraControls(scene, clock, camera);
 
   // putting in a simple axis helper to help visualize
-  var axisHelper = new THREE.AxisHelper( 10 );
-  scene.add( axisHelper );
+  // var axisHelper = new THREE.AxisHelper( 10 );
+  // scene.add( axisHelper );
 
   var objLoader = new THREE.OBJLoader();
 
   // audio
-  objLoader.load('textures/koi.obj', function(obj) {
+  objLoader.load('textures/koi2.obj', function(obj) {
     koiGeo = obj.children[0].geometry;
     var path;
     switch(song) {
@@ -111,6 +113,10 @@ function onLoad(framework) {
 
   currentPost = []//[ VerticalRoll ]
   setPostProcessing();
+
+  // load in background planets
+  galaxy = new GalaxyBackground(scene, clock, directionalLight);
+  galaxy.initializeBackground();
 
   gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers',
     'smooth-operator', 'cello-suite']).onChange(function(newVal) {
@@ -297,6 +303,7 @@ function onUpdate(framework) {
     VerticalRoll.shader.material.uniforms.rollSpeed.value = Audio.getRateFromSound() / 1000;
   }
 
+  if (galaxy) galaxy.tick();
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
