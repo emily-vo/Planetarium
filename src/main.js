@@ -7,6 +7,7 @@ import CameraControls from './worlds/cameraControls'
 import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
 import CrystalWorld from './worlds/crystalWorld'
+import GalaxyBackground from './worlds/galaxybackground'
 
 import Audio from './audio'
 
@@ -21,6 +22,7 @@ var flowerWorld;
 var waterWorld;
 var crystalWorld;
 var currentWorld;
+var galaxy; 
 
 // scene nodes
 var scene;
@@ -101,6 +103,10 @@ function onLoad(framework) {
     }
     Audio.init(path, initWorlds);
   });
+
+  // load in background planets
+  galaxy = new GalaxyBackground(scene, clock, directionalLight);  
+  galaxy.initializeBackground(); 
 
   gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers',
     'smooth-operator', 'cello-suite']).onChange(function(newVal) {
@@ -232,8 +238,9 @@ function onUpdate(framework) {
     var bg = scene.background ? scene.background : new THREE.Color(0,0,0);
     var color = Audio.getColorFromSound(bg);
     // Change the background color (testing)
-    scene.background = color;
+    scene.background = new THREE.Color(color.r , color.g , color.b );
   }
+  if (galaxy) galaxy.tick(); 
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate

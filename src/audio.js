@@ -154,10 +154,10 @@ function getColorFromSound(oldColor) {
       hex = ("000" + hex).substr(-3);
       color = new THREE.Color("#" + hex);
 
-      var r = 0.8 * oldColor.r + 0.2 * color.r;
-      var g = 0.8 * oldColor.g + 0.2 * color.g;
-      var b = 0.8 * oldColor.b + 0.2 * color.b;
-      color = new THREE.Color(r,g,b);
+      var r = 0.9 * oldColor.r + 0.1 * color.r;
+      var g = 0.9 * oldColor.g + 0.1 * color.g;
+      var b = 0.9 * oldColor.b + 0.1 * color.b;
+      color = new THREE.Color(r/1.1,g/1.2,b);
       // console.log(color);
     }
   return color;
