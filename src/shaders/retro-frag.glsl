@@ -46,7 +46,7 @@ void main() {
     col.g = col.g * brightness + lightness;
     col.b = col.b * brightness + lightness - yel;
 
-    // CRT scanlines
+    // CRT scanlines https://gamedev.stackexchange.com/questions/64036/how-can-i-implement-a-scanline-effect
     float y = f_uv.y * 500.0;
     float d = floor(y) - y;
     float d_sq = d * d;
