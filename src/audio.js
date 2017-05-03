@@ -1,5 +1,6 @@
 const THREE = require('three');
 import pitchHelper from './pitchHelper'
+import { analyze, guess } from 'web-audio-beat-detector';
 var playing = false;
 var context;
 var sourceNode, sourceJs;
@@ -10,6 +11,7 @@ var jsNode;
 var splitter;
 var array = new Array();
 var reset = true;
+var tempo = 0;
 function init(path, initWorlds) {
   if (! window.AudioContext) { // check if the default naming is enabled, if not use the chrome one.
       if (! window.webkitAudioContext) alert('no audiocontext found');
@@ -38,7 +40,7 @@ function loadSound(url, initWorlds) {
 
       analyser = context.createAnalyser();
       analyser.smoothingTimeConstant = 0.3;
-      analyser.fftSize = 2048;
+      analyser.fftSize = 512;
 
       sourceNode.connect(analyser);
       analyser.connect(sourceJs);
@@ -48,8 +50,9 @@ function loadSound(url, initWorlds) {
       sourceJs.connect(gainNode);
       gainNode.connect(context.destination);
       reset = true;
-      initWorlds();
 
+      detectBeat();
+      initWorlds();
       playing = true;
     }, (e) => {console.log(e)});
   }
@@ -73,7 +76,7 @@ function playOnLoad(url, updateAnalysers) {
       sourceJs.buffer = buffer;
 
       analyser = context.createAnalyser();
-      analyser.smoothingTimeConstant = 0.6;
+      analyser.smoothingTimeConstant = 0.3;
       analyser.fftSize = 512;
 
       sourceNode.connect(analyser);
@@ -83,6 +86,9 @@ function playOnLoad(url, updateAnalysers) {
       sourceNode.connect(gainNode);
       sourceJs.connect(gainNode);
       gainNode.connect(context.destination);
+
+      detectBeat();
+
       playSound();
       updateAnalysers();
     }, (e) => {console.log(e)});
@@ -163,9 +169,22 @@ function getColorFromSound(oldColor) {
   return color;
 }
 
+// Detects the bpm and returns it (tempo)
+// Only needs to be called once per song
+function detectBeat() {
+  analyze(sourceNode.buffer)
+    .then((tmp) => {
+        console.log("Tempo: "  + tmp)
+        tempo = tmp
+        return tmp;
+    })
+    .catch((err) => { console.log(err) });
+}
+
 function getRateFromSound() {
-  //TODO: implement according to bpm
-  return 0;
+  // var offset = (tempo - 140) / 2000
+  // return offset;
+  return tempo;
 }
 
 function getArray() {
@@ -177,6 +196,7 @@ function getSourceJS() {
 function getAnalyser() {
   return analyser;
 }
+
 
 export default {
   playSound: playSound,
