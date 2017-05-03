@@ -10,8 +10,8 @@ float gray(vec4 col) {
 // Influence from https://threejs.org/examples/webgl_postprocessing.html
 float pattern() {
   vec2 center = vec2(0.5, 0.5);
-  vec2 tSize = vec2(512, 512);
-  float pScale = 1.5;
+  vec2 tSize = vec2(512, 750);
+  float pScale = 2.0 + pScale * 0.1;
 
   float s = sin(1.5);
   float c = cos(1.5);
@@ -23,7 +23,7 @@ float pattern() {
 void main() {
     vec4 col = texture2D(tDiffuse, f_uv);
     float pat = pattern();
-    float brightness = 1.5;
+    float brightness = 1.1;
 
     float r = col.r * pat * brightness;
     float g = col.g * pat * brightness;

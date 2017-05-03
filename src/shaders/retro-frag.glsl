@@ -16,7 +16,7 @@ void main() {
     vec4 col = texture2D(tDiffuse, f_uv);
     float brightness = 0.7;
     float lightness = 0.7;
-    float red = warmth + 0.1;
+    float red = warmth + 0.2;
     float yel = warmth;
 
     // grain - https://www.reddit.com/r/opengl/comments/1rr4fy/any_good_ways_of_generating_film_grain_noise/

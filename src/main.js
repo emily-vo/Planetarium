@@ -13,6 +13,7 @@ import GalaxyBackground from './worlds/galaxybackground'
 import VerticalRoll from './postprocessing/verticalRoll'
 import RGBShift from './postprocessing/rgbShift'
 import Dots from './postprocessing/dots'
+import DotsBW from './postprocessing/dotsbw'
 import Saturate from './postprocessing/saturate'
 import Retro from './postprocessing/retro'
 
@@ -39,7 +40,7 @@ var directionalLight;
 var composer;
 
 // Post-processing shaders
-var allPost = [VerticalRoll, RGBShift, Dots];
+var allPost = [VerticalRoll, RGBShift, Dots, DotsBW, Saturate, Retro];
 var currentPost = [];
 
 var humble = "./audio/humble.mp3";
@@ -54,11 +55,12 @@ var music = {
   humble: 1,
   wildcat: 2,
   flowers: 3,
+  ysl: 4,
 };
 
-var song = music.flowers;
+var song = music.wildcat;
 
-var audioControl = { 'mute': false, 'music': 'the-deli-flowers' };
+var audioControl = { 'mute': false, 'music': 'wildcat' };
 var planetControl = {'planet': 'flower'};
 
 var cameraOffset = 20;
@@ -118,7 +120,7 @@ function onLoad(framework) {
     Audio.init(path, initWorlds);
   });
 
-  currentPost = [ Retro ];
+  currentPost = [ ];
   setPostProcessing();
 
   // load in background planets
@@ -126,12 +128,15 @@ function onLoad(framework) {
   galaxy.initializeBackground();
 
   gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 'ysl-bengfang',
-    'smooth-operator', 'cello-suite']).onChange(function(newVal) {
+    'dont-want-to-leave', 'american-boy']).onChange(function(newVal) {
     Audio.setMusic(newVal, resetAnalysers);
     if (audioControl.mute) Audio.mute();
     switch(newVal) {
       case 'humble': currentPost = [ VerticalRoll ]; break;
       case 'ysl-bengfang': currentPost = [ RGBShift ]; break;
+      case 'the-deli-flowers': currentPost = [ Dots ]; break;
+      case 'dont-want-to-leave': currentPost = [ Retro ]; break;
+      case 'american-boy': currentPost = [ DotsBW ]; break;
       default: currentPost = [];
     }
     setPostProcessing();
