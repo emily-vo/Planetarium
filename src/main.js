@@ -319,6 +319,9 @@ function onUpdate(framework) {
     if (Dots.isOn()) {
       Dots.shader.material.uniforms.scale.value = size / 100;
     }
+    if (DotsBW.isOn()) {
+      DotsBW.shader.material.uniforms.scale.value = size / 100;
+    }
     if (Retro.isOn()) {
       Retro.shader.material.uniforms.warmth.value = color.r;
       Retro.shader.material.uniforms.time.value = clock.elapsedTime;

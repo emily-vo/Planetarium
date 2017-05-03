@@ -10,8 +10,8 @@ float gray(vec4 col) {
 // Influence from https://threejs.org/examples/webgl_postprocessing.html
 float pattern() {
   vec2 center = vec2(0.5, 0.5);
-  vec2 tSize = vec2(512, 750);
-  float pScale = 2.0 + pScale * 0.1;
+  vec2 tSize = vec2(256,256);
+  float pScale = 4.0;
 
   float s = sin(1.5);
   float c = cos(1.5);
