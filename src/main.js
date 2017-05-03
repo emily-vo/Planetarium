@@ -12,6 +12,9 @@ import GalaxyBackground from './worlds/galaxybackground'
 
 import VerticalRoll from './postprocessing/verticalRoll'
 import RGBShift from './postprocessing/rgbShift'
+import Dots from './postprocessing/dots'
+import Saturate from './postprocessing/saturate'
+import Retro from './postprocessing/retro'
 
 import Audio from './audio'
 
@@ -35,6 +38,8 @@ var renderer;
 var directionalLight;
 var composer;
 
+// Post-processing shaders
+var allPost = [VerticalRoll, RGBShift, Dots];
 var currentPost = [];
 
 var humble = "./audio/humble.mp3";
@@ -53,7 +58,7 @@ var music = {
 
 var song = music.flowers;
 
-var audioControl = { 'mute': true, 'music': 'the-deli-flowers' };
+var audioControl = { 'mute': false, 'music': 'the-deli-flowers' };
 var planetControl = {'planet': 'flower'};
 
 var cameraOffset = 20;
@@ -113,7 +118,7 @@ function onLoad(framework) {
     Audio.init(path, initWorlds);
   });
 
-  currentPost = []//[RGBShift]//[ VerticalRoll ]
+  currentPost = [ Retro ];
   setPostProcessing();
 
   // load in background planets
@@ -155,12 +160,17 @@ function onLoad(framework) {
   });
 }
 
+
+// Note: Currently can only have 1 shader pass at time.
+// TODO: Get multiple passes to work
 function setPostProcessing(shaders) {
+  for (var s in allPost) { allPost[s].turnOff() }
   composer = new EffectComposer(renderer);
   var renderPass = new EffectComposer.RenderPass(scene, camera);
   composer.addPass(renderPass);
   for (var s in currentPost) {
-    var pass = currentPost[s].shader
+    currentPost[s].turnOn();
+    var pass = currentPost[s].shader;
     pass.renderToScreen = true;
     composer.addPass(pass);
   }
@@ -239,8 +249,6 @@ function choreo() {
     }
 
     if (timeTarget(CRYSTAL_ZOOMOUT)) {
-
-
       currentWorld.toggleDisplay(false);
       currentWorld.normalOffset = -1;
       currentWorld = crystalWorld;
@@ -260,7 +268,6 @@ function choreo() {
       cameraControls.zoom(CRYSTAL_ZOOM, CRYSTAL_ZOOM_END, 20, -10);
       currentWorld.rotateSpeed += Math.PI / 800;
     }
-
 
     if (timeTarget(WATER_ZOOMOUT)) {
       currentWorld.toggleDisplay(false);
@@ -293,18 +300,22 @@ function onUpdate(framework) {
     var size = Audio.getSizeFromSound();
     var speed = Audio.getRateFromSound();
 
-    switch (audioControl.music) {
-      case 'humble': {
-        var unif = VerticalRoll.shader.material.uniforms;
-        unif.distortion.value = size / 35;
-        unif.distortion2.value = size / 25;
-        unif.speed.value = speed / 200;
-        unif.rollSpeed.value = speed / 1000;
-        unif.time.value = clock.elapsedTime;
-      } break;
-      case 'ysl-bengfang': {
-        RGBShift.shader.material.uniforms.aberration.value = size / 5000;
-      } break;
+    if (VerticalRoll.isOn()) {
+      var unif = VerticalRoll.shader.material.uniforms;
+      unif.distortion.value = size / 35;
+      unif.distortion2.value = size / 25;
+      unif.speed.value = speed / 200;
+      unif.rollSpeed.value = speed / 1000;
+      unif.time.value = clock.elapsedTime;
+    }
+    if (RGBShift.isOn()) {
+      RGBShift.shader.material.uniforms.aberration.value = size / 5000;
+    }
+    if (Dots.isOn()) {
+      Dots.shader.material.uniforms.scale.value = size / 100;
+    }
+    if (Retro.isOn()) {
+      Retro.shader.material.uniforms.warmth.value = color.r;
     }
   }
 

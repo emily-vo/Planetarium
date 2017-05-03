@@ -16,29 +16,13 @@ var shader = new EffectComposer.ShaderPass({
           type: 'f',
           value: 1.0
         },
-        rollSpeed: {
+        warmth: {
           type: 'f',
-          value: 0.0
-        },
-        time: {
-          type: 'f',
-          value: 0.0
-        },
-        speed: {
-          type: 'f',
-          value: 0.2
-        },
-        distortion: {
-          type: 'f',
-          value: 0.0
-        },
-        distortion2: {
-          type: 'f',
-          value: 0.0
+          value: 1.0
         }
     },
     vertexShader: require('../shaders/pass-vert.glsl'),
-    fragmentShader: require('../shaders/verticalroll-frag.glsl')
+    fragmentShader: require('../shaders/retro-frag.glsl')
 });
 
 export default {

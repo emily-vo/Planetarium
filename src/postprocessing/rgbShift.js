@@ -1,6 +1,11 @@
 const THREE = require('three');
 const EffectComposer = require('three-effectcomposer')(THREE)
 
+var on = false;
+function turnOn() { on = true }
+function turnOff() { on = false }
+function isOn() { return on }
+
 var shader = new EffectComposer.ShaderPass({
     uniforms: {
         tDiffuse: {
@@ -21,5 +26,8 @@ var shader = new EffectComposer.ShaderPass({
 });
 
 export default {
-  shader: shader
+  shader: shader,
+  turnOn: turnOn,
+  turnOff: turnOff,
+  isOn: isOn
 }
