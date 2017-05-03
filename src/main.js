@@ -79,13 +79,13 @@ function onLoad(framework) {
   cameraControls = new CameraControls(scene, clock, camera);
 
   // putting in a simple axis helper to help visualize
-  var axisHelper = new THREE.AxisHelper( 10 );
-  scene.add( axisHelper );
+  // var axisHelper = new THREE.AxisHelper( 10 );
+  // scene.add( axisHelper );
 
   var objLoader = new THREE.OBJLoader();
 
   // audio
-  objLoader.load('textures/koi.obj', function(obj) {
+  objLoader.load('textures/koi2.obj', function(obj) {
     koiGeo = obj.children[0].geometry;
     var path;
     switch(song) {

@@ -32,8 +32,9 @@ export default class Koi extends Asset {
 
 
         var mesh = new THREE.Mesh(assetGeo, this.material);
+        mesh.rotation.y = Math.PI / 2.0; 
         //var mesh = new THREE.Mesh(assetGeo, new THREE.MeshBasicMaterial( {color: 0xffffff }));
-        //setAbsolutePosition(mesh, -5, 10, -1);
+        setAbsolutePosition(mesh, 0, -0.17, 0);
         var koiItem = new Item(mesh);
 
         // The asset class must have a normal and a vertex assigned before alignment can occur
