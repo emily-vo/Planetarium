@@ -316,6 +316,8 @@ function onUpdate(framework) {
     }
     if (Retro.isOn()) {
       Retro.shader.material.uniforms.warmth.value = color.r;
+      Retro.shader.material.uniforms.time.value = clock.elapsedTime;
+      Retro.shader.material.uniforms.size.value = size;
     }
   }
 

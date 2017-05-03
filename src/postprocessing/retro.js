@@ -19,6 +19,14 @@ var shader = new EffectComposer.ShaderPass({
         warmth: {
           type: 'f',
           value: 1.0
+        },
+        time: {
+          type: 'f',
+          value: 0.0
+        },
+        size: {
+          type: 'f',
+          value: 0.0
         }
     },
     vertexShader: require('../shaders/pass-vert.glsl'),
