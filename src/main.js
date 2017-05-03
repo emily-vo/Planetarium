@@ -11,6 +11,7 @@ import CrystalWorld from './worlds/crystalWorld'
 import GalaxyBackground from './worlds/galaxybackground'
 
 import VerticalRoll from './postprocessing/verticalRoll'
+import RGBShift from './postprocessing/rgbShift'
 
 import Audio from './audio'
 
@@ -39,6 +40,7 @@ var currentPost = [];
 var humble = "./audio/humble.mp3";
 var wildcat = "./audio/wildcat.mp3";
 var flowers = "./audio/the-deli-flowers.mp3";
+var ysl = "./audio/ysl-bengfang.mp3";
 
 var zoomIn;
 var zoomOut;
@@ -51,7 +53,7 @@ var music = {
 
 var song = music.flowers;
 
-var audioControl = { 'mute': true, 'music': 'smooth operator' };
+var audioControl = { 'mute': true, 'music': 'the-deli-flowers' };
 var planetControl = {'planet': 'flower'};
 
 var cameraOffset = 20;
@@ -111,21 +113,21 @@ function onLoad(framework) {
     Audio.init(path, initWorlds);
   });
 
-  currentPost = []//[ VerticalRoll ]
+  currentPost = []//[RGBShift]//[ VerticalRoll ]
   setPostProcessing();
 
   // load in background planets
   galaxy = new GalaxyBackground(scene, clock, directionalLight);
   galaxy.initializeBackground();
 
-  gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers',
+  gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 'ysl-bengfang',
     'smooth-operator', 'cello-suite']).onChange(function(newVal) {
     Audio.setMusic(newVal, resetAnalysers);
 
-    if (newVal == 'humble') {
-      currentPost = [VerticalRoll];
-    } else {
-      currentPost = []
+    switch(newVal) {
+      case 'humble': currentPost = [ VerticalRoll ]; break;
+      case 'ysl-bengfang': currentPost = [ RGBShift ]; break;
+      default: currentPost = [];
     }
     setPostProcessing();
   });
@@ -283,24 +285,27 @@ function onUpdate(framework) {
   if (crystalWorld && flowerWorld && waterWorld) choreo();
 
   if (Audio.isPlaying()) {
-    // var size = Audio.getSizeFromSound();
+    // Change the background color
     var bg = scene.background ? scene.background : new THREE.Color(0,0,0);
     var color = Audio.getColorFromSound(bg);
-    // Change the background color
     scene.background = color;
-  }
 
-  for (var s in currentPost) {
-    var unif = currentPost[s].shader.material.uniforms;
-    unif.time.value = clock.elapsedTime;
-  }
+    var size = Audio.getSizeFromSound();
+    var speed = Audio.getRateFromSound();
 
-  if (audioControl.music == 'humble' && Audio.isPlaying()) {
-
-    VerticalRoll.shader.material.uniforms.distortion.value = Audio.getSizeFromSound() / 35;
-    VerticalRoll.shader.material.uniforms.distortion2.value = Audio.getSizeFromSound() / 25;
-    VerticalRoll.shader.material.uniforms.speed.value = Audio.getRateFromSound() / 200;
-    VerticalRoll.shader.material.uniforms.rollSpeed.value = Audio.getRateFromSound() / 1000;
+    switch (audioControl.music) {
+      case 'humble': {
+        var unif = VerticalRoll.shader.material.uniforms;
+        unif.distortion.value = size / 35;
+        unif.distortion2.value = size / 25;
+        unif.speed.value = speed / 200;
+        unif.rollSpeed.value = speed / 1000;
+        unif.time.value = clock.elapsedTime;
+      } break;
+      case 'ysl-bengfang': {
+        RGBShift.shader.material.uniforms.aberration.value = size / 5000;
+      } break;
+    }
   }
 
   if (galaxy) galaxy.tick();

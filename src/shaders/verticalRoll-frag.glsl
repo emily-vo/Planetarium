@@ -7,7 +7,7 @@ uniform float distortion;
 uniform float distortion2;
 varying vec2 f_uv;
 
-// Noise from https://github.com/ashima/webgl-noise/blob/master/src/noise2D.glsl
+// Noise directly from https://github.com/ashima/webgl-noise/blob/master/src/noise2D.glsl
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 
 vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -41,17 +41,11 @@ float snoise(vec2 v)
 
 // Influence from https://github.com/felixturner/bad-tv-shader/blob/master/BadTVShader.js
 void main() {
+    float roll = f_uv.y - time * speed;
 
-  //  float gray = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-
-  //  col.rgb = vec3(gray, gray, gray) * (u_amount) + col.rgb * (1.0 - u_amount);
-
-
-    float yt = f_uv.y - time * speed;
-
-    float offset = snoise(vec2(yt * 3.0, 0.0)) * 0.2;
+    float offset = snoise(vec2(roll * 3.0, 0.0)) * 0.2;
     offset *= distortion * distortion * offset * offset;
-    offset += snoise(vec2(yt * 50.0, 0.0) * 0.001);
+    offset += snoise(vec2(roll * 50.0, 0.0) * 0.001);
 
     vec4 col = texture2D(tDiffuse, vec2( fract(f_uv.x + offset), fract(f_uv.y - time * rollSpeed)));
 

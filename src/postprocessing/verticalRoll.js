@@ -33,10 +33,8 @@ var shader = new EffectComposer.ShaderPass({
         }
     },
     vertexShader: require('../shaders/pass-vert.glsl'),
-    fragmentShader: require('../shaders/verticalRoll-frag.glsl')
+    fragmentShader: require('../shaders/verticalroll-frag.glsl')
 });
-
-
 
 export default {
   shader: shader
