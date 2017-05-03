@@ -1,5 +1,6 @@
 
 const THREE = require('three'); // older modules are imported like this. You shouldn't have to worry about this much
+const EffectComposer = require('three-effectcomposer')(THREE)
 import Framework from './framework'
 import World from './worlds/world'
 import BasicWorld from './worlds/basicWorld'
@@ -8,10 +9,12 @@ import FlowerWorld from './worlds/flowerWorld'
 import WaterWorld from './worlds/waterWorld'
 import CrystalWorld from './worlds/crystalWorld'
 
+import VerticalRoll from './postprocessing/verticalRoll'
+
 import Audio from './audio'
 
 // initialize global clock
-var clock =new THREE.Clock(false);
+var clock = new THREE.Clock(false);
 var cameraControls;
 
 var koiGeo;
@@ -25,7 +28,11 @@ var currentWorld;
 // scene nodes
 var scene;
 var camera;
+var renderer;
 var directionalLight;
+var composer;
+
+var currentPost = [];
 
 var humble = "./audio/humble.mp3";
 var wildcat = "./audio/wildcat.mp3";
@@ -42,7 +49,7 @@ var music = {
 
 var song = music.flowers;
 
-var audioControl = { 'mute': false, 'music': 'smooth operator' };
+var audioControl = { 'mute': true, 'music': 'smooth operator' };
 var planetControl = {'planet': 'flower'};
 
 var cameraOffset = 20;
@@ -52,7 +59,7 @@ function onLoad(framework) {
   // initialize framework
   scene = framework.scene;
   camera = framework.camera;
-  var renderer = framework.renderer;
+  renderer = framework.renderer;
   var gui = framework.gui;
   var stats = framework.stats;
 
@@ -102,9 +109,19 @@ function onLoad(framework) {
     Audio.init(path, initWorlds);
   });
 
+  currentPost = []//[ VerticalRoll ]
+  setPostProcessing();
+
   gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers',
     'smooth-operator', 'cello-suite']).onChange(function(newVal) {
     Audio.setMusic(newVal, resetAnalysers);
+
+    if (newVal == 'humble') {
+      currentPost = [VerticalRoll];
+    } else {
+      currentPost = []
+    }
+    setPostProcessing();
   });
 
   gui.add(audioControl, 'mute').onChange(function(newVal) {
@@ -128,7 +145,23 @@ function onLoad(framework) {
     }
     currentWorld.toggleDisplay(true);
   });
+}
 
+function setPostProcessing(shaders) {
+  composer = new EffectComposer(renderer);
+  var renderPass = new EffectComposer.RenderPass(scene, camera);
+  composer.addPass(renderPass);
+  for (var s in currentPost) {
+    var pass = currentPost[s].shader
+    pass.renderToScreen = true;
+    composer.addPass(pass);
+  }
+  render();
+}
+
+function render() {
+  composer.render();
+  requestAnimationFrame(render);
 }
 
 function initWorlds() {
@@ -146,7 +179,7 @@ function initWorlds() {
   currentWorld.toggleDisplay(true);
 
   setWorldSpeeds();
-
+  if (audioControl.mute) Audio.mute()
   Audio.playSound();
   clock.start();
 }
@@ -198,6 +231,8 @@ function choreo() {
     }
 
     if (timeTarget(CRYSTAL_ZOOMOUT)) {
+
+
       currentWorld.toggleDisplay(false);
       currentWorld.normalOffset = -1;
       currentWorld = crystalWorld;
@@ -248,6 +283,20 @@ function onUpdate(framework) {
     // Change the background color
     scene.background = color;
   }
+
+  for (var s in currentPost) {
+    var unif = currentPost[s].shader.material.uniforms;
+    unif.time.value = clock.elapsedTime;
+  }
+
+  if (audioControl.music == 'humble' && Audio.isPlaying()) {
+
+    VerticalRoll.shader.material.uniforms.distortion.value = Audio.getSizeFromSound() / 35;
+    VerticalRoll.shader.material.uniforms.distortion2.value = Audio.getSizeFromSound() / 25;
+    VerticalRoll.shader.material.uniforms.speed.value = Audio.getRateFromSound() / 200;
+    VerticalRoll.shader.material.uniforms.rollSpeed.value = Audio.getRateFromSound() / 1000;
+  }
+
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
