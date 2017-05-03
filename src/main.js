@@ -123,7 +123,7 @@ function onLoad(framework) {
   gui.add(audioControl, 'music', ['humble', 'wildcat', 'the-deli-flowers', 'ysl-bengfang',
     'smooth-operator', 'cello-suite']).onChange(function(newVal) {
     Audio.setMusic(newVal, resetAnalysers);
-
+    if (audioControl.mute) Audio.mute();
     switch(newVal) {
       case 'humble': currentPost = [ VerticalRoll ]; break;
       case 'ysl-bengfang': currentPost = [ RGBShift ]; break;
@@ -134,9 +134,9 @@ function onLoad(framework) {
 
   gui.add(audioControl, 'mute').onChange(function(newVal) {
     if (newVal) {
-      Audio.mute()
+      Audio.mute();
     } else {
-      Audio.unmute()
+      Audio.unmute();
     }
   })
 
