@@ -13,7 +13,7 @@ import GalaxyBackground from './worlds/galaxybackground'
 import VerticalRoll from './postprocessing/verticalRoll'
 import RGBShift from './postprocessing/rgbShift'
 import Dots from './postprocessing/dots'
-import DotsBW from './postprocessing/dotsbw'
+import DotsBW from './postprocessing/dotsBW'
 import Saturate from './postprocessing/saturate'
 import Retro from './postprocessing/retro'
 
